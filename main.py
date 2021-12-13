@@ -1,16 +1,13 @@
 import os
 import logging
-
 import discord
+
 from discord.ext import commands
 
 from private.config import TOKEN, OWNER_IDS, DEFAULT_PREFIXES, LOCAL
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="[%(asctime)-15s] %(message)s")
-
-os.environ['JISHAKU_NO_UNDERSCORE'] = 'True'
-os.environ['JISHAKU_HIDE'] = 'True'
 
 
 class Ayane(commands.Bot):
@@ -20,11 +17,15 @@ class Ayane(commands.Bot):
             strip_after_prefix=True,
             intents=discord.Intents.all(),
         )
+        self.loop.create_task(self.set_bot_attrs())
         self._load_cogs()
         self.owner_ids = OWNER_IDS
         self.website = "https://ayane.live/"
-        self.invite = ""
         self.server_invite = "https://discord.gg/QNXC8yFfKg"
+
+    async def set_bot_attrs(self):
+        await self.wait_until_ready()
+        self.invite = f"https://discord.com/oauth2/authorize?client_id={self.user.id}&scope=bot+applications.commands&permissions=173211516614&response_type=code&redirect_uri=https%3A%2F%2Fdiscord.gg%2Finvite%2FQNXC8yFfKg"
 
     async def on_ready(self):
         print("Logged in as", str(self.user))
