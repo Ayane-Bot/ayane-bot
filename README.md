@@ -1,2 +1,2 @@
-# ayane
+# Ayane
 Ayane Bot official repository.
