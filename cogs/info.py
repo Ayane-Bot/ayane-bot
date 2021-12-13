@@ -30,7 +30,7 @@ class Info(commands.Cog):
         owners_string = " ".join([f"`{own}`" for own in self.bot.owner_ids])
         embed = discord.Embed(
             title="Information about the bot",
-            color=self.bot.mycolor,
+            color=self.bot.colour,
         )
         embed.set_thumbnail(url=owner.avatar.url)
         embed.add_field(

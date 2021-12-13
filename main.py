@@ -22,6 +22,7 @@ class Ayane(commands.Bot):
         self.owner_ids = OWNER_IDS
         self.website = "https://ayane.live/"
         self.server_invite = "https://discord.gg/QNXC8yFfKg"
+        self.colour = discord.Colour(value=0xA37FFF)
 
     async def set_bot_attrs(self):
         await self.wait_until_ready()
