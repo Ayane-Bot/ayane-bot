@@ -21,12 +21,12 @@ class Ayane(commands.Bot):
         self._load_cogs()
         self.owner_ids = OWNER_IDS
         self.website = "https://ayane.live/"
-        self.server_invite = "https://discord.com/invite/QNXC8yFfKg"
+        self.server_invite = "https://discord.com/invite/FQNXC8yFfKg"
         self.colour = discord.Colour(value=0xA37FFF)
 
     async def set_bot_attrs(self):
         await self.wait_until_ready()
-        self.invite = f"https://discord.com/oauth2/authorize?client_id={self.user.id}&scope=bot+applications.commands&permissions=173211516614&response_type=code&redirect_uri=https%3A%2F%2Fdiscord.gg%2Finvite%2FQNXC8yFfKg"
+        self.invite = f"https://discord.com/oauth2/authorize?client_id={self.user.id}&scope=bot+applications.commands&permissions=173211516614&response_type=code&redirect_uri={self.server_invite}"
 
     async def on_ready(self):
         print("Logged in as", str(self.user))
