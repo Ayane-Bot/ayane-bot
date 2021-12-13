@@ -32,7 +32,7 @@ class Info(commands.Cog):
             title="Information about the bot",
             color=self.bot.colour,
         )
-        embed.set_thumbnail(url=owner.avatar.url)
+        embed.set_thumbnail(url=self.bot.user.display_avatar.url)
         embed.add_field(
             name="<:bot_owner:846407210493804575> Owners",
             value=f"Owners : {owners_string}\n",
