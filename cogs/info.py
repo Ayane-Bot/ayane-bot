@@ -1,5 +1,7 @@
 import discord
 from discord.ext import commands
+
+import platform
 import datetime
 
 
@@ -65,7 +67,8 @@ class Info(commands.Cog):
             inline=False,
         )
         embed.set_footer(
-            text=f"Requested by {ctx.author.name}", icon_url=ctx.author.avatar.url
+            text=f"Requested by {ctx.author.name}",
+            icon_url=ctx.author.display_avatar.url,
         )
         embed.timestamp = datetime.datetime.utcnow()
         message = await ctx.send(embed=embed)
