@@ -8,6 +8,7 @@ import discord
 import humanize as humanize
 from discord.ext import commands
 
+from cogs.utils.helpers import PersistentExceptionView
 from main import Ayane
 from private.config import LOCAL, LOCAL_USER
 
@@ -186,7 +187,7 @@ class Events(commands.Cog):
 
             try:
                 if len(to_send) < 2000:
-                    await error_channel.send(to_send, view=self.bot.error_view)
+                    await error_channel.send(to_send, view=PersistentExceptionView(self.bot))
                 else:
                     file = discord.File(
                         io.StringIO(traceback_string), filename="traceback.py"
@@ -194,7 +195,7 @@ class Events(commands.Cog):
                     await error_channel.send(
                         f"```yaml\n{command_data}``````py Command {ctx.command} raised the following error:{local_data}\n```",
                         file=file,
-                        view=self.bot.error_view,
+                        view=PersistentExceptionView(self.bot),
                     )
             finally:
                 for line in traceback_string.split("\n"):

@@ -30,7 +30,6 @@ class Ayane(commands.Bot):
     def __init__(self):
         # These are all attributes that will be set later in the `on_ready_once` method.
         self.invite: str = None
-        self.error_view: discord.ui.View = None
 
         # All extensions that are not located in the 'cogs' directory.
         self.initial_extensions = ['jishaku']
@@ -55,8 +54,7 @@ class Ayane(commands.Bot):
     async def on_ready_once(self):
         await self.wait_until_ready()
         self.invite = discord.utils.oauth_url(self.user.id, permissions=discord.Permissions(173211516614), redirect_uri=self.server_invite, scopes=["bot", "applications.commands"])
-        self.error_view = PersistentExceptionView(self)
-        self.add_view(self.error_view)
+        self.add_view(PersistentExceptionView(self))
 
     @staticmethod
     async def _establish_database_connection() -> asyncpg.Pool:
@@ -141,13 +139,14 @@ if __name__ == "__main__":
         
         return await bot.is_owner(ctx.author)
 
-
-    webhook = discord.SyncWebhook.from_url(WEBHOOK_URL, bot_token=bot.http.token)
     try:
         if not LOCAL:
+            webhook = discord.SyncWebhook.from_url(WEBHOOK_URL, bot_token=bot.http.token)
             webhook.send('👋 Ayane is waking up!')
+            del webhook
         bot.run(TOKEN)
         
     finally:
         if not LOCAL:
+            webhook = discord.SyncWebhook.from_url(WEBHOOK_URL, bot_token=bot.http.token)
             webhook.send('🔻 Ayane is going to sleep!')
