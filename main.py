@@ -8,6 +8,7 @@ import discord
 
 from discord.ext import commands
 
+from cogs.utils.context import AyaneContext
 from cogs.utils.helpers import PersistentExceptionView
 from private.config import (TOKEN, DEFAULT_PREFIXES, OWNER_IDS, LOCAL, DB_CONF, WEBHOOK_URL)
 
@@ -78,6 +79,9 @@ class Ayane(commands.Bot):
 
     async def on_ready(self):
         logging.info(f"\033[42m\033[35m Logged in as {self.user}! \033[0m")
+
+    async def get_context(self, message, *, cls=AyaneContext):
+        return await super().get_context(message, cls=cls)
 
     async def on_error(self, event_method: str, *args, **kwargs) -> None:
         """ Logs uncaught exceptions and sends them to the error log channel in the support guild. """
