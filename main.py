@@ -20,7 +20,7 @@ oop = '\033[43m\033[37m⚠\033[0m'
 ok = '\033[42m\033[30m✔\033[0m'
 
 
-# JSK flags
+# Jishaku flags
 os.environ['JISHAKU_NO_UNDERSCORE'] = 'True'
 os.environ['JISHAKU_HIDE'] = 'True'
 
@@ -66,10 +66,13 @@ class Ayane(commands.Bot):
             "host": DB_CONF.host,
             "port": DB_CONF.port
         }
+        
         try:
             return await asyncpg.create_pool(**credentials)
+        
         except Exception as e:
             logging.error("Could not create database pool", exc_info=e)
+            
         finally:
             logging.info(f'{ok} Database connection created.')
 
@@ -81,16 +84,17 @@ class Ayane(commands.Bot):
         traceback_string = traceback.format_exc()
         for line in traceback_string.split('\n'):
             logging.info(line)
+            
         await self.wait_until_ready()
         error_channel = self.get_channel(920086768903147550)
         to_send = f"```yaml\nAn error occurred in an {event_method} event``````py" \
                   f"\n{traceback_string}\n```"
+        
         if len(to_send) < 2000:
             try:
                 await error_channel.send(to_send)
 
             except (discord.Forbidden, discord.HTTPException):
-
                 await error_channel.send(f"```yaml\nAn error occurred in an {event_method} event``````py",
                                          file=discord.File(io.StringIO(traceback_string), filename='traceback.py'))
         else:
@@ -107,11 +111,14 @@ class Ayane(commands.Bot):
             try:
                 self.load_extension(ext)
                 logging.info(f"{ok} Loaded extension {ext}")
+                
             except Exception as e:
                 if isinstance(e, commands.ExtensionNotFound):
                     logging.error(f"{oop} Extension {ext} was not found {oop}", exc_info=False)
+                    
                 elif isinstance(e, commands.NoEntryPointError):
                     logging.error(f"{err} Extension {ext} has no setup function {err}", exc_info=False)
+                    
                 else:
                     logging.error(f"{err}{err} Failed to load extension {ext} {err}{err}", exc_info=e)
 
@@ -127,6 +134,7 @@ if __name__ == "__main__":
         """
         if LOCAL is False:
             return True
+        
         return await bot.is_owner(ctx.author)
 
 
@@ -135,6 +143,7 @@ if __name__ == "__main__":
         if not LOCAL:
             webhook.send('👋 Ayane is waking up!')
         bot.run(TOKEN)
+        
     finally:
         if not LOCAL:
             webhook.send('🔻 Ayane is going to sleep!')
