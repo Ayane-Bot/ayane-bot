@@ -13,9 +13,16 @@ from private.config import (TOKEN, DEFAULT_PREFIXES, OWNER_IDS, LOCAL, DB_CONF, 
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="[%(asctime)-15s] %(message)s")
+
+# Some very fancy characters hehe
 err = '\033[41m\033[30m❌\033[0m'
 oop = '\033[43m\033[37m⚠\033[0m'
 ok = '\033[42m\033[30m✔\033[0m'
+
+
+# JSK flags
+os.environ['JISHAKU_NO_UNDERSCORE'] = 'True'
+os.environ['JISHAKU_HIDE'] = 'True'
 
 
 class Ayane(commands.Bot):
