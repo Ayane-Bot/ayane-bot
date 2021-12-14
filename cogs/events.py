@@ -68,3 +68,8 @@ class Events(commands.Cog):
                 for line in traceback_string.split('\n'):
                     logging.info(line)
 
+    @commands.Cog.listener('on_command')
+    async def basic_command_logger(self, ctx):
+        await self.bot.db.execute(
+            "INSERT INTO commands (guild_id, user_id, command, timestamp) VALUES ($1, $2, $3, $4)",
+            getattr(ctx.guild, 'id', None), ctx.author.id, ctx.command.qualified_name, ctx.message.created_at)
