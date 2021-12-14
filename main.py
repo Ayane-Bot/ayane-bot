@@ -137,4 +137,4 @@ if __name__ == "__main__":
         bot.run(TOKEN)
     finally:
         if not LOCAL:
-            webhook.send('👋 Ayane is going to sleep!')
+            webhook.send('🔻 Ayane is going to sleep!')
