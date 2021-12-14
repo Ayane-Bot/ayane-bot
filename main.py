@@ -9,21 +9,29 @@ import discord
 from discord.ext import commands
 
 from cogs.utils.helpers import PersistentExceptionView
-from private.config import (TOKEN, DEFAULT_PREFIXES, OWNER_IDS, LOCAL, DB_CONF)
+from private.config import (TOKEN, DEFAULT_PREFIXES, OWNER_IDS, LOCAL, DB_CONF, WEBHOOK_URL)
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="[%(asctime)-15s] %(message)s")
+err = '\033[41m\033[30m❌\033[0m'
+oop = '\033[43m\033[37m⚠\033[0m'
+ok = '\033[42m\033[30m✔\033[0m'
 
 
 class Ayane(commands.Bot):
     def __init__(self):
+        # These are all attributes that will be set later in the `on_ready_once` method.
+        self.invite: str = None
+        self.error_view: discord.ui.View = None
+
+        # All extensions that are not located in the 'cogs' directory.
+        self.initial_extensions = ['jishaku']
+
         super().__init__(
             command_prefix=commands.when_mentioned_or(*DEFAULT_PREFIXES),
             strip_after_prefix=True,
             intents=discord.Intents.all())
-        self.invite: str = None
 
-        self.error_view: discord.ui.View = None
         self.owner_ids = OWNER_IDS
 
         # Constants- should be moved to cogs/utils/constants.py maybe?
@@ -56,12 +64,13 @@ class Ayane(commands.Bot):
         except Exception as e:
             logging.error("Could not create database pool", exc_info=e)
         finally:
-            logging.info('Database connection created.')
+            logging.info(f'{ok} Database connection created.')
 
     async def on_ready(self):
-        print("Logged in as", str(self.user))
+        logging.info(f"\033[42m\033[35m Logged in as {self.user}! \033[0m")
 
     async def on_error(self, event_method: str, *args, **kwargs) -> None:
+        """ Logs uncaught exceptions and sends them to the error log channel in the support guild. """
         traceback_string = traceback.format_exc()
         for line in traceback_string.split('\n'):
             logging.info(line)
@@ -85,17 +94,19 @@ class Ayane(commands.Bot):
         """
         Loads all the extensions in the ./cogs directory.
         """
-        try:
-            self.load_extension("jishaku")
-        except Exception as e:
-            logging.error(f"Failed to load jishaku", exc_info=e)
-
-        for ext in os.listdir("./cogs"):
-            if ext.endswith(".py"):
-                try:
-                    self.load_extension(f"cogs.{ext[:-3]}")
-                except Exception as e:
-                    logging.error(f"Failed to load extension {ext}.", exc_info=e)
+        extensions = [f"cogs.{f[:-3]}" for f in os.listdir("./cogs") if f.endswith(".py")  # 'Cogs' folder
+                      ] + self.initial_extensions  # Initial extensions like jishaku or others that may be elsewhere
+        for ext in extensions:
+            try:
+                self.load_extension(ext)
+                logging.info(f"{ok} Loaded extension {ext}")
+            except Exception as e:
+                if isinstance(e, commands.ExtensionNotFound):
+                    logging.error(f"{oop} Extension {ext} was not found {oop}", exc_info=False)
+                elif isinstance(e, commands.NoEntryPointError):
+                    logging.error(f"{err} Extension {ext} has no setup function {err}", exc_info=False)
+                else:
+                    logging.error(f"{err}{err} Failed to load extension {ext} {err}{err}", exc_info=e)
 
 
 if __name__ == "__main__":
@@ -111,4 +122,12 @@ if __name__ == "__main__":
             return True
         return await bot.is_owner(ctx.author)
 
-    bot.run(TOKEN)
+
+    webhook = discord.SyncWebhook.from_url(WEBHOOK_URL, bot_token=bot.http.token)
+    try:
+        if not LOCAL:
+            webhook.send('👋 Ayane is waking up!')
+        bot.run(TOKEN)
+    finally:
+        if not LOCAL:
+            webhook.send('👋 Ayane is going to sleep!')
