@@ -51,29 +51,38 @@ class Events(commands.Cog):
         if isinstance(error, tuple(ignored)):
             return
 
-        elif isinstance(error, commands.BadUnionArgument):
-            _message = f"You did not provide a valid {conv_n(error.converters)}, please go check `{ctx.clean_prefix}help {ctx.command.name}`."
-            embed = discord.Embed(title="❌ Bad argument", description=_message)
-            await ctx.send(embed=embed, delete_after=15)
-
-        elif isinstance(error, commands.BadArgument):
-            _message = f"You provided at least one wrong argument. Please go check `{ctx.clean_prefix}help {ctx.command}`"
-            embed = discord.Embed(title="❌ Bad argument", description=_message)
-            await ctx.send(embed=embed, delete_after=15)
-
-        elif isinstance(error, commands.UserNotFound):
-            _message = f"You did not provide a valid user, please go check `{ctx.clean_prefix}help {ctx.command.name}`."
-            embed = discord.Embed(title="❌ User not found", description=_message)
-            await ctx.send(embed=embed, delete_after=15)
-
-        elif isinstance(error, commands.MemberNotFound):
-            _message = f"You did not provide a valid member, Please go check `{ctx.clean_prefix}help {ctx.command.name}`."
-            embed = discord.Embed(title="❌ Member not found", description=_message)
-            await ctx.send(embed=embed, delete_after=15)
-
+        # TODO: Leo: Work on better UserInputError messages.
         elif isinstance(error, commands.UserInputError):
-            _message = f"You made an error in your commmand. Please go check `{ctx.clean_prefix}help {ctx.command}`"
-            embed = discord.Embed(title="❌ Input error", description=_message)
+            embed = discord.Embed(title='An incorrect argument was passed.')
+
+            if isinstance(error, commands.BadUnionArgument):
+                embed.description = f"You did not provide a valid {conv_n(error.converters)}, please go check `{ctx.clean_prefix}help {ctx.command.name}`."
+                embed.title = "❌ Bad argument"
+
+            elif isinstance(error, commands.BadLiteralArgument):
+                pass
+
+            elif isinstance(error, commands.ArgumentParsingError):
+                pass
+
+            elif isinstance(error, commands.BadArgument):
+
+                if isinstance(error, commands.UserNotFound):
+                    embed.description = f"You did not provide a valid user, please go check `{ctx.clean_prefix}help {ctx.command.name}`."
+                    embed.title = "❌ User not found"
+
+                elif isinstance(error, commands.MemberNotFound):
+                    embed.description = f"You did not provide a valid member, Please go check `{ctx.clean_prefix}help {ctx.command.name}`."
+                    embed.title = "❌ Member not found"
+
+                else:
+                    embed.description = f"You provided at least one wrong argument. Please go check `{ctx.clean_prefix}help {ctx.command}`"
+                    embed.title = "❌ Bad argument"
+
+            else:
+                embed.description = f"You made an error in your commmand. Please go check `{ctx.clean_prefix}help {ctx.command}`"
+                embed.title = "❌ Input error"
+
             await ctx.send(embed=embed, delete_after=15)
 
         elif isinstance(error, commands.BotMissingPermissions):
@@ -87,12 +96,11 @@ class Events(commands.Cog):
             _message = f"This command has been temporaly disabled, it is probably under maintenance. For more informations join the [support server]({self.bot.server_invite}) !"
             embed = discord.Embed(title="🛑 Command disabled", description=_message)
             await ctx.send(embed=embed, delete_after=15)
-            return
+
         elif isinstance(error, commands.MaxConcurrencyReached):
             _message = f"This command can only be used **{error.number}** time simultaneously, please retry later."
             embed = discord.Embed(title="🛑 Maximum concurrency reached", description=_message)
             await ctx.send(embed=embed, delete_after=15)
-            return
 
         elif isinstance(error, commands.CommandOnCooldown):
             _message = f"This command is on cooldown, please retry in {humanize.time.precisedelta(math.ceil(error.retry_after))}."
