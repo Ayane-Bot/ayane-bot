@@ -20,6 +20,8 @@ class Events(commands.Cog):
 
     @commands.Cog.listener('on_command_error')
     async def error_log(self, ctx, error):
+        """ Handles command exceptions and logs unhandled ones to the support guild. """
+
         if isinstance(error, commands.CommandInvokeError):
             error = error.original
 

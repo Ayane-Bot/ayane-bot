@@ -15,4 +15,4 @@ class PersistentExceptionView(discord.ui.View):
     async def resolve(self, _, interaction: discord.Interaction):
         message = interaction.message
         error = '```py\n' + '\n'.join(message.content.split('\n')[7:])
-        await message.edit(content=f"{error}```fix\n✅ Marked as fixed by the developers.```", view=None)
+        await message.edit(content=f"{error}```fix\n✅ Marked as fixed by {interaction.user}.```", view=None)
