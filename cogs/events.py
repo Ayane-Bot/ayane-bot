@@ -26,7 +26,7 @@ class Events(commands.Cog):
             error = error.original
 
         ignored = [commands.CommandNotFound,
-                   ] + [commands.NotOwner] if LOCAL else []
+                   ] + ([commands.NotOwner] if LOCAL else [])
 
         if isinstance(error, tuple(ignored)):
             return
