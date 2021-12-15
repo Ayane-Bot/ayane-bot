@@ -90,6 +90,71 @@ class Events(commands.Cog):
     def __init__(self, bot):
         self.bot: Ayane = bot
 
+    @staticmethod
+    async def send_interaction_error_message(interaction, *args, **kwargs):
+        if interaction.response.is_done():
+            await interaction.followup.send(*args, **kwargs)
+        else:
+            await interaction.response.send_message(*args, **kwargs)
+
+    @staticmethod
+    async def send_unexpected_error(ctx,error,user=None,interaction=None,**kwargs):
+        with contextlib.suppress(discord.HTTPException):
+            _message = f"Sorry, an error has occured, it has been reported to my developers. To be inform of the " \
+                       f"bot issues and updates join the [support server]({constants.server_invite}) !"
+            embed = discord.Embed(title="❌ Error", description=_message)
+            embed.add_field(name="Traceback :", value=f"```py\n{type(error).__name__} : {error}```")
+
+            if interaction:
+                await ctx.bot.get_cog("events").send_interaction_error_message(interaction, embed=embed, **kwargs)
+            else:
+                await ctx.send(embed=embed, **kwargs)
+
+        error_channel = ctx.bot.get_channel(920086735755575327)
+        traceback_string = "".join(traceback.format_exception(etype=None, value=error, tb=error.__traceback__))
+
+        if ctx.guild:
+            command_data = (
+                f"by: {user.name if user else ctx.author.name} ({user.id if user else ctx.author.id})"
+                f"\ncommand: {ctx.message.content[0:1700]}"
+                f"\nguild_id: {ctx.guild.id} - channel_id: {ctx.channel.id}"
+                f"\nowner: {ctx.guild.owner.name} ({ctx.guild.owner.id})"
+                f"\nbot admin: {'✅' if ctx.me.guild_permissions.administrator else '❌'} "
+                f"- role pos: {ctx.me.top_role.position}"
+            )
+        else:
+            command_data = (
+                f"command: {ctx.message.content[0:1700]}"
+                f"\nCommand executed in DMs"
+            )
+
+        if LOCAL:
+            local_data = f'\nError occured in local mode from {LOCAL_USER}\'s computer'
+        else:
+            local_data = ''
+
+        to_send = (
+            f"```yaml\n{command_data}``````py"
+            f"\nCommand {ctx.command} raised the following error:{local_data}"
+            f"\n{traceback_string}\n```"
+        )
+
+        try:
+            if len(to_send) < 2000:
+                await error_channel.send(to_send, view=PersistentExceptionView(ctx.bot))
+            else:
+                file = discord.File(
+                    io.StringIO(traceback_string), filename="traceback.py"
+                )
+                await error_channel.send(
+                    f"```yaml\n{command_data}``````py Command {ctx.command} raised the following error:{local_data}\n```",
+                    file=file,
+                    view=PersistentExceptionView(ctx.bot),
+                )
+        finally:
+            for line in traceback_string.split("\n"):
+                logging.info(line)
+
     @commands.Cog.listener("on_command_error")
     async def error_log(self, ctx, error):
         """Handles command exceptions and logs unhandled ones to the support guild."""
@@ -220,57 +285,7 @@ class Events(commands.Cog):
             await ctx.send(embed=embed, delete_after=15)
 
         else:
-            with contextlib.suppress(discord.HTTPException):
-                _message = f"Sorry, an error has occured, it has been reported to my developers. To be inform of the " \
-                           f"bot issues and updates join the [support server]({constants.server_invite}) !"
-                embed = discord.Embed(title="❌ Error", description=_message)
-                embed.add_field(name="Traceback :", value=f"```py\n{type(error).__name__} : {error}```")
-                await ctx.send(embed=embed)
-
-            error_channel = self.bot.get_channel(920086735755575327)
-            traceback_string = "".join(traceback.format_exception(etype=None, value=error, tb=error.__traceback__))
-
-            if ctx.guild:
-                command_data = (
-                    f"by: {ctx.author.name} ({ctx.author.id})"
-                    f"\ncommand: {ctx.message.content[0:1700]}"
-                    f"\nguild_id: {ctx.guild.id} - channel_id: {ctx.channel.id}"
-                    f"\nowner: {ctx.guild.owner.name} ({ctx.guild.owner.id})"
-                    f"\nbot admin: {'✅' if ctx.me.guild_permissions.administrator else '❌'} "
-                    f"- role pos: {ctx.me.top_role.position}"
-                )
-            else:
-                command_data = (
-                    f"command: {ctx.message.content[0:1700]}"
-                    f"\nCommand executed in DMs"
-                )
-
-            if LOCAL:
-                local_data = f'\nError occured in local mode from {LOCAL_USER}\'s computer'
-            else:
-                local_data = ''
-
-            to_send = (
-                f"```yaml\n{command_data}``````py"
-                f"\nCommand {ctx.command} raised the following error:{local_data}"
-                f"\n{traceback_string}\n```"
-            )
-
-            try:
-                if len(to_send) < 2000:
-                    await error_channel.send(to_send, view=PersistentExceptionView(self.bot))
-                else:
-                    file = discord.File(
-                        io.StringIO(traceback_string), filename="traceback.py"
-                    )
-                    await error_channel.send(
-                        f"```yaml\n{command_data}``````py Command {ctx.command} raised the following error:{local_data}\n```",
-                        file=file,
-                        view=PersistentExceptionView(self.bot),
-                    )
-            finally:
-                for line in traceback_string.split("\n"):
-                    logging.info(line)
+            await self.send_unexpected_error(ctx,error)
 
     @commands.Cog.listener("on_command")
     async def basic_command_logger(self, ctx):
