@@ -8,6 +8,7 @@ import discord
 
 from discord.ext import commands
 
+from utils import constants
 from utils.context import AyaneContext
 from utils.helpers import PersistentExceptionView
 from private.config import (TOKEN, DEFAULT_PREFIXES, OWNER_IDS, LOCAL, DB_CONF, WEBHOOK_URL)
@@ -40,7 +41,7 @@ class Ayane(commands.Bot):
             intents=discord.Intents.all())
 
         self.owner_ids = OWNER_IDS
-        self.colour = discord.Colour(value=0xA37FFF)
+        self.colour = self.color = discord.Colour(value=0xA37FFF)
 
         # Startup tasks and stuff
         self.loop.create_task(self.on_ready_once())
@@ -49,7 +50,7 @@ class Ayane(commands.Bot):
 
     async def on_ready_once(self):
         await self.wait_until_ready()
-        self.invite = discord.utils.oauth_url(self.user.id, permissions=discord.Permissions(173211516614), redirect_uri=self.server_invite, scopes=["bot", "applications.commands"])
+        self.invite = discord.utils.oauth_url(self.user.id, permissions=discord.Permissions(173211516614), redirect_uri=constants.server_invite, scopes=["bot", "applications.commands"])
         self.add_view(PersistentExceptionView(self))
 
     @staticmethod

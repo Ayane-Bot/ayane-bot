@@ -4,7 +4,8 @@ import typing
 import discord
 from discord.ext import commands
 
-from cogs.utils.context import AyaneContext
+from utils.defaults import AyaneCog
+from utils.context import AyaneContext
 from main import Ayane
 from private.config import LOCAL
 
@@ -13,7 +14,7 @@ def setup(bot):
     bot.add_cog(Owner(bot))
 
 
-class Owner(commands.Cog):
+class Owner(AyaneCog, emoji='🦉', brief='owner-only commands'):
     def __init__(self, bot):
         self.bot: Ayane = bot
 
