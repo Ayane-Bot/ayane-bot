@@ -8,7 +8,7 @@ import discord
 import humanize as humanize
 from discord.ext import commands
 
-from cogs.utils.helpers import PersistentExceptionView
+from utils.helpers import PersistentExceptionView
 from main import Ayane
 from private.config import LOCAL, LOCAL_USER
 

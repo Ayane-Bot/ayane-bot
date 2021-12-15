@@ -5,12 +5,11 @@ import traceback
 
 import asyncpg
 import discord
-from waifuim import APIBaseURL
 
 from discord.ext import commands
 
-from cogs.utils.context import AyaneContext
-from cogs.utils.helpers import PersistentExceptionView
+from utils.context import AyaneContext
+from utils.helpers import PersistentExceptionView
 from private.config import (TOKEN, DEFAULT_PREFIXES, OWNER_IDS, LOCAL, DB_CONF, WEBHOOK_URL)
 
 log = logging.getLogger(__name__)

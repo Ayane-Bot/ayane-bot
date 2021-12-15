@@ -2,7 +2,7 @@ from collections import Counter
 
 import discord
 
-from cogs.utils.context import AyaneContext
+from utils.context import AyaneContext
 from private.config import LOCAL
 
 
