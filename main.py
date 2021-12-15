@@ -137,7 +137,9 @@ if __name__ == "__main__":
         if LOCAL is False:
             return True
         
-        return await bot.is_owner(ctx.author)
+        if await bot.is_owner(ctx.author):
+            return True
+        raise commands.NotOwner()
 
     try:
         if not LOCAL:
