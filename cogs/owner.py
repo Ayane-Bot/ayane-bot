@@ -52,3 +52,7 @@ class Owner(AyaneCog, emoji='🦉', brief='owner-only commands'):
             extras['url'] = 'https://youtu.be/dQw4w9WgXcQ'
         await self.bot.change_presence(activity=discord.Activity(type=activity_types[status], name=text, **extras))
         await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+    @dev.command(name='error')
+    async def error_(self,ctx):
+        """Make the bot raise unexpected error."""
+        print(an_error)

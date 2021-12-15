@@ -286,7 +286,7 @@ class Events(AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
             await ctx.send(embed=embed, delete_after=15)
 
         else:
-            await self.send_unexpected_error(ctx,error)
+            await self.send_unexpected_error(ctx, error)
 
     @commands.Cog.listener("on_command")
     async def basic_command_logger(self, ctx):

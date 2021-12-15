@@ -50,7 +50,8 @@ class Ayane(commands.Bot):
 
     async def on_ready_once(self):
         await self.wait_until_ready()
-        self.invite = discord.utils.oauth_url(self.user.id, permissions=discord.Permissions(173211516614), redirect_uri=constants.server_invite, scopes=["bot", "applications.commands"])
+        self.server_invite=constants.server_invite
+        self.invite = discord.utils.oauth_url(self.user.id, permissions=discord.Permissions(173211516614), redirect_uri=self.server_invite, scopes=["bot", "applications.commands"])
         self.add_view(PersistentExceptionView(self))
 
     @staticmethod
