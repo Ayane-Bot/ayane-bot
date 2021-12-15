@@ -1,13 +1,16 @@
 import contextlib
+import inspect
 import io
 import logging
 import math
 import traceback
+import typing
 
 import discord
 import humanize as humanize
 from discord.ext import commands
 
+from utils import constants
 from utils.helpers import PersistentExceptionView
 from main import Ayane
 from private.config import LOCAL, LOCAL_USER
@@ -15,6 +18,55 @@ from private.config import LOCAL, LOCAL_USER
 
 def setup(bot):
     bot.add_cog(Events(bot))
+
+
+string_map = {
+    discord.Member: "member",
+    discord.User: "user",
+    discord.Message: "message",
+    discord.PartialMessage: "message",
+    discord.TextChannel: "channel",
+    discord.VoiceChannel: "voice channel",
+    discord.StageChannel: "stage channel",
+    discord.StoreChannel: "store channel",
+    discord.CategoryChannel: "category channel",
+    discord.Invite: "invite",
+    discord.Guild: "server",
+    discord.Role: "role",
+    discord.Game: "game",
+    discord.Colour: "colour",
+    discord.Emoji: "emoji",
+    discord.PartialEmoji: "emoji",
+    int: "whole number",
+    float: "number",
+    str: "string",
+    bool: "boolean",
+}
+
+
+def join_literals(annotation: inspect.Parameter.annotation, return_list: bool = False):
+    if typing.get_origin(annotation) is typing.Literal:
+        arguments = annotation.__args__
+        if return_list is False:
+            return '[' + '|'.join(arguments) + ']'
+        else:
+            return list(arguments)
+    return None
+
+
+def convert_union_annotations(param: inspect.Parameter):
+    annotations = param.annotation
+    args = typing.get_args(annotations)
+    maybe_strings = [string_map.get(a, a) for a in args]
+    for a in maybe_strings:
+        if not isinstance(a, str):
+            if argument := join_literals(a):
+                maybe_strings.remove(a)
+                maybe_strings.append(f"[{argument}]")
+            else:
+                maybe_strings.remove(a)
+                maybe_strings.append('[unknown]')
+    return ", ".join(maybe_strings[:-2] + [" or ".join(maybe_strings[-2:])])
 
 
 def conv_n(tuple_acc):
@@ -61,10 +113,25 @@ class Events(commands.Cog):
                 embed.title = "❌ Bad argument"
 
             elif isinstance(error, commands.BadLiteralArgument):
-                pass
+                embed.title = "❌ Bad argument"
+                literals = join_literals(error.param.annotation, return_list=True)
+                literals = '"' + '", "'.join(literals[:-2] + ['" or "'.join(literals[-2:])]) + '"'
+                embed.description = f"Sorry but the argument `{error.param.name}` isn't one of the following: {literals}"
 
             elif isinstance(error, commands.ArgumentParsingError):
-                pass
+                if isinstance(error, commands.UnexpectedQuoteError):
+                    embed.title = "❌ Invalid Quote Mark"
+                    embed.description = f'Unexpected quote mark, {error.quote!r}, in non-quoted string'
+
+                elif isinstance(error, commands.ExpectedClosingQuoteError):
+                    embed.title = "❌ Missing Closing Quote"
+                    embed.description = f"Expected closing {error.close_quote}."
+
+                elif isinstance(error, commands.InvalidEndOfQuotedStringError):
+                    embed.title = "❌ Invalid Character after Quote"
+                    embed.description = f'Expected a space after closing quotation but received {error.char!r}'
+                else:
+                    embed.title = "❌ Sorry, Something went wrong while reading your message..."
 
             elif isinstance(error, commands.BadArgument):
 
@@ -75,6 +142,10 @@ class Events(commands.Cog):
                 elif isinstance(error, commands.MemberNotFound):
                     embed.description = f"You did not provide a valid member, Please go check `{ctx.clean_prefix}help {ctx.command.name}`."
                     embed.title = "❌ Member not found"
+
+                elif isinstance(error, commands.RoleNotFound):
+                    embed.description = f"You did not provide a valid role, Please go check `{ctx.clean_prefix}help {ctx.command.name}`."
+                    embed.title = "❌ Role not found"
 
                 else:
                     embed.description = f"You provided at least one wrong argument. Please go check `{ctx.clean_prefix}help {ctx.command}`"
@@ -94,7 +165,7 @@ class Events(commands.Cog):
             await ctx.send(embed=embed)
 
         elif isinstance(error, commands.DisabledCommand):
-            _message = f"This command has been temporaly disabled, it is probably under maintenance. For more informations join the [support server]({self.bot.server_invite}) !"
+            _message = f"This command has been temporaly disabled, it is probably under maintenance. For more informations join the [support server]({constants.server_invite}) !"
             embed = discord.Embed(title="🛑 Command disabled", description=_message)
             await ctx.send(embed=embed, delete_after=15)
 
@@ -151,7 +222,7 @@ class Events(commands.Cog):
         else:
             with contextlib.suppress(discord.HTTPException):
                 _message = f"Sorry, an error has occured, it has been reported to my developers. To be inform of the " \
-                           f"bot issues and updates join the [support server]({self.bot.server_invite}) !"
+                           f"bot issues and updates join the [support server]({constants.server_invite}) !"
                 embed = discord.Embed(title="❌ Error", description=_message)
                 embed.add_field(name="Traceback :", value=f"```py\n{type(error).__name__} : {error}```")
                 await ctx.send(embed=embed)
