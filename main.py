@@ -5,7 +5,6 @@ import traceback
 
 import asyncpg
 import discord
-from waifuim import APIBaseURL
 
 from discord.ext import commands
 
