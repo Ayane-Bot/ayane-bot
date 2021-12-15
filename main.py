@@ -5,6 +5,7 @@ import traceback
 
 import asyncpg
 import discord
+from waifuim import APIBaseURL
 
 from discord.ext import commands
 
@@ -40,10 +41,6 @@ class Ayane(commands.Bot):
             intents=discord.Intents.all())
 
         self.owner_ids = OWNER_IDS
-
-        # Constants- should be moved to cogs/utils/constants.py maybe?
-        self.website = "https://ayane.live/"
-        self.server_invite = "https://discord.gg/QNXC8yFfKg"
         self.colour = discord.Colour(value=0xA37FFF)
 
         # Startup tasks and stuff
