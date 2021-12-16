@@ -158,8 +158,7 @@ class Ayane(commands.Bot):
         return await self.db.fetchrow("SELECT reason FROM registered_user WHERE id=$1 AND is_blacklisted", user.id)
 
     async def before_ready_once(self):
-        ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-        connector = aiohttp.TCPConnector(ssl_context=ssl_context)
+        connector = aiohttp.TCPConnector(ssl=certifi.where())
         self.session = aiohttp.ClientSession(connector=connector)
         self.waifuclient = waifuim.WaifuAioClient(appname="Ayane-Bot", token=WAIFU_API_TOKEN, session=self.session)
 
