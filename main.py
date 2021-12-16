@@ -7,6 +7,7 @@ import traceback
 
 import aiohttp
 import certifi
+import ssl
 import humanize
 
 import asyncpg
@@ -159,7 +160,8 @@ class Ayane(commands.Bot):
         return await self.db.fetchrow("SELECT reason FROM registered_user WHERE id=$1 AND is_blacklisted", user.id)
 
     async def before_ready_once(self):
-        connector = aiohttp.TCPConnector(ssl=certifi.where())
+        ssl_context=ssl.create_default_context(cafile=certifi.where())
+        connector = aiohttp.TCPConnector(ssl=ssl_context)
         self.session = aiohttp.ClientSession(connector=connector)
         self.waifuclient = waifuim.WaifuAioClient(appname="Ayane-Bot", token=WAIFU_API_TOKEN, session=self.session)
 
