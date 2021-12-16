@@ -1,17 +1,24 @@
+import asyncio
 import io
 import os
 import logging
 import traceback
 
+import aiohttp
+import humanize
+
 import asyncpg
 import discord
+import waifuim
 
 from discord.ext import commands
 
 from utils import constants
 from utils.context import AyaneContext
+from utils.exceptions import UserBlacklisted
 from utils.helpers import PersistentExceptionView
-from private.config import (TOKEN, DEFAULT_PREFIXES, OWNER_IDS, LOCAL, DB_CONF, WEBHOOK_URL)
+from private.config import (TOKEN, DEFAULT_PREFIXES, OWNER_IDS, LOCAL, DB_CONF, WEBHOOK_URL, WAIFU_API_TOKEN)
+from utils.lock import UserLock
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="[%(asctime)-15s] %(message)s")
@@ -45,18 +52,117 @@ class Ayane(commands.Bot):
             strip_after_prefix=True,
             intents=intents)
 
+        self.server_invite = constants.server_invite
         self.owner_ids = OWNER_IDS
         self.colour = self.color = discord.Colour(value=0xA37FFF)
 
         # Startup tasks and stuff
         self.loop.create_task(self.on_ready_once())
+        self.loop.run_until_complete(self.before_ready_once())
         self._load_cogs()
         self.db: asyncpg.Pool = self.loop.run_until_complete(self._establish_database_connection())
+        self.sus_guilds = []
+        self.user_lock = {}
+        self.guild_ratio = 0.35
+        self.guild_maxbot = 31
+        self.minimum_command_interval = 86400
+        self.guild_whitelist = [
+            110373943822540800,
+            264445053596991498,
+            333949691962195969,
+            336642139381301249,
+            800449566037114892,
+            508355356376825868,
+            850807820634030130,
+        ]
+        self.add_check(self.check_blacklisted)
+        self.add_check(self.check_user_lock)
+
+    def get_sus_guilds(self):
+        sus = []
+        for guild in self.guilds:
+            prct = len(guild.bots) / len(guild.members)
+            if (
+                    prct > self.guild_ratio
+                    or len(guild.bots) > self.guild_maxbot
+                    and not guild.id in self.guild_whitelist
+            ):
+                sus.append(guild)
+        return sus
+
+    async def wait_commands(self, guild):
+        try:
+            await self.wait_for(
+                "command_completion", timeout=self.minimum_command_interval
+            )
+        except asyncio.TimeoutError:
+
+            if guild.id not in [g.id for g in self.get_sus_guilds()]:
+                return
+            guild = self.get_guild(guild.id)
+            prct = len(guild.bots) / len(guild.members)
+            try:
+                await guild.owner.send(
+                    f"""Hey **{guild.owner.name}** looks like someone invited me in your server but I have a bad news...
+    Discord does not like servers with too many bots or with a too big proportion of them in the server, also it seems that no one used me in your server for at least {humanize.time.precisedelta(self.minimum_command_interval)}, therefore I have to leave your server.
+    I'm really sorry but don't worry too much, once the bot has been verified (keep a look out for the checkmark) you can reinvite it and everything will be fine.
+    Alternatively you can also decide to make your server respect some condions that will avoid me to leave after {humanize.time.precisedelta(self.minimum_command_interval)}.
+    (less than **{self.guild_maxbot}** bots in your server and a bots/guild_members ratio less or equal to **{self.guild_ratio * 100}%**)
+
+    **Here is some information that may help you to understand my decision.**
+    *Those information were calculated taking my presence in your server in account.*
+
+    You had **{len(guild.bots)}** bots in your server and a ratio of bots/user of **{round(prct * 100, 2)}**%"""
+                )
+
+            except:
+                pass
+
+            self.bot.sus_guilds.append(guild.id)
+            await guild.leave()
+
+    def add_user_lock(self, lock: UserLock):
+        self.user_lock.update({lock.user.id: lock})
+
+    @staticmethod
+    async def check_user_lock(ctx):
+        if lock := ctx.bot.user_lock.get(ctx.author.id):
+            if lock.locked():
+                if isinstance(lock, UserLock):
+                    raise lock.error
+                raise commands.CommandError(
+                    "You can't invoke another command while another command is running."
+                )
+            else:
+                ctx.bot.user_lock.pop(ctx.author.id, None)
+                return True
+        return True
+
+    @staticmethod
+    async def check_blacklisted(ctx):
+        cog_name = ctx.command.cog.qualified_name.lower() if ctx.command.cog else None
+        if "jishaku" == cog_name:
+            return True
+        if not hasattr(ctx.bot, "db"):
+            return True
+        result = await ctx.bot.is_blacklisted(ctx.author)
+        if result:
+            raise UserBlacklisted(ctx.author,reason=result[0])
+        return True
+
+    async def is_blacklisted(self, user):
+        return await self.db.fetchrow("SELECT reason FROM registered_user WHERE id=$1 AND is_blacklisted",user.id)
+
+    async def before_ready_once(self):
+        self.session = aiohttp.ClientSession()
+        self.waifuclient = waifuim.WaifuAioClient(appname="Ayane-Bot", token=WAIFU_API_TOKEN, session=self.session)
 
     async def on_ready_once(self):
         await self.wait_until_ready()
-        self.server_invite=constants.server_invite
-        self.invite = discord.utils.oauth_url(self.user.id, permissions=discord.Permissions(173211516614), redirect_uri=self.server_invite, scopes=["bot", "applications.commands"])
+        self.invite = discord.utils.oauth_url(self.user.id,
+                                              permissions=discord.Permissions(173211516614),
+                                              redirect_uri=self.server_invite,
+                                              scopes=["bot", "applications.commands"])
         self.add_view(PersistentExceptionView(self))
 
     @staticmethod

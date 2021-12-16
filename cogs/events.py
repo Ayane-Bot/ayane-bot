@@ -10,8 +10,7 @@ import discord
 import humanize as humanize
 from discord.ext import commands
 
-from utils import constants
-from utils import defaults
+from utils import constants, defaults, exceptions
 from utils.helpers import PersistentExceptionView
 from main import Ayane
 from private.config import LOCAL, LOCAL_USER
@@ -107,7 +106,7 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
             embed.add_field(name="Traceback :", value=f"```py\n{type(error).__name__} : {error}```")
 
             if interaction:
-                await ctx.bot.get_cog("events").send_interaction_error_message(interaction, embed=embed, **kwargs)
+                await ctx.bot.get_cog("Events").send_interaction_error_message(interaction, embed=embed, **kwargs)
             else:
                 await ctx.send(embed=embed, **kwargs)
 
@@ -162,19 +161,25 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
 
         if isinstance(error, commands.CommandInvokeError):
             error = error.original
-
         ignored = [
                       commands.CommandNotFound,
                   ] + ([commands.CheckFailure] if LOCAL else [])
-
         if isinstance(error, tuple(ignored)):
             return
+        try:
+            await ctx.message.add_reaction("<:verif_red_check:845634265333104682>")
+        except discord.DiscordException:
+            pass
 
         # TODO: Leo: Work on better UserInputError messages.
-        elif isinstance(error, commands.UserInputError):
+        if isinstance(error, commands.UserInputError):
             embed = discord.Embed(title='An incorrect argument was passed.')
 
-            if isinstance(error, commands.BadUnionArgument):
+            if isinstance(error, exceptions.UserLocked):
+                embed.title='❌ Multiples Commands Running'
+                embed.description=f"Hey **{ctx.author}**,one thing after an other. " + str(error)
+
+            elif isinstance(error, commands.BadUnionArgument):
                 embed.description = f"You did not provide a valid {conv_n(error.converters)}, please go check `{ctx.clean_prefix}help {ctx.command.name}`."
                 embed.title = "❌ Bad argument"
 
@@ -277,6 +282,10 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
                             f"you arent one of my loved developers <:ty:833356132075700254>."
             )
             await ctx.send(embed=embed, delete_after=15)
+
+        elif isinstance(error,exceptions.UserBlacklisted):
+            embed = discord.Embed(title="🛑 Blacklisted", description=str(error))
+            await ctx.send(embed=embed)
 
         elif isinstance(error, commands.CheckFailure):
             embed = discord.Embed(

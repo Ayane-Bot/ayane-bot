@@ -1,5 +1,5 @@
 from waifuim import APIBaseURL
 
-DomainBaseURL = APIBaseURL.replace("api.","")
+APIDomainName = APIBaseURL.replace("https://api.","")
 website = "https://ayane.live/"
 server_invite = "https://discord.gg/QNXC8yFfKg"
