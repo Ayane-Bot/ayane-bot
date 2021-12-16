@@ -33,8 +33,12 @@ class PictureConverter:
 
         return filename
 
+    
+def setup(bot):
+    bot.add_cog(Waifu(bot))
+    
 
-class Image(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot waifu API commands and some others.'):
+class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot waifu API commands and some others.'):
     """The bot waifu API commands and some others."""
     def __init__(self, bot):
         self.bot = bot
@@ -856,7 +860,3 @@ class Image(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         embed.set_footer(text=f"shiro.gg | {round(end - start, 2)}")
         embed.set_image(url=rq["url"])
         await ctx.send(embed=embed)
-
-
-def setup(bot):
-    bot.add_cog(Image(bot))
