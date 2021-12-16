@@ -51,7 +51,6 @@ class Ayane(commands.Bot):
             command_prefix=commands.when_mentioned_or(*DEFAULT_PREFIXES),
             strip_after_prefix=True,
             intents=intents,
-            slash_commands=True,
         )
 
         self.server_invite = constants.server_invite
@@ -120,7 +119,7 @@ class Ayane(commands.Bot):
             except:
                 pass
 
-            self.bot.sus_guilds.append(guild.id)
+            self.sus_guilds.append(guild.id)
             await guild.leave()
 
     def add_user_lock(self, lock: UserLock):
