@@ -8,7 +8,7 @@ import platform
 
 from main import Ayane
 from utils import constants
-from utils.defaults import AyaneCog
+from utils.defaults import AyaneCog, ayane_command
 from utils.context import AyaneContext
 
 
@@ -108,7 +108,7 @@ class Info(AyaneCog, emoji='ℹ', brief='Information about me!'):
     def cog_unload(self) -> None:
         self.bot.help_command = commands.MinimalHelpCommand()
 
-    @commands.command(aliases=['info'])
+    @ayane_command(aliases=['info'])
     async def about(self, ctx: AyaneContext):
         """Some information about the bot like the bot owners, statistics etc."""
         text_channel = 0

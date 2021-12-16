@@ -35,10 +35,15 @@ class Ayane(commands.Bot):
         # All extensions that are not located in the 'cogs' directory.
         self.initial_extensions = ['jishaku']
 
+        # Disabling the typing intents as we won't be using them.
+        intents = discord.Intents.all()
+        intents.typing = False  # noqa
+        intents.dm_typing = False  # noqa
+
         super().__init__(
             command_prefix=commands.when_mentioned_or(*DEFAULT_PREFIXES),
             strip_after_prefix=True,
-            intents=discord.Intents.all())
+            intents=intents)
 
         self.owner_ids = OWNER_IDS
         self.colour = self.color = discord.Colour(value=0xA37FFF)

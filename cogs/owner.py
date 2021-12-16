@@ -4,7 +4,7 @@ import typing
 import discord
 from discord.ext import commands
 
-from utils.defaults import AyaneCog
+from utils.defaults import AyaneCog, ayane_group
 from utils.context import AyaneContext
 from main import Ayane
 from private.config import LOCAL
@@ -23,8 +23,8 @@ class Owner(AyaneCog, emoji='🦉', brief='owner-only commands'):
             return True
         raise commands.NotOwner()
 
-    @commands.group(name='dev', aliases=['d'],
-                    invoke_without_command=True, hidden=True)
+    @ayane_group(name='dev', aliases=['d'],
+                 invoke_without_command=True, hidden=True)
     async def dev(self, ctx: AyaneContext, subcommand: str = None):
         if subcommand:
             return await ctx.send(f'Unknown subcommand `{subcommand}`', delete_after=5)
@@ -52,7 +52,3 @@ class Owner(AyaneCog, emoji='🦉', brief='owner-only commands'):
             extras['url'] = 'https://youtu.be/dQw4w9WgXcQ'
         await self.bot.change_presence(activity=discord.Activity(type=activity_types[status], name=text, **extras))
         await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
-    @dev.command(name='error')
-    async def error_(self,ctx):
-        """Make the bot raise unexpected error."""
-        print(an_error)
