@@ -11,7 +11,7 @@ import humanize as humanize
 from discord.ext import commands
 
 from utils import constants
-from utils.defaults import AyaneCog
+from utils import defaults
 from utils.helpers import PersistentExceptionView
 from main import Ayane
 from private.config import LOCAL, LOCAL_USER
@@ -87,7 +87,7 @@ def conv_n(tuple_acc):
     return returning
 
 
-class Events(AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
+class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
     def __init__(self, bot):
         self.bot: Ayane = bot
 

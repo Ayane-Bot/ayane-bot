@@ -8,7 +8,7 @@ import platform
 
 from main import Ayane
 from utils import constants
-from utils.defaults import AyaneCog, ayane_command
+from utils import defaults
 from utils.context import AyaneContext
 
 
@@ -17,14 +17,14 @@ def setup(bot):
 
 
 class AyaneHelpView(discord.ui.View):
-    def __init__(self, mapping: typing.Dict[AyaneCog, typing.List[commands.Command]], /, *, bot: Ayane):
+    def __init__(self, mapping: typing.Dict[defaults.AyaneCog, typing.List[commands.Command]], /, *, bot: Ayane):
         super().__init__(timeout=120)
         self.message: discord.Message = None
         self.mapping = mapping
         self.bot = bot
         self.main_page: discord.Embed = None
 
-    def build_cog_page(self, cog: AyaneCog, /):
+    def build_cog_page(self, cog: defaults.AyaneCog, /):
         cog_commands = self.mapping[cog]
         if not cog_commands:
             return discord.Embed(title='Something happened...', description='This cog has no commands...', color=self.bot.color)
@@ -98,7 +98,7 @@ class AyaneHelpCommand(commands.HelpCommand):
         await view.start(self.context)
 
 
-class Info(AyaneCog, emoji='ℹ', brief='Information about me!'):
+class Info(defaults.AyaneCog, emoji='ℹ', brief='Information about me!'):
     def __init__(self, bot):
         self.bot: Ayane = bot
         help_command = AyaneHelpCommand()
@@ -108,7 +108,7 @@ class Info(AyaneCog, emoji='ℹ', brief='Information about me!'):
     def cog_unload(self) -> None:
         self.bot.help_command = commands.MinimalHelpCommand()
 
-    @ayane_command(aliases=['info'])
+    @defaults.ayane_command(aliases=['info'])
     async def about(self, ctx: AyaneContext):
         """Some information about the bot like the bot owners, statistics etc."""
         text_channel = 0
