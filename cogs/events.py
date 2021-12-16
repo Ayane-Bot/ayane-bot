@@ -16,10 +16,6 @@ from main import Ayane
 from private.config import LOCAL, LOCAL_USER
 
 
-def setup(bot):
-    bot.add_cog(Events(bot))
-
-
 string_map = {
     discord.Member: "member",
     discord.User: "user",
@@ -86,6 +82,10 @@ def conv_n(tuple_acc):
     return returning
 
 
+def setup(bot):
+    bot.add_cog(Events(bot))
+
+
 class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
     def __init__(self, bot):
         self.bot: Ayane = bot
@@ -94,6 +94,7 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
     async def send_interaction_error_message(interaction, *args, **kwargs):
         if interaction.response.is_done():
             await interaction.followup.send(*args, **kwargs)
+            
         else:
             await interaction.response.send_message(*args, **kwargs)
 
@@ -107,6 +108,7 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
 
             if interaction:
                 await ctx.bot.get_cog("Events").send_interaction_error_message(interaction, embed=embed, **kwargs)
+                
             else:
                 await ctx.send(embed=embed, **kwargs)
 
@@ -275,6 +277,7 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
 
         elif isinstance(error, commands.NoPrivateMessage):
             return
+        
         elif isinstance(error, commands.NotOwner):
             embed = discord.Embed(
                 title="🛑 Owner-only",
