@@ -50,7 +50,9 @@ class Ayane(commands.Bot):
         super().__init__(
             command_prefix=commands.when_mentioned_or(*DEFAULT_PREFIXES),
             strip_after_prefix=True,
-            intents=intents)
+            intents=intents,
+            slash_commands=True,
+        )
 
         self.server_invite = constants.server_invite
         self.owner_ids = OWNER_IDS
