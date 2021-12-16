@@ -29,7 +29,7 @@ class Owner(defaults.AyaneCog, emoji='🦉', brief='owner-only commands'):
         if subcommand:
             return await ctx.send(f'Unknown subcommand `{subcommand}`', delete_after=5)
 
-    @dev.ayane_command(name='restart', aliases=['reboot', 'r'])
+    @dev.ayane_command(name='restart', aliases=['reboot', 'r'],message_command=True)
     async def dev_restart(self, ctx: AyaneContext, *, service: str = 'ayane'):
         if LOCAL:
             return
@@ -38,7 +38,7 @@ class Owner(defaults.AyaneCog, emoji='🦉', brief='owner-only commands'):
 
     Status = typing.Literal['playing', 'streaming', 'listening', 'watching', 'competing']
 
-    @dev.ayane_command(name='status', aliases=['ss'])
+    @dev.ayane_command(name='status', aliases=['ss'],message_command=True)
     async def dev_status(self, ctx: AyaneContext, status: Status, *, text: str):
         activity_types = {
             'playing': discord.ActivityType.playing,
