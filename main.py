@@ -2,10 +2,10 @@ import asyncio
 import io
 import os
 import logging
+import ssl
 import traceback
 
 import aiohttp
-import certifi
 import humanize
 
 import asyncpg
@@ -39,6 +39,8 @@ class Ayane(commands.Bot):
     def __init__(self):
         # These are all attributes that will be set later in the `on_ready_once` method.
         self.invite: str = None
+        self.waifuclient: waifuim.WaifuAioClient = None
+        self.session: aiohttp.ClientSession = None
 
         # All extensions that are not located in the 'cogs' directory.
         self.initial_extensions = ['jishaku']
@@ -87,7 +89,7 @@ class Ayane(commands.Bot):
             if (
                     prct > self.guild_ratio
                     or len(guild.bots) > self.guild_maxbot
-                    and not guild.id in self.guild_whitelist
+                    and guild.id not in self.guild_whitelist
             ):
                 sus.append(guild)
         return sus
@@ -117,7 +119,7 @@ class Ayane(commands.Bot):
     You had **{len(guild.bots)}** bots in your server and a ratio of bots/user of **{round(prct * 100, 2)}**%"""
                 )
 
-            except:
+            except:  # noqa
                 pass
 
             self.sus_guilds.append(guild.id)
@@ -149,14 +151,16 @@ class Ayane(commands.Bot):
             return True
         result = await ctx.bot.is_blacklisted(ctx.author)
         if result:
-            raise UserBlacklisted(ctx.author,reason=result[0])
+            raise UserBlacklisted(ctx.author, reason=result[0])
         return True
 
     async def is_blacklisted(self, user):
-        return await self.db.fetchrow("SELECT reason FROM registered_user WHERE id=$1 AND is_blacklisted",user.id)
+        return await self.db.fetchrow("SELECT reason FROM registered_user WHERE id=$1 AND is_blacklisted", user.id)
 
     async def before_ready_once(self):
-        self.session = aiohttp.ClientSession(ssl=certifi.where())
+        ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+        connector = aiohttp.TCPConnector(ssl_context=ssl_context)
+        self.session = aiohttp.ClientSession(connector=connector)
         self.waifuclient = waifuim.WaifuAioClient(appname="Ayane-Bot", token=WAIFU_API_TOKEN, session=self.session)
 
     async def on_ready_once(self):
@@ -188,6 +192,12 @@ class Ayane(commands.Bot):
 
     async def on_ready(self):
         logging.info(f"\033[42m\033[35m Logged in as {self.user}! \033[0m")
+
+    async def on_interaction(self, interaction: discord.Interaction):
+        try:
+            await super().on_interaction(interaction)
+        except commands.CommandNotFound as error:
+            print(error)
 
     async def get_context(self, message, *, cls=AyaneContext):
         return await super().get_context(message, cls=cls)
