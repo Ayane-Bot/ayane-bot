@@ -109,7 +109,7 @@ class Info(defaults.AyaneCog, emoji='ℹ', brief='Information about me!'):
         self.bot.help_command = commands.MinimalHelpCommand()
 
     @defaults.ayane_command(aliases=['info'])
-    async def about(self, ctx: AyaneContext):
+    async def about(self, ctx: AyaneContext) -> discord.Message:
         """Some information about the bot like the bot owners, statistics etc."""
         text_channel = 0
         voice_channel = 0
@@ -165,4 +165,4 @@ class Info(defaults.AyaneCog, emoji='ℹ', brief='Information about me!'):
             text=f"Requested by {ctx.author.name}",
             icon_url=ctx.author.display_avatar.url,
         )
-        await ctx.send(embed=embed)
+        return await ctx.send(embed=embed)
