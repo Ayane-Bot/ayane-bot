@@ -6,6 +6,7 @@ import ssl
 import traceback
 
 import aiohttp
+import certifi
 import humanize
 
 import asyncpg
