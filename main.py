@@ -171,13 +171,13 @@ class Ayane(commands.Bot):
                                               permissions=discord.Permissions(173211516614),
                                               redirect_uri=self.server_invite,
                                               scopes=["bot", "applications.commands"])
-
+        self.add_view(PersistentExceptionView(self))
         await self.change_presence(
             activity=discord.Activity(
                 type=discord.ActivityType.watching, name="Hentai! 🍑"
             )
         )
-        self.add_view(PersistentExceptionView(self))
+
 
     @staticmethod
     async def _establish_database_connection() -> asyncpg.Pool:
