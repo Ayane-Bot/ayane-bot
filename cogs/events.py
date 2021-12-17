@@ -310,7 +310,7 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
         )
         
     @commands.Cog.listener("on_message")
-    async def basic_command_logger(self, message):
+    async def on_message_event(self, message):
         if message.content==self.bot.user.mention:
             display_prefixes=[f'`{p}`' for p in DEFAULT_PREFIXES]
             await message.reply(f"Hi **{message.author.name}**,my prefixes are {' '.join(display_prefixes[0:-1]) if len(display_prefixes)>1 else display_prefixes[0]}{' and '+display_prefixes[-1] if len(display_prefixes)>1 else ''}")
