@@ -13,7 +13,7 @@ from discord.ext import commands
 from utils import constants, defaults, exceptions
 from utils.helpers import PersistentExceptionView
 from main import Ayane
-from private.config import LOCAL, LOCAL_USER
+from private.config import LOCAL, LOCAL_USER, DEFAULT_PREFIXES
 
 string_map = {
     discord.Member: "member",
@@ -308,3 +308,9 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
             ctx.command.qualified_name,
             ctx.message.created_at,
         )
+        
+    @commands.Cog.listener("on_message")
+    async def basic_command_logger(self, message):
+        if message.content==self.bot.user.mention:
+            display_prefixes=[f'`{p}`' for p in DEFAULT_PREFIXES]
+            await message.reply(f"Hi **{message.author.name}**,my prefixes are {' '.join(display_prefixes[0:-1]) if len(display_prefixes)>1 else display_prefixes[0]}{' and '+display_prefixes[-1] if len(display_prefixes)>1 else ''}")
