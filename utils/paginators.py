@@ -512,7 +512,7 @@ class ViewMenu(BaseView):
                     return await self.show_checked_page(interaction, page - 1)
 
 class ImageMenu(ViewMenu):
-    def __init__(self, delete_after=False, timeout=float(86400), **kwargs):
+Chang    def __init__(self, delete_after=False, timeout=86400, **kwargs):
         super().__init__(
             timeout=timeout, delete_after=delete_after, **kwargs, imagemenu=True
         )
