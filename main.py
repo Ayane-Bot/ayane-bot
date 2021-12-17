@@ -2,7 +2,6 @@ import asyncio
 import io
 import os
 import logging
-import ssl
 import traceback
 
 import aiohttp
@@ -20,7 +19,8 @@ from utils import constants
 from utils.context import AyaneContext
 from utils.exceptions import UserBlacklisted
 from utils.helpers import PersistentExceptionView
-from private.config import (TOKEN, DEFAULT_PREFIXES, OWNER_IDS, LOCAL, DB_CONF, WEBHOOK_URL, WAIFU_API_TOKEN)
+from private.config import (TOKEN, DEFAULT_PREFIXES, OWNER_IDS, LOCAL, DB_CONF, WEBHOOK_URL, WAIFU_API_TOKEN,
+                            PREVENT_LOCAL_COMMANDS)
 from utils.lock import UserLock
 
 log = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ class Ayane(commands.Bot):
         super().__init__(
             command_prefix=commands.when_mentioned_or(*DEFAULT_PREFIXES),
             strip_after_prefix=True,
-            intents=intents,
+            intents=intents
         )
 
         self.server_invite = constants.server_invite
@@ -160,7 +160,7 @@ class Ayane(commands.Bot):
         return await self.db.fetchrow("SELECT reason FROM registered_user WHERE id=$1 AND is_blacklisted", user.id)
 
     async def before_ready_once(self):
-        ssl_context=ssl.create_default_context(cafile=certifi.where())
+        ssl_context = ssl.create_default_context(cafile=certifi.where())
         connector = aiohttp.TCPConnector(ssl=ssl_context)
         self.session = aiohttp.ClientSession(connector=connector)
         self.waifuclient = waifuim.WaifuAioClient(appname="Ayane-Bot", token=WAIFU_API_TOKEN, session=self.session)
@@ -196,10 +196,11 @@ class Ayane(commands.Bot):
         logging.info(f"\033[42m\033[35m Logged in as {self.user}! \033[0m")
 
     async def on_interaction(self, interaction: discord.Interaction):
-        try:
-            await super().on_interaction(interaction)
-        except commands.CommandNotFound as error:
-            print(error)
+        if LOCAL is False or (LOCAL is True and PREVENT_LOCAL_COMMANDS is False):
+            try:
+                await super().on_interaction(interaction)
+            except commands.CommandNotFound as error:
+                print(error)
 
     async def get_context(self, message, *, cls=AyaneContext):
         return await super().get_context(message, cls=cls)

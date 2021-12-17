@@ -15,7 +15,6 @@ from utils.helpers import PersistentExceptionView
 from main import Ayane
 from private.config import LOCAL, LOCAL_USER
 
-
 string_map = {
     discord.Member: "member",
     discord.User: "user",
@@ -94,12 +93,12 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
     async def send_interaction_error_message(interaction, *args, **kwargs):
         if interaction.response.is_done():
             await interaction.followup.send(*args, **kwargs)
-            
+
         else:
             await interaction.response.send_message(*args, **kwargs)
 
     @staticmethod
-    async def send_unexpected_error(ctx,error,user=None,interaction=None,**kwargs):
+    async def send_unexpected_error(ctx, error, user=None, interaction=None, **kwargs):
         with contextlib.suppress(discord.HTTPException):
             _message = f"Sorry, an error has occured, it has been reported to my developers. To be inform of the " \
                        f"bot issues and updates join the [support server]({constants.server_invite}) !"
@@ -108,7 +107,7 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
 
             if interaction:
                 await ctx.bot.get_cog("Events").send_interaction_error_message(interaction, embed=embed, **kwargs)
-                
+
             else:
                 await ctx.send(embed=embed, **kwargs)
 
@@ -131,7 +130,7 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
             )
 
         if LOCAL:
-            local_data = f'\nError occured in local mode from {LOCAL_USER}\'s computer'
+            local_data = f'\nError occured in local mode with user of "from {LOCAL_USER}"'
         else:
             local_data = ''
 
@@ -178,8 +177,8 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
             embed = discord.Embed(title='An incorrect argument was passed.')
 
             if isinstance(error, exceptions.UserLocked):
-                embed.title='❌ Multiples Commands Running'
-                embed.description=f"Hey **{ctx.author}**,one thing after an other. " + str(error)
+                embed.title = '❌ Multiples Commands Running'
+                embed.description = f"Hey **{ctx.author}**,one thing after an other. " + str(error)
 
             elif isinstance(error, commands.BadUnionArgument):
                 embed.description = f"You did not provide a valid {conv_n(error.converters)}, please go check `{ctx.clean_prefix}help {ctx.command.name}`."
@@ -277,7 +276,7 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
 
         elif isinstance(error, commands.NoPrivateMessage):
             return
-        
+
         elif isinstance(error, commands.NotOwner):
             embed = discord.Embed(
                 title="🛑 Owner-only",
@@ -286,7 +285,7 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
             )
             await ctx.send(embed=embed, delete_after=15)
 
-        elif isinstance(error,exceptions.UserBlacklisted):
+        elif isinstance(error, exceptions.UserBlacklisted):
             embed = discord.Embed(title="🛑 Blacklisted", description=str(error))
             await ctx.send(embed=embed)
 
