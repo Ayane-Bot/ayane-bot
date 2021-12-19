@@ -80,8 +80,8 @@ class AyaneHelpView(paginators.ViewMenu):
 
 class AyaneHelpCommand(commands.HelpCommand):
     def __init__(self, **kwargs):
-        self.verify_checks=False
         super().__init__(**kwargs)
+        self.verify_checks=False
 
     def get_command_signature(self, command):
         return f"{self.context.clean_prefix}{command.qualified_name} {command.signature}"
