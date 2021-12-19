@@ -22,6 +22,12 @@ class AyaneHelpView(paginators.ViewMenu):
         self.help_command = help_command
         super().__init__(**kwargs)
 
+    async def reload_items(self):
+        self.clear_items()
+        await self.add_select_options()
+        self.add_all_items()
+
+
     async def add_select_options(self):
         options=[]
         for cog, cmds in self.help_command.get_bot_mapping().items():
@@ -104,6 +110,7 @@ class AyaneHelpCommand(commands.HelpCommand):
         source_items=source_items if isinstance(source_items,list) else [source_items]
         if view_instance:
             view_instance.source.entries = source_items
+            await view_instance.reload_items()
             await view_instance.show_page(0)
             return
 
