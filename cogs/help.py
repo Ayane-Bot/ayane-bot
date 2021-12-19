@@ -133,11 +133,12 @@ class AyaneHelpCommand(commands.HelpCommand):
         embed_list = []
         items_per_page = 8
         public_commands = await self.filter_commands(cog_or_group.commands if group else cog_or_group.get_commands())
-        com_description = ""
+
         if not public_commands:
             raise PrivateCategoryOrGroup(group=group)
         pages = math.ceil(len(public_commands) / items_per_page)
         for i in range(pages):
+            com_description = ""
             page = i + 1
             start = (page - 1) * items_per_page
             end = start + items_per_page
