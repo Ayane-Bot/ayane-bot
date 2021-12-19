@@ -159,6 +159,8 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
     @commands.Cog.listener("on_command_error")
     async def error_log(self, ctx, error):
         """Handles command exceptions and logs unhandled ones to the support guild."""
+        if hasattr(ctx.command, 'on_error') and not hasattr(ctx,'bypass_first_error_handler'):
+            return
 
         if isinstance(error, commands.CommandInvokeError):
             error = error.original

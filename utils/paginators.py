@@ -144,10 +144,10 @@ class BaseView(discord.ui.View):
                 and interaction.user
                 and interaction.user.id
                 not in {
-                    self.bot.owner_id,
-                    self.ctx.author.id,
-                    *self.bot.owner_ids,
-                }
+            self.bot.owner_id,
+            self.ctx.author.id,
+            *self.bot.owner_ids,
+        }
         ):
             raise NotAuthorized(self.ctx.author)
         return True
@@ -217,7 +217,7 @@ class BaseView(discord.ui.View):
                 interaction, embed=embed, ephemeral=True
             )
         else:
-            await send_unexpected_error(self.ctx, error, user=interaction.user, interaction=interaction,ephemeral=True)
+            await send_unexpected_error(self.ctx, error, user=interaction.user, interaction=interaction, ephemeral=True)
 
 
 class ViewMenuLauncher(BaseView):
@@ -282,6 +282,7 @@ class ViewMenuLauncher(BaseView):
         else:
             await self.viewmenu.start()
 
+
 class ViewMenu(BaseView):
     def __init__(
             self,
@@ -307,6 +308,7 @@ class ViewMenu(BaseView):
             self.remove_item(self.go_to_previous_page)
             self.remove_item(self.go_to_next_page)
             self.remove_item(self.go_to_last_page)
+            self.remove_item(self.numbered_page)
             return
         self.go_to_first_page.disabled = page_number == 0
         self.go_to_previous_page.disabled = page_number == 0
@@ -314,7 +316,7 @@ class ViewMenu(BaseView):
         self.go_to_last_page.disabled = page_number == self.source.get_max_pages() - 1
 
     def add_all_items(self) -> None:
-        self.numbered_page.row = 1
+        self.numbered_page.row = self.go_to_first_page.row+1
         self.stop_pages.row = 1
         if self.source.is_paginating():
             max_pages = self.source.get_max_pages()
@@ -345,8 +347,7 @@ class ViewMenu(BaseView):
         else:
             return {}
 
-    async def show_page(
-            self, interaction: discord.Interaction, page_number: int
+    async def show_page(self, page_number: int
     ) -> None:
         page = await self.source.get_page(page_number)
         self.current_page = page_number
@@ -360,19 +361,19 @@ class ViewMenu(BaseView):
             self.message = await self.message.edit(**kwargs, view=self)
 
     async def show_checked_page(
-            self, interaction: discord.Interaction, page_number: int
+            self, page_number: int
     ):
         max_page = self.source.get_max_pages()
         try:
             if max_page is None:
                 # If it doesn't give maximum pages, it cannot be checked
-                await self.show_page(interaction, page_number)
+                await self.show_page(page_number)
             elif page_number >= max_page:
-                await self.show_page(interaction, max_page - 1)
+                await self.show_page(max_page - 1)
             elif page_number < 0:
-                await self.show_page(interaction, 0)
+                await self.show_page(0)
             elif max_page > page_number >= 0:
-                await self.show_page(interaction, page_number)
+                await self.show_page(page_number)
         except IndexError:
             # An error happened that can be handled, so ignore it.
             pass
@@ -401,7 +402,7 @@ class ViewMenu(BaseView):
             self, button: discord.ui.Button, interaction: discord.Interaction
     ):
         """go to the first page"""
-        await self.show_page(interaction, 0)
+        await self.show_page(0)
 
     @discord.ui.button(
         emoji="<:before_track:840584439817699348>",
@@ -412,7 +413,7 @@ class ViewMenu(BaseView):
             self, button: discord.ui.Button, interaction: discord.Interaction
     ):
         """go to the previous page"""
-        await self.show_checked_page(interaction, self.current_page - 1)
+        await self.show_checked_page(self.current_page - 1)
 
     @discord.ui.button(
         row=1,
@@ -441,7 +442,7 @@ class ViewMenu(BaseView):
             self, button: discord.ui.Button, interaction: discord.Interaction
     ):
         """go to the next page"""
-        await self.show_checked_page(interaction, self.current_page + 1)
+        await self.show_checked_page(self.current_page + 1)
 
     @discord.ui.button(
         emoji="<:last_track:840584439813373972>",
@@ -453,7 +454,7 @@ class ViewMenu(BaseView):
     ):
         """go to the last page"""
         # The call here is safe because it's guarded by skip_if
-        await self.show_page(interaction, self.source.get_max_pages() - 1)
+        await self.show_page(self.source.get_max_pages() - 1)
 
     @discord.ui.button(
         row=1,
@@ -509,10 +510,11 @@ class ViewMenu(BaseView):
                     if page < 1:
                         page = 1
 
-                    return await self.show_checked_page(interaction, page - 1)
+                    return await self.show_checked_page(page - 1)
+
 
 class ImageMenu(ViewMenu):
-Chang    def __init__(self, delete_after=False, timeout=86400, **kwargs):
+    def __init__(self, delete_after=False, timeout=86400, **kwargs):
         super().__init__(
             timeout=timeout, delete_after=delete_after, **kwargs, imagemenu=True
         )
@@ -542,26 +544,25 @@ Chang    def __init__(self, delete_after=False, timeout=86400, **kwargs):
 
     async def editfav(self, image_name, image, user):
         t = await self.bot.waifuclient.fav(user_id=user.id, toggle=[image_name])
-        inserted = image_name in t.get("inserted") and  image_name not in t.get(
+        inserted = image_name in t.get("inserted") and image_name not in t.get(
             "deleted"
         )
-        deleted = image_name in t.get("deleted") and  image_name not in t.get("inserted")
+        deleted = image_name in t.get("deleted") and image_name not in t.get("inserted")
         if inserted:
             mes = "**added** to"
         elif deleted:
             mes = "**removed** from"
         else:
             raise RuntimeError("The image is not in either inserted or deleted")
-        return f"Alright **{user.name}**, the [image](https://waifu.im/preview/?image={image}),"\
-               f"has successfully been {mes} your Gallery.\n"\
-               f"You can look at your Gallery [here](https://waifu.im/fav/)"\
+        return f"Alright **{user.name}**, the [image](https://{APIDomainName}/preview/?image={image})," \
+               f"has successfully been {mes} your Gallery.\n" \
+               f"You can look at your Gallery [here](https://{APIDomainName}/fav/)" \
                "after logging in with your discord account, or by using the `favourite` command. "
 
     @discord.ui.button(emoji="❤", style=discord.ButtonStyle.grey)
     async def add_to_favourite(
             self, button: discord.ui.Button, interaction: discord.Interaction
     ):
-        print(bla)
         user = interaction.user
         self.check_limit(
             self.fav_limit, self.fav.setdefault(user.id, 1), user, self.fav
@@ -600,7 +601,6 @@ Chang    def __init__(self, delete_after=False, timeout=86400, **kwargs):
             self.info,
         )
         await interaction.response.defer(ephemeral=True)
-        source = self.image_info["source"]
         try:
             rq = await self.bot.waifuclient.info(images=[self.image_info["file"]])
             self.image_info = self.source.imageinfos[self.current_page] = rq["images"][
@@ -623,9 +623,9 @@ Chang    def __init__(self, delete_after=False, timeout=86400, **kwargs):
             if e.status != 404:
                 raise e
         numberfav = self.image_info["like"]
-        sd_part = "If the image doesn't have any source, and you really want it,"\
-                  "please use **[Saucenao](https://saucenao.com/)**,"\
-                  "report the picture (with the big yellow button 😄) and send the new source."
+        sd_part = "If the image doesn't have any source, and you really want it," \
+                  "please use **[Saucenao](https://saucenao.com/)**," \
+                  f"Join the [support server]({self.bot.server_invite}) and share us the new source."
         description = (
                 f"This **[image](https://waifu.im/preview/?image={image})** **is {'not' if not in_fav else 'already'}** in your [gallery](https://waifu.im/fav/)\n\n"
                 + sd_part
@@ -645,6 +645,7 @@ Chang    def __init__(self, delete_after=False, timeout=86400, **kwargs):
             )
         return await interaction.followup.send(embed=embed, ephemeral=True)
 
+
 class FavMenu(ImageMenu):
     def add_all_items(self, **kwargs) -> None:
         super().add_all_items()
@@ -662,4 +663,4 @@ class FavMenu(ImageMenu):
             if not self.source.entries:
                 await self.stop_paginator()
 
-            await self.show_checked_page(interaction, self.current_page)
+            await self.show_checked_page(self.current_page)
