@@ -21,7 +21,6 @@ class AyaneHelpView(paginators.ViewMenu):
     def __init__(self, help_command, **kwargs):
         self.help_command = help_command
         super().__init__(**kwargs)
-        self.verify_checks=False
 
     async def add_select_options(self):
         options=[]
@@ -81,6 +80,7 @@ class AyaneHelpView(paginators.ViewMenu):
 
 class AyaneHelpCommand(commands.HelpCommand):
     def __init__(self, **kwargs):
+        self.verify_checks=False
         super().__init__(**kwargs)
 
     def get_command_signature(self, command):
