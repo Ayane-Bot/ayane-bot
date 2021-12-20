@@ -316,7 +316,7 @@ class ViewMenu(BaseView):
         self.go_to_last_page.disabled = page_number == self.source.get_max_pages() - 1
 
     def add_all_items(self) -> None:
-        self.numbered_page.row = self.go_to_first_page.row+1
+        self.numbered_page.row = 1
         self.stop_pages.row = 1
         if self.source.is_paginating():
             max_pages = self.source.get_max_pages()
