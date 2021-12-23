@@ -243,7 +243,7 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
                 _message=str(error).replace(ctx.command.name,f"`{ctx.command.name}`")
             else:
                 _message = f"`{ctx.command.name}` command has been temporally disabled, it is probably under maintenance. For more information join the [support server]({constants.server_invite}) !"
-            embed = discord.Embed(title="🛑 Command disabled", description=)
+            embed = discord.Embed(title="🛑 Command disabled", description=_message)
             await ctx.send(embed=embed, delete_after=15)
 
         elif isinstance(error, commands.MaxConcurrencyReached):
