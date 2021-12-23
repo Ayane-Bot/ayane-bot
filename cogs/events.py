@@ -240,7 +240,7 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
 
         elif isinstance(error, commands.DisabledCommand):
             _message = f"{error}. For more informations join the [support server]({constants.server_invite}) !"
-            embed = discord.Embed(title="🛑 Command disabled", description=)
+            embed = discord.Embed(title="🛑 Command disabled", description=_message)
             await ctx.send(embed=embed, delete_after=15)
 
         elif isinstance(error, commands.MaxConcurrencyReached):
