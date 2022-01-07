@@ -102,7 +102,7 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
         with contextlib.suppress(discord.HTTPException):
             _message = f"Sorry, an error has occured, it has been reported to my developers. To be inform of the " \
                        f"bot issues and updates join the [support server]({constants.server_invite}) !"
-            embed = discord.Embed(title="❌ Error", description=_message)
+            embed = discord.Embed(title="❌ Error", colour=ctx.bot.colour, description=_message)
             embed.add_field(name="Traceback :", value=f"```py\n{type(error).__name__} : {error}```")
 
             if interaction:
