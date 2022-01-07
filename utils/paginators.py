@@ -195,6 +195,7 @@ class BaseView(discord.ui.View):
                 interaction,
                 embed=discord.Embed(
                     title="🛑 LimitReached",
+                    colour=self.bot.colour,
                     description=f"Sorry **{error.user.name}**,"
                                 f"you already have reached the limit of **{error.limit}** "
                                 f"clicks, you are currently at **{error.counter}**,"
@@ -205,6 +206,7 @@ class BaseView(discord.ui.View):
         elif isinstance(error, discord.ext.commands.NotOwner):
             embed = discord.Embed(
                 title="🛑 Owner-only",
+                colour=self.bot.colour,
                 description=f"Sorry **{interaction.user}**, but this command is an owner-only command and "
                             f"you arent one of my loved developers <:ty:833356132075700254>."
             )
@@ -212,7 +214,7 @@ class BaseView(discord.ui.View):
                 interaction, embed=embed, ephemeral=True
             )
         elif isinstance(error, UserBlacklisted):
-            embed = discord.Embed(title="🛑 Forbidden", description=str(error))
+            embed = discord.Embed(title="🛑 Forbidden", colour=self.bot.colour, description=str(error))
             await send_error_message(
                 interaction, embed=embed, ephemeral=True
             )
