@@ -556,9 +556,9 @@ class ImageMenu(ViewMenu):
             mes = "**removed** from"
         else:
             raise RuntimeError("The image is not in either inserted or deleted")
-        return f"Alright **{user.name}**, the [image](https://{APIDomainName}/preview/?image={image})," \
+        return f"Alright **{user.name}**, the [image](https://{APIDomainName}/preview/?image={image}), " \
                f"has successfully been {mes} your Gallery.\n" \
-               f"You can look at your Gallery [here](https://{APIDomainName}/fav/)" \
+               f"You can look at your Gallery [here](https://{APIDomainName}/fav/) " \
                "after logging in with your discord account, or by using the `favourite` command. "
 
     @discord.ui.button(emoji="❤", style=discord.ButtonStyle.grey)
