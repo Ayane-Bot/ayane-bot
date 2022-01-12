@@ -36,8 +36,8 @@ class Fun(defaults.AyaneCog, emoji='🎢', brief='Some fun commands'):
         return error_message
 
     @staticmethod
-    def format_anilist_embeds(media, is_nsfw, index=0, total=0):
-        footer_text = "Safe Search • " if not is_nsfw else ""
+    def format_anilist_embeds(media, safe_search=False, index=0, total=0):
+        footer_text = "Safe Search • " if safe_search else ""
         if media.cover_color:
             _color = int(media.cover_color.replace("#", ""), 16)
         else:
@@ -74,9 +74,9 @@ class Fun(defaults.AyaneCog, emoji='🎢', brief='Some fun commands'):
         try:
             anime = await self.kadalclient.search_anime(name, popularity=True, allow_adult=True)
         except kadal.MediaNotFound:
-            return await ctx.send(self.format_error_message(name, safe_search=False))
+            return await ctx.send(self.format_error_message(name))
         ctx.stop_if_nsfw(anime.is_adult)
-        await ctx.send(embed=self.format_anilist_embeds(anime, is_nsfw))
+        await ctx.send(embed=self.format_anilist_embeds(anime))
 
     @defaults.ayane_command(name='manga',
                             aliases=['mng', 'mang', 'webtton', 'comic', 'manhua', 'manhwa', 'pornhwa', 'pornhua'])
@@ -85,9 +85,9 @@ class Fun(defaults.AyaneCog, emoji='🎢', brief='Some fun commands'):
         try:
             manga = await self.kadalclient.search_manga(name, popularity=True, allow_adult=True)
         except kadal.MediaNotFound:
-            return await ctx.send(self.format_error_message(name, safe_search=False))
+            return await ctx.send(self.format_error_message(name))
         ctx.stop_if_nsfw(manga.is_adult)
-        await ctx.send(embed=self.format_anilist_embeds(manga, is_nsfw))
+        await ctx.send(embed=self.format_anilist_embeds(manga))
 
     @defaults.ayane_command(
         name='topmanga',
@@ -124,7 +124,7 @@ class Fun(defaults.AyaneCog, emoji='🎢', brief='Some fun commands'):
             variables["isAdult"] = adult
         allmangas = await self.kadalclient.custom_paged_search(**variables)
         for i, manga in enumerate(allmangas):
-            embed_list.append(self.format_anilist_embeds(manga, is_nsfw, index=i + 1, total=len(allmangas)))
+            embed_list.append(self.format_anilist_embeds(manga, index=i + 1, total=len(allmangas)))
         await ViewMenu(source=BaseSource(embed_list, per_page=1), ctx=ctx).start()
 
     @defaults.ayane_command(name='topanime', aliases=['topanm'])
@@ -150,5 +150,5 @@ class Fun(defaults.AyaneCog, emoji='🎢', brief='Some fun commands'):
             variables["isAdult"] = adult
         allanimes = await self.kadalclient.custom_paged_search(**variables)
         for i, anime in enumerate(allanimes):
-            embed_list.append(self.format_anilist_embeds(anime, is_nsfw, index=i + 1, total=len(allanimes)))
+            embed_list.append(self.format_anilist_embeds(anime, index=i + 1, total=len(allanimes)))
         await ViewMenu(source=BaseSource(embed_list, per_page=1), ctx=ctx).start()
