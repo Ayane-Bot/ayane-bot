@@ -18,3 +18,11 @@ class AyaneContext(commands.Context):
                 embed.colour = self.bot.colour
                 
         return await super().send(content=content, embed=embed, **kwargs)
+
+    def stop_if_nsfw(self, value):
+        if isinstance(self.channel, (discord.Thread, discord.TextChannel)):
+            is_nsfw = self.channel.is_nsfw()
+        else:
+            is_nsfw = False
+        if value and not is_nsfw:
+            raise commands.NSFWChannelRequired(self.channel)

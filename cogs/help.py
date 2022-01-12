@@ -207,7 +207,7 @@ class AyaneHelpCommand(commands.HelpCommand):
                 if not cmds or not cog:
                     continue
                 if string.lower() in cog.qualified_name.lower() and len(string) >= 2:
-                    liste.append(f"`{str(cog)}`")
+                    liste.append(f"`{str(cog.qualified_name)}`")
         return liste
 
     async def command_not_found(self, string):
