@@ -18,8 +18,7 @@ class MessageContentCooldown(commands.CooldownMapping):
 class AntiSpam:
     """We use the same ratelimit/criteria as https://github.com/Rapptz/RoboDanny/"""
 
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self):
         # A 30 min cache for user that joined 'together'
         self.fast_followed_joiners = ExpiringCache(seconds=1800.0)
         # The date and id of the last joiner (to determine whether they are 'fast followed users')
@@ -35,17 +34,15 @@ class AntiSpam:
         self.cooldown_content = MessageContentCooldown.from_cooldown(15, 17.0, commands.BucketType.member)
 
     @staticmethod
-    async def sanction(self, bot, member, action):
+    async def sanction(member, action):
         # Make sure the member isn't already kicked/banned
-        guild = self.bot.get_guild(member.guild.id)
-        if guild:
-            if guild.get_member(member.id):
-                await getattr(member, action)(reason=f"{action.capitalize()} by {member.guild.me} Anti-Spam.")
-                try:
-                    await member.send(f"Hey it looks like my Anti-Spam kicked you from **{member.guild.name}**. "
-                                      "If you think it's an error contact the guild moderators.")
-                except discord.HTTPException:
-                    pass
+        if member.guild.get_member(member.id):
+            await getattr(member, action)(reason=f"{action.capitalize()} by {member.guild.me} Anti-Spam.")
+            try:
+                await member.send(f"Hey it looks like my Anti-Spam kicked you from **{member.guild.name}**. "
+                                  "If you think it's an error contact the guild moderators.")
+            except discord.HTTPException:
+                pass
 
     def add_fast_followed_joiner(self, member):
         """If the user that joined and the last joiner joined date is really close (3 seconds)"""
@@ -85,9 +82,9 @@ class AntiSpam:
             return
         if self.is_spamming(message):
             if is_strict_mod:
-                await self.sanction(message.author, "ban")
+                await self.sanction()
             else:
-                await self.sanction(message.author, "kick")
+                await self.sanction()
 
 
 def setup(bot):
@@ -98,7 +95,7 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
     def __init__(self, bot):
         self.bot: Ayane = bot
         # We use defaultdict because it's faster than using setdefault each time.
-        self.antispam = defaultdict(AntiSpam(self.bot))
+        self.antispam = defaultdict(AntiSpam)
 
     async def get_guild_mod(self, guild_id):
         return await self.bot.db.fetchval("SELECT strict_antispam FROM registered_guild WHERE id=$1", guild_id)
