@@ -42,6 +42,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
     """The bot waifu API commands and some others."""
     def __init__(self, bot):
         self.bot = bot
+        self.bot.waifu_reason_exempted_users = {747737674952999024}
         if not self.bot.loop.is_running():
             self.bot.loop.run_until_complete(self.helpdescription())
         else:
