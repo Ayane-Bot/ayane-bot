@@ -115,8 +115,6 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
             return
         if message.author.bot:
             return
-        if message.author.guild_permissions.manage_messages:
-            return
         guild_mode = await self.get_guild_mod(message.guild.id)
         await self.antispam[message.guild.id].sanction_if_spamming(message, guild_mode)
 
