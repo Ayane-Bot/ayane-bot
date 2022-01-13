@@ -34,13 +34,16 @@ class AntiSpam:
         self.cooldown_content = MessageContentCooldown.from_cooldown(15, 17.0, commands.BucketType.member)
 
     @staticmethod
-    async def sanction(member, action):
+    async def sanction(member, action, mod):
         # Make sure the member isn't already kicked/banned
         if member.guild.get_member(member.id):
-            await getattr(member, action)(reason=f"{action.capitalize()} by {member.guild.me} Anti-Spam.")
+            verb = "kicked" if action == "kick" else "banned"
+            reason = f"{verb.capitalize()} by {member.guild.me} Anti-Spam ({mod})."
+            await getattr(member, action)(reason=reason)
             try:
-                await member.send(f"Hey it looks like my Anti-Spam kicked you from **{member.guild.name}**. "
-                                  "If you think it's an error contact the guild moderators.")
+                await member.send(f"Hey it looks like my Anti-Spam {verb} you from **{member.guild.name}**\n"
+                                  "If you think it's an error contact the guild moderators.\n"
+                                  f"```Reason: {reason}```")
             except discord.HTTPException:
                 pass
 
@@ -77,14 +80,14 @@ class AntiSpam:
         if self.cooldown_content.get_bucket(message).update_rate_limit(message_creation_date):
             return True
 
-    async def sanction_if_spamming(self, message, is_strict_mod):
-        if not message.guild or is_strict_mod is None:
+    async def sanction_if_spamming(self, message, is_strict_mode):
+        if not message.guild or is_strict_mode is None:
             return
         if self.is_spamming(message):
-            if is_strict_mod:
-                await self.sanction(message.author,"ban")
+            if is_strict_mode:
+                await self.sanction(message.author, "ban", "Strict-mode")
             else:
-                await self.sanction(message.author, "kick")
+                await self.sanction(message.author, "kick", "Soft-mode")
 
 
 def setup(bot):
@@ -112,5 +115,5 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
             return
         if message.author.guild_permissions.manage_messages:
             return
-        guild_mod = await self.get_guild_mod(message.guild.id)
-        await self.antispam[message.guild.id].sanction_if_spamming(message, guild_mod)
+        guild_mode = await self.get_guild_mod(message.guild.id)
+        await self.antispam[message.guild.id].sanction_if_spamming(message, guild_mode)
