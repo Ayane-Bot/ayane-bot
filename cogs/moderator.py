@@ -78,7 +78,7 @@ class AntiSpam:
     async def sanction_if_spamming(self, message, is_strict_mod):
         if not message.guild or is_strict_mod is None:
             return
-        if self.is_spamming(self, message):
+        if self.is_spamming(message):
             if is_strict_mod:
                 await self.sanction(message.author, "ban")
             else:
