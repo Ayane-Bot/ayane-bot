@@ -147,3 +147,4 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
             ctx.guild.name,
             antispam_mode,
         )
+        await ctx.send(f"The antispam mode is now set to `{mode}`.")
