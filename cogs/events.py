@@ -190,7 +190,7 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
                 embed.title = "❌ Bad argument"
                 literals = join_literals(error.param.annotation, return_list=True)
                 literals = '"' + '", "'.join(literals[:-2] + ['" or "'.join(literals[-2:])]) + '"'
-                embed.description = f"Sorry but the argument `{error.param.name}` isn't one of the following: {literals}"
+                embed.description = f"The `{error.param.name}` argument must be one of the following: {literals}"
 
             elif isinstance(error, commands.ArgumentParsingError):
                 if isinstance(error, commands.UnexpectedQuoteError):

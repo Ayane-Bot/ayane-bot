@@ -1,9 +1,11 @@
 import datetime
+from typing import Literal
 
 import discord
 from discord.ext import commands
 
 from utils import defaults
+from utils.context import AyaneContext
 from utils.cache import ExpiringCache
 from main import Ayane
 
@@ -117,3 +119,29 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
             return
         guild_mode = await self.get_guild_mod(message.guild.id)
         await self.antispam[message.guild.id].sanction_if_spamming(message, guild_mode)
+
+    @defaults.ayane_command(name="antispam", aliases=["antiraid"])
+    async def toggle_antispam(
+            self,
+            ctx: AyaneContext,
+            mode: Literal["soft", "strict", "off"] = commands.Option(
+                default="off",
+                description="The guild antispam mode",
+            ),
+    ) -> discord.Message:
+        """Set the antispam mode
+        `strict` : ban users when spamming
+        `soft` : kick users when spamming
+        `off` : disable anti-spam
+        default to `off`."""
+        if mode == "off":
+            antispam_mode = None
+        else:
+            antispam_mode = mode == "strict"
+        await self.bot.db.execute(
+            "INSERT INTO registered_guild (id,name,strict_antispam)"
+            "VALUES ($1,$2,$3) ON CONFLICT (id) DO UPDATE SET name=$2,strict_antispam=$3",
+            ctx.guild.id,
+            ctx.guild.name,
+            antispam_mode,
+        )
