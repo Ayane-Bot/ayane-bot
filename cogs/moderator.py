@@ -98,7 +98,7 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
     def __init__(self, bot):
         self.bot: Ayane = bot
         # We use defaultdict because it's faster than using setdefault each time.
-        self.antispam = defaultdict(AntiSpam)
+        self.antispam = defaultdict(AntiSpam(self.bot))
 
     async def get_guild_mod(self, guild_id):
         return await self.bot.db.fetchval("SELECT strict_antispam FROM registered_guild WHERE id=$1", guild_id)
