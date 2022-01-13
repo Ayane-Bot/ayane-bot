@@ -104,6 +104,10 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
             return
         if message.author.id in {self.bot.owner_id, *self.bot.owner_ids}:
             return
+        if not isinstance(message.author, discord.Member):
+            return
+        if message.author.bot:
+            return
         if message.author.guild_permissions.manage_messages:
             return
         guild_mod = await self.get_guild_mod(message.guild.id)
