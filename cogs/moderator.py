@@ -57,9 +57,9 @@ class AntiSpam:
     @staticmethod
     def is_new(member):
         # If account has been created between now and 3 big months
-        recent_account = member.created_at > datetime.datetime.utcnow() - datetime.timedelta(days=93)
+        recent_account = member.created_at > discord.utils.utcnow() - datetime.timedelta(days=93)
         # If the user joined in the last 2 weeks
-        recent_member = member.joined_at > datetime.datetime.utcnow() - datetime.timedelta(days=14)
+        recent_member = member.joined_at > discord.utils.utcnow() - datetime.timedelta(days=14)
         return recent_member and recent_account
 
     def is_spamming(self, message):
