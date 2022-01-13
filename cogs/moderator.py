@@ -63,7 +63,7 @@ class AntiSpam:
         return recent_member and recent_account
 
     def is_spamming(self, message):
-        message_creation_date = message.created_at
+        message_creation_date = message.created_at.timestamp()
         if message.author.id in self.fast_followed_joiners:
             if self.cooldown_fast_followed.get_bucket(message).update_rate_limit(message_creation_date):
                 return True
