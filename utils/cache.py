@@ -1,6 +1,10 @@
+import time
+
+
 class ExpiringCache(dict):
     """https://github.com/Rapptz/RoboDanny/blob/1fb95d76d1b7685e2e2ff950e11cddfc96efbfec/cogs/utils/cache.py
     really useful cache that keeps key/values for a certain given time"""
+
     def __init__(self, seconds):
         self.__ttl = seconds
         super().__init__()
