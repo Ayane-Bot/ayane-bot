@@ -82,9 +82,9 @@ class AntiSpam:
             return
         if self.is_spamming(message):
             if is_strict_mod:
-                await self.sanction()
+                await self.sanction(message.author,"ban")
             else:
-                await self.sanction()
+                await self.sanction(message.author, "kick")
 
 
 def setup(bot):
