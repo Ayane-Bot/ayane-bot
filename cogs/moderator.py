@@ -120,7 +120,9 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
         guild_mode = await self.get_guild_mod(message.guild.id)
         await self.antispam[message.guild.id].sanction_if_spamming(message, guild_mode)
 
+
     @defaults.ayane_command(name="antispam", aliases=["antiraid"])
+    @commands.has_guild_permissions(kick_members=True, ban_members=True, manage_messages=True)
     async def toggle_antispam(
             self,
             ctx: AyaneContext,
