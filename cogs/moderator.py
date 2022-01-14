@@ -161,7 +161,7 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
         `strict` : ban users when spamming (recommended)
         `soft` : kick users when spamming
         `light` : Mute users when spamming
-        `off` : disable anti-spam
+        `disabled` : disable anti-spam
         every mode do delete the user messages in the last 24 hours.
         default to `disabled`."""
         if mode == "disabled":
