@@ -39,7 +39,11 @@ class ModUtils:
             except discord.HTTPException:
                 pass
             if delete_last_day:
-                await self.purge(member.guild.text_channels,after=discord.utils.utcnow() - datetime.timedelta(days=1))
+                await self.purge(
+                    member.guild.text_channels,
+                    after=discord.utils.utcnow() - datetime.timedelta(days=1),
+                    user=member
+                )
 
     async def mute(self, member, reason=None, delete_last_day=False):
         if member.guild.get_member(member.id):
@@ -54,7 +58,10 @@ class ModUtils:
             for category in member.guild.categories:
                 await category.set_permissions(role, send_messages=False, connect=False)
             if delete_last_day:
-                await self.purge(member.guild.text_channels,after=discord.utils.utcnow() - datetime.timedelta(days=1))
+                await self.purge(member.guild.text_channels,
+                                 after=discord.utils.utcnow() - datetime.timedelta(days=1),
+                                 user=member,
+                )
 
     async def unmute(self, member, reason=None):
         if member.guild.get_member(member.id):
