@@ -25,7 +25,7 @@ class GuildMode(Enum):
 
 class AntiSpam:
     """We use the same ratelimit/criteria as https://github.com/Rapptz/RoboDanny/"""
-    def __init__(self, modutils):
+    def __init__(self):
         self.modutils = ModUtils
         # A 30 min cache for user that joined 'together'
         self.fast_followed_joiners = ExpiringCache(seconds=1800.0)
@@ -144,8 +144,8 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
     async def toggle_antispam(
             self,
             ctx: AyaneContext,
-            mode: Literal["light","soft", "strict", "off"] = commands.Option(
-                default="off",
+            mode: Literal["light","soft", "strict", "disabled"] = commands.Option(
+                default="disabled",
                 description="The guild antispam mode",
             ),
     ) -> discord.Message:
@@ -155,8 +155,8 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
         `light` : Mute users when spamming
         `off` : disable anti-spam
         every mode do delete the user messages in the last 24 hours.
-        default to `off`."""
-        if mode == "off":
+        default to `disabled`."""
+        if mode == "disabled":
             mode = None
         await self.bot.db.execute(
             "INSERT INTO registered_guild (id,name,anti_spam_mode)"
@@ -165,4 +165,4 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
             ctx.guild.name,
             mode,
         )
-        await ctx.send(f"The antispam mode is now set to `{mode}`.")
+        await ctx.send(f"The antispam mode is now set to `{mode if mode else 'disabled'}`.")
