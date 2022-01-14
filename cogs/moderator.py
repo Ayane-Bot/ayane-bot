@@ -91,21 +91,20 @@ class AntiSpam:
         if not message.guild or guild_mode is None:
             return
         if self.is_spamming(message):
-            print(guild_mode)
-            if guild_mode.strict:
+            if guild_mode == GuildMode.strict.value:
                 if message.guild.get_member(message.author.id):
                     await self.modutils.ban(
                         message.guild,
                         message.author,
                         reason=f"{message.guild.me} AntiSpam (Strict Mode)",
                     )
-            elif guild_mode.soft:
+            elif guild_mode == GuildMode.soft.value:
                 await self.modutils.kick(
                     message.author,
                     reason= f"{message.guild.me} AntiSpam (Soft Mode)",
                     delete_last_day=True,
                 )
-            elif guild_mode.light:
+            elif guild_mode == GuildMode.light.value:
                 await self.modutils.mute(
                     message.author,
                     reason=f"{message.guild.me} AntiSpam (Light Mode)",
@@ -136,7 +135,7 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
             return
         if message.author.bot:
             return
-        guild_mode = GuildMode(await self.get_guild_mod(message.guild.id))
+        guild_mode = await self.get_guild_mod(message.guild.id)
         await self.antispam[message.guild.id].sanction_if_spamming(message, guild_mode)
 
 

@@ -27,7 +27,7 @@ class ModUtils:
     async def ban(self, guild, user, reason=None):
         await guild.ban(user, reason=reason)
         try:
-            await user.send(self.format_sanction_reason(reason, "Banned"))
+            await user.send(self.format_sanction_reason(guild, reason, "Banned"))
         except discord.HTTPException:
             pass
 
