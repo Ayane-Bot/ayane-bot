@@ -91,6 +91,7 @@ class AntiSpam:
         if not message.guild or guild_mode is None:
             return
         if self.is_spamming(message):
+            print(guild_mode)
             if guild_mode.strict:
                 if message.guild.get_member(message.author.id):
                     await self.modutils.ban(
