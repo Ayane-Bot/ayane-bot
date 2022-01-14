@@ -93,9 +93,10 @@ class AntiSpam:
         if self.is_spamming(message):
             if guild_mode.strict:
                 if message.guild.get_member(message.author.id):
-                    await self.modutils.ban(message.guild,
-                                            message.author,
-                                            reason=f"{message.guild.me} AntiSpam (Strict Mode)",
+                    await self.modutils.ban(
+                        message.guild,
+                        message.author,
+                        reason=f"{message.guild.me} AntiSpam (Strict Mode)",
                     )
             elif guild_mode.soft:
                 await self.modutils.kick(
