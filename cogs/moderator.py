@@ -20,8 +20,8 @@ class MessageContentCooldown(commands.CooldownMapping):
 
 class AntiSpam:
     """We use the same ratelimit/criteria as https://github.com/Rapptz/RoboDanny/"""
-    def __init__(self,modutils):
-        self.modutils=modutils
+    def __init__(self, modutils):
+        self.modutils = modutils
         # A 30 min cache for user that joined 'together'
         self.fast_followed_joiners = ExpiringCache(seconds=1800.0)
         # The date and id of the last joiner (to determine whether they are 'fast followed users')
@@ -108,7 +108,7 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
     def __init__(self, bot):
         self.bot: Ayane = bot
         # We use defaultdict because it's faster than using setdefault each time.
-        self.modutils = ModUtils
+        self.modutils = ModUtils()
         self.antispam = defaultdict(AntiSpam(self.modutils))
 
 
