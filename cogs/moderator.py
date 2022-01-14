@@ -8,14 +8,17 @@ from utils import defaults
 from utils.context import AyaneContext
 from utils.cache import ExpiringCache
 from utils.mods import ModUtils
+from utils.exceptions import AlreadyMuted
 from main import Ayane
 
 from collections import defaultdict
 from enum import Enum
 
+
 class MessageContentCooldown(commands.CooldownMapping):
     def _bucket_key(self, message):
         return message.channel.id, message.content
+
 
 class GuildMode(Enum):
     strict = "strict"
@@ -23,8 +26,10 @@ class GuildMode(Enum):
     light = "light"
     disabled = None
 
+
 class AntiSpam:
     """We use the same ratelimit/criteria as https://github.com/Rapptz/RoboDanny/"""
+
     def __init__(self):
         self.modutils = ModUtils()
         # A 30 min cache for user that joined 'together'
@@ -101,15 +106,18 @@ class AntiSpam:
             elif guild_mode == GuildMode.soft.value:
                 await self.modutils.kick(
                     message.author,
-                    reason= f"{message.guild.me} AntiSpam (Soft Mode)",
+                    reason=f"{message.guild.me} AntiSpam (Soft Mode)",
                     delete_last_day=True,
                 )
             elif guild_mode == GuildMode.light.value:
-                await self.modutils.mute(
-                    message.author,
-                    reason=f"{message.guild.me} AntiSpam (Light Mode)",
-                    delete_last_day=True,
-                )
+                try:
+                    await self.modutils.mute(
+                        message.author,
+                        reason=f"{message.guild.me} AntiSpam (Light Mode)",
+                        delete_last_day=True,
+                    )
+                except AlreadyMuted:
+                    pass
 
 
 def setup(bot):
@@ -122,6 +130,7 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
         # We use defaultdict because it's faster than using setdefault each time.
         self.modutils = ModUtils()
         self.antispam = defaultdict(AntiSpam)
+
     async def get_guild_mod(self, guild_id):
         return await self.bot.db.fetchval("SELECT anti_spam_mode FROM registered_guild WHERE id=$1", guild_id)
 
@@ -138,13 +147,12 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
         guild_mode = await self.get_guild_mod(message.guild.id)
         await self.antispam[message.guild.id].sanction_if_spamming(message, guild_mode)
 
-
     @defaults.ayane_command(name="antispam", aliases=["antiraid"])
     @commands.has_guild_permissions(kick_members=True, ban_members=True, manage_messages=True)
     async def toggle_antispam(
             self,
             ctx: AyaneContext,
-            mode: Literal["light","soft", "strict", "disabled"] = commands.Option(
+            mode: Literal["light", "soft", "strict", "disabled"] = commands.Option(
                 default="disabled",
                 description="The guild antispam mode",
             ),
