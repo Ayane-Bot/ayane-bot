@@ -27,7 +27,7 @@ class ModUtils:
     async def ban(self, guild, user, reason=None):
         await guild.ban(user, reason=reason)
         try:
-            await user.send(self.format_sanction_reason(guild, reason, "Banned"))
+            await user.send(self.format_sanction_reason(guild, str(reason), "Banned"))
         except discord.HTTPException:
             pass
 
@@ -35,7 +35,7 @@ class ModUtils:
         if member.guild.get_member(member.id):
             await member.kick(reason=reason)
             try:
-                await member.send(self.format_sanction_reason(member.guild, reason, "Kicked"))
+                await member.send(self.format_sanction_reason(member.guild, str(reason), "Kicked"))
             except discord.HTTPException:
                 pass
             if delete_last_day:
@@ -48,7 +48,7 @@ class ModUtils:
                 raise AlreadyMuted
             await member.add_roles(role ,reason=reason)
             try:
-                await member.send(self.format_sanction_reason(member.guild, reason, "Muted"))
+                await member.send(self.format_sanction_reason(member.guild, str(reason), "Muted"))
             except discord.HTTPException:
                 pass
             for category in member.guild.categories:
@@ -62,7 +62,7 @@ class ModUtils:
             if role in member.roles:
                 await member.remove_roles(role, reason=reason)
                 try:
-                    await member.send(self.format_sanction_reason(member.guild, reason, "Unmuted"))
+                    await member.send(self.format_sanction_reason(member.guild, str(reason), "Unmuted"))
                 except discord.HTTPException:
                     pass
             for category in member.guild.categories:
