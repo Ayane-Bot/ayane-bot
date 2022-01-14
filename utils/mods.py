@@ -56,11 +56,15 @@ class ModUtils:
             if delete_last_day:
                 await self.purge(member.guild.text_channels,after=discord.utils.utcnow() - datetime.timedelta(days=1))
 
-    async def unmute(self, member, reason=None, delete_last_day=False):
+    async def unmute(self, member, reason=None):
         if member.guild.get_member(member.id):
             role = await self.set_muted_role(member.guild)
             if role in member.roles:
-                await member.remove_roles(role ,reason=reason)
+                await member.remove_roles(role, reason=reason)
+                try:
+                    await member.send(self.format_sanction_reason(member.guild, reason, "Unmuted"))
+                except discord.HTTPException:
+                    pass
             for category in member.guild.categories:
                 await category.set_permissions(role, send_messages=False, connect=False)
 
