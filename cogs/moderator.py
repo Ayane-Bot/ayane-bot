@@ -159,7 +159,7 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
         if mode == "off":
             mode = None
         await self.bot.db.execute(
-            "INSERT INTO registered_guild (id,name,strict_antispam)"
+            "INSERT INTO registered_guild (id,name,anti_spam_mode)"
             "VALUES ($1,$2,$3) ON CONFLICT (id) DO UPDATE SET name=$2,anti_spam_mode=$3",
             ctx.guild.id,
             ctx.guild.name,
