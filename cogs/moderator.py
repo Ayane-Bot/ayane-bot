@@ -11,12 +11,17 @@ from utils.mods import ModUtils
 from main import Ayane
 
 from collections import defaultdict
-
+from enum import Enum
 
 class MessageContentCooldown(commands.CooldownMapping):
     def _bucket_key(self, message):
         return message.channel.id, message.content
 
+class GuildMode(Enum):
+    strict = "strict"
+    soft = "soft"
+    light = "light"
+    disabled = None
 
 class AntiSpam:
     """We use the same ratelimit/criteria as https://github.com/Rapptz/RoboDanny/"""
@@ -82,20 +87,26 @@ class AntiSpam:
         if self.cooldown_content.get_bucket(message).update_rate_limit(message_creation_date):
             return True
 
-    async def sanction_if_spamming(self, message, is_strict_mode):
-        if not message.guild or is_strict_mode is None:
+    async def sanction_if_spamming(self, message, guild_mode):
+        if not message.guild or guild_mode is None:
             return
         if self.is_spamming(message):
-            if is_strict_mode:
+            if guild_mode.strict:
                 if message.guild.get_member(message.author.id):
                     await self.modutils.ban(message.guild,
                                             message.author,
                                             reason=f"{message.guild.me} AntiSpam (Strict Mode)",
                     )
-            else:
+            elif guild_mode.soft:
                 await self.modutils.kick(
                     message.author,
                     reason= f"{message.guild.me} AntiSpam (Soft Mode)",
+                    delete_last_day=True,
+                )
+            elif guild_mode.light:
+                await self.modutils.mute(
+                    message.author,
+                    reason=f"{message.guild.me} AntiSpam (Light Mode)",
                     delete_last_day=True,
                 )
 
@@ -124,7 +135,7 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
             return
         if message.author.bot:
             return
-        guild_mode = await self.get_guild_mod(message.guild.id)
+        guild_mode = GuildMode(await self.get_guild_mod(message.guild.id))
         await self.antispam[message.guild.id].sanction_if_spamming(message, guild_mode)
 
 
@@ -133,25 +144,25 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
     async def toggle_antispam(
             self,
             ctx: AyaneContext,
-            mode: Literal["soft", "strict", "off"] = commands.Option(
+            mode: Literal["light","soft", "strict", "off"] = commands.Option(
                 default="off",
                 description="The guild antispam mode",
             ),
     ) -> discord.Message:
         """Set the antispam mode
-        `strict` : ban users when spamming
+        `strict` : ban users when spamming (recommended)
         `soft` : kick users when spamming
+        `light` : Mute users when spamming
         `off` : disable anti-spam
+        every mode do delete the user messages in the last 24 hours.
         default to `off`."""
         if mode == "off":
-            antispam_mode = None
-        else:
-            antispam_mode = mode == "strict"
+            mode = None
         await self.bot.db.execute(
             "INSERT INTO registered_guild (id,name,strict_antispam)"
             "VALUES ($1,$2,$3) ON CONFLICT (id) DO UPDATE SET name=$2,strict_antispam=$3",
             ctx.guild.id,
             ctx.guild.name,
-            antispam_mode,
+            mode,
         )
         await ctx.send(f"The antispam mode is now set to `{mode}`.")
