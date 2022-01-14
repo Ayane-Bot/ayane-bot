@@ -41,3 +41,15 @@ class UserBlacklisted(commands.CheckFailure):
 
 class APIServerError(commands.CommandError):
     pass
+
+
+class AlreadyMuted(Exception):
+    pass
+
+
+class IsStaffMember(Exception):
+    pass
+
+
+class IsAuthor(Exception):
+    pass

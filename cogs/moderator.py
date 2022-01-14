@@ -7,6 +7,7 @@ from discord.ext import commands
 from utils import defaults
 from utils.context import AyaneContext
 from utils.cache import ExpiringCache
+from utils.mods import ModUtils
 from main import Ayane
 
 from collections import defaultdict
@@ -19,8 +20,8 @@ class MessageContentCooldown(commands.CooldownMapping):
 
 class AntiSpam:
     """We use the same ratelimit/criteria as https://github.com/Rapptz/RoboDanny/"""
-
-    def __init__(self):
+    def __init__(self,modutils):
+        self.modutils=modutils
         # A 30 min cache for user that joined 'together'
         self.fast_followed_joiners = ExpiringCache(seconds=1800.0)
         # The date and id of the last joiner (to determine whether they are 'fast followed users')
@@ -37,7 +38,6 @@ class AntiSpam:
 
     @staticmethod
     async def sanction(member, action, mod):
-        # Make sure the member isn't already kicked/banned
         if member.guild.get_member(member.id):
             verb = "kicked" if action == "kick" else "banned"
             reason = f"{verb.capitalize()} by {member.guild.me} Anti-Spam ({mod})."
@@ -87,9 +87,17 @@ class AntiSpam:
             return
         if self.is_spamming(message):
             if is_strict_mode:
-                await self.sanction(message.author, "ban", "Strict-mode")
+                if message.guild.get_member(message.author.id):
+                    await self.modutils.ban(message.guild,
+                                            message.author,
+                                            reason=f"{message.guild.me} AntiSpam (Strict Mode)",
+                    )
             else:
-                await self.sanction(message.author, "kick", "Soft-mode")
+                await self.modutils.kick(
+                    message.author,
+                    reason= f"{message.guild.me} AntiSpam (Soft Mode)",
+                    delete_last_day=True,
+                )
 
 
 def setup(bot):
@@ -100,7 +108,9 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
     def __init__(self, bot):
         self.bot: Ayane = bot
         # We use defaultdict because it's faster than using setdefault each time.
-        self.antispam = defaultdict(AntiSpam)
+        self.modutils = ModUtils
+        self.antispam = defaultdict(AntiSpam(self.modutils))
+
 
     async def get_guild_mod(self, guild_id):
         return await self.bot.db.fetchval("SELECT strict_antispam FROM registered_guild WHERE id=$1", guild_id)
