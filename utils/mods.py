@@ -7,7 +7,7 @@ class ModUtils:
         self.reason_format = reason_format
 
     @staticmethod
-    async def set_muted_role(self, guild):
+    async def set_muted_role(guild):
         role = discord.utils.get(guild.roles, name="Muted")
         muted_permissions = guild.default_role.permissions
         muted_permissions.send_messages = False
