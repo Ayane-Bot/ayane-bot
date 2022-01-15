@@ -47,6 +47,10 @@ class AlreadyMuted(Exception):
     pass
 
 
+class NotMuted(Exception):
+    pass
+
+
 class IsStaffMember(Exception):
     pass
 

@@ -2,17 +2,19 @@ import datetime
 from typing import Literal
 
 import discord
+import humanize.time
 from discord.ext import commands
 
 from utils import defaults
 from utils.context import AyaneContext
 from utils.cache import ExpiringCache
 from utils.mods import ModUtils
-from utils.exceptions import AlreadyMuted
+from utils.exceptions import AlreadyMuted, NotMuted
 from main import Ayane
 
 from collections import defaultdict
 from enum import Enum
+import dateparser
 
 
 class MessageContentCooldown(commands.CooldownMapping):
@@ -174,3 +176,96 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
             mode,
         )
         await ctx.send(f"The antispam mode is now set to `{mode if mode else 'disabled'}`.")
+
+    @defaults.ayane_command(name="ban")
+    @commands.has_guild_permissions(ban_members=True)
+    async def ban_(self, ctx : AyaneContext, member : discord.Member, *, reason = None):
+        """Ban a member
+        If 'spam' is in the reason, all the message the user sent in the last 24 hours will be deleted."""
+        days = 0
+        if member.guild_permissions.ban_members:
+            return await ctx.send("Sorry this user also has **Ban Members** permission, "
+                                  "therefore I cannot allow you to ban an other staff member")
+        if reason and "spam" in reason:
+            days = 1
+        await self.modutils.ban(member.guild, member, reason=reason, delete_message_days=days)
+        await ctx.send(f"**{member.name}** has been banned.")
+
+    @defaults.ayane_command(name="unban")
+    @commands.has_guild_permissions(ban_members=True)
+    async def unban_(self, ctx : AyaneContext, user : discord.User, *, reason=None):
+        """Unban a member"""
+        try:
+            await self.modutils.unban(ctx.guild, user, reason=reason)
+        except discord.NotFound:
+            return await ctx.send("This user was not banned or has already been unbanned.")
+        await ctx.send(f"**{user.name}** has been unbanned.")
+
+    @defaults.ayane_command(name="kick")
+    @commands.has_guild_permissions(kick_members=True)
+    async def kick_(self, ctx : AyaneContext, member : discord.Member, *, reason = None):
+        """Kick a member"""
+        days = 0
+        if member.guild_permissions.kick_members:
+            return await ctx.send("Sorry this user also has **Kick Members** permission, "
+                                  "therefore I cannot allow you to kick an other staff member")
+        await self.modutils.kick(member, reason=reason)
+        await ctx.send(f"**{member.name}** has been kicked.")
+
+    @defaults.ayane_command(name="mute")
+    @commands.has_guild_permissions(manage_messages=True)
+    async def mute_(self, ctx : AyaneContext, member : discord.Member, *, reason = None):
+        """Mute a member"""
+        if member.guild_permissions.manage_messages:
+            return await ctx.send("Sorry this user also has **Manage Messages** permission, "
+                                  "therefore I cannot allow you to mute an other staff member")
+        try:
+            await self.modutils.mute(member, reason=reason)
+        except AlreadyMuted:
+            return await ctx.send("Sorry this user is already muted.")
+        await ctx.send(f"**{member.name}** has been muted.")
+
+    @defaults.ayane_command(name="unmute")
+    @commands.has_guild_permissions(manage_messages=True)
+    async def unmute_(self, ctx : AyaneContext, member : discord.Member, *, reason = None):
+        """Unmute a member"""
+        try:
+            await self.modutils.unmute(member, reason=reason)
+        except NotMuted:
+            return await ctx.send("Sorry this user was not muted or as already been unmuted.")
+        await ctx.send(f"**{member.name}** has been unmuted.")
+
+
+    @defaults.ayane_command(name="timeout")
+    @commands.has_guild_permissions(moderate_members=True)
+    async def timeout_(self, ctx: AyaneContext, member: discord.Member, *, until):
+        """Timeout/disable timeout of a member.
+        If the time you passed is invalid and the user is already timed out, then the bot will stop the timeout."""
+        until = dateparser.parse(
+            until,
+            settings={'TO_TIMEZONE': 'UTC','RETURN_AS_TIMEZONE_AWARE': True,'PREFER_DATES_FROM': 'future'},
+        )
+        if not member.timed_out and not until:
+            return await ctx.send("I couldn't parse your date.")
+
+        if member.guild_permissions.moderate_members:
+            return await ctx.send("Sorry this user also has **Moderate Members** permission, "
+                                  "therefore I cannot allow you to timeout an other staff member")
+        if until and until <= ctx.message.created_at:
+            return await ctx.send("Your date is in the past.")
+        try:
+            await member.edit(timeout_until=until)
+        except discord.HTTPException:
+            return await ctx.send("Something went wrong, please check that the time provided isn't more than 28 days.")
+        if until:
+            duration = ctx.message.created_at - until
+            duration -= datetime.timedelta(microseconds=duration.microseconds)
+            state = f'has been timed out for **{humanize.time.precisedelta(duration)}**.'
+        else:
+            state = "timeout has been disabled.\n*As I couldn't parse your date and the user was already timed out, " \
+                    "I disabled its timeout.*"
+        await ctx.send(f"**{member.name}** {state}")
+
+
+
+

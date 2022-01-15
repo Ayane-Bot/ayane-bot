@@ -1,5 +1,5 @@
 import datetime
-from utils.exceptions import AlreadyMuted
+from utils.exceptions import AlreadyMuted, NotMuted
 import discord
 
 class ModUtils:
@@ -24,10 +24,16 @@ class ModUtils:
     def format_sanction_reason(self, guild, reason, action):
         return self.reason_format.replace("$action", action).replace("$reason", reason).replace("$guild",guild.name)
 
-    async def ban(self, guild, user, reason=None):
-        await guild.ban(user, reason=reason)
+    async def ban(self, guild, user, reason=None, delete_message_days=1):
+        await guild.ban(user, reason=reason, delete_message_days=delete_message_days)
         try:
             await user.send(self.format_sanction_reason(guild, str(reason), "Banned"))
+        except discord.HTTPException:
+            pass
+    async def unban(self, guild, user, reason=None):
+        await guild.unban(user, reason=reason)
+        try:
+            await user.send(self.format_sanction_reason(guild, str(reason), "Unbanned"))
         except discord.HTTPException:
             pass
 
@@ -72,6 +78,8 @@ class ModUtils:
                     await member.send(self.format_sanction_reason(member.guild, str(reason), "Unmuted"))
                 except discord.HTTPException:
                     pass
+            else:
+                raise NotMuted
             for category in member.guild.categories:
                 await category.set_permissions(role, send_messages=False, connect=False)
 
