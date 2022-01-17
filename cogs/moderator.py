@@ -236,7 +236,7 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
         await ctx.send(f"**{member.name}** has been unmuted.")
 
 
-    @defaults.ayane_command(name="tempmute")
+    @defaults.ayane_command(name="timeout")
     @commands.has_guild_permissions(moderate_members=True)
     async def timeout_(self, ctx: AyaneContext, member: discord.Member, *, until):
         """Timeout/disable timeout of a member.
