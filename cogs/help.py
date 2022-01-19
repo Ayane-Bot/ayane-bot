@@ -6,6 +6,9 @@ import discord
 from discord.ext import commands
 
 
+from private.config import LOCAL
+
+
 class PrivateCategoryOrGroup(Exception):
     def __init__(self, group=False):
         super().__init__(
@@ -232,7 +235,10 @@ class AyaneHelpCommand(commands.HelpCommand):
 class Help(defaults.AyaneCog, brief='The bot help command'):
     def __init__(self, bot):
         self.bot: Ayane = bot
-        self.bot.help_command = AyaneHelpCommand()
+        self.bot.help_command = AyaneHelpCommand(
+            command_attrs=dict(slash_command=not LOCAL, 
+                               message_command=LOCAL)
+        )
 
     def cog_unload(self) -> None:
         self.bot.help_command = commands.MinimalHelpCommand()
