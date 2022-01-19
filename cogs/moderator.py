@@ -258,7 +258,7 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
         except discord.HTTPException:
             return await ctx.send("Something went wrong, please check that the time provided isn't more than 28 days.")
         if until:
-            state = f'has been timed out until {discord.utils.format_dt(until,style="R")}.'
+            state = f'has been timed out and will be release {discord.utils.format_dt(until,style="R")}.'
         else:
             state = "timeout has been disabled.\n*As I couldn't parse your date and the user was already timed out, " \
                     "I disabled its timeout.*"
