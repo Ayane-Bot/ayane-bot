@@ -321,7 +321,7 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
             await message.reply(
                 f"Hi **{message.author.name}**, my prefixes are "
                 f"{', '.join(display_prefixes[0:-1]) if len(display_prefixes)>1 else display_prefixes[0]}"
-                f"{' and '+display_prefixes[-1] if len(display_prefixes)>1 else ''}. "
+                f"{' and '+display_prefixes[-1] if len(display_prefixes)>1 else ''}.\n"
                 "However you will only be able to run a command by using slash commands `/`. <:ty:833356132075700254>",
                 mention_author=False
             )
