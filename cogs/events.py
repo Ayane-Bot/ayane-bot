@@ -318,4 +318,10 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
     async def on_message_event(self, message):
         if message.content in (f'<@{self.bot.user.id}>',f'<@!{self.bot.user.id}>'):
             display_prefixes=[f'`{p}`' for p in DEFAULT_PREFIXES]
-            await message.reply(f"Hi **{message.author.name}**, my prefixes are {', '.join(display_prefixes[0:-1]) if len(display_prefixes)>1 else display_prefixes[0]}{' and '+display_prefixes[-1] if len(display_prefixes)>1 else ''} <:ty:833356132075700254>", mention_author=False)
+            await message.reply(
+                f"Hi **{message.author.name}**, my prefixes are "
+                f"{', '.join(display_prefixes[0:-1]) if len(display_prefixes)>1 else display_prefixes[0]}"
+                f"{' and '+display_prefixes[-1] if len(display_prefixes)>1 else ''}. "
+                "However you will only be able to run a command by using slash commands `/`. <:ty:833356132075700254>",
+                mention_author=False
+            )
