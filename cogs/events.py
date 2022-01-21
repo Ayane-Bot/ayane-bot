@@ -159,7 +159,7 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
     @commands.Cog.listener("on_command_error")
     async def error_log(self, ctx, error):
         """Handles command exceptions and logs unhandled ones to the support guild."""
-        if hasattr(ctx.command, 'on_error') and not hasattr(ctx,'bypass_first_error_handler'):
+        if hasattr(ctx.command, 'on_error') and not hasattr(ctx, 'bypass_first_error_handler'):
             return
 
         if isinstance(error, commands.CommandInvokeError):
@@ -240,7 +240,7 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
 
         elif isinstance(error, commands.DisabledCommand):
             if ctx.command.enabled:
-                _message=str(error).replace(ctx.command.name,f"`{ctx.command.name}`")+"."
+                _message = str(error).replace(ctx.command.name, f"`{ctx.command.name}`") + "."
             else:
                 _message = f"`{ctx.command.name}` command has been temporally disabled, it is probably under maintenance. For more information join the [support server]({constants.server_invite})!"
             embed = discord.Embed(title="🛑 Command disabled", description=_message)
@@ -313,15 +313,50 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
             ctx.command.qualified_name,
             ctx.message.created_at,
         )
-        
+
     @commands.Cog.listener("on_message")
     async def on_message_event(self, message):
-        if message.content in (f'<@{self.bot.user.id}>',f'<@!{self.bot.user.id}>'):
-            display_prefixes=[f'`{p}`' for p in DEFAULT_PREFIXES]
+        if message.content in (f'<@{self.bot.user.id}>', f'<@!{self.bot.user.id}>'):
+            display_prefixes = [f'`{p}`' for p in DEFAULT_PREFIXES]
             await message.reply(
                 f"Hi **{message.author.name}**, my prefixes are "
-                f"{', '.join(display_prefixes[0:-1]) if len(display_prefixes)>1 else display_prefixes[0]}"
-                f"{' and '+display_prefixes[-1] if len(display_prefixes)>1 else ''}.\n"
+                f"{', '.join(display_prefixes[0:-1]) if len(display_prefixes) > 1 else display_prefixes[0]}"
+                f"{' and ' + display_prefixes[-1] if len(display_prefixes) > 1 else ''}.\n"
                 "However you will only be able to run a command by using slash commands `/`. <:ty:833356132075700254>",
                 mention_author=False
             )
+
+    def format_log_embed(self, guild, title, who_added=None):
+        embed = discord.Embed(timestamp=discord.utils.utcnow(), colour=self.bot.colour, title=title)
+        if guild.icon:
+            embed.set_thumbnail(url=guild.icon.url)
+        embed.add_field(name="Name", value=guild.name, inline=False)
+        embed.add_field(name="ID", value=str(guild.id), inline=False)
+        embed.add_field(name="Owner", value=str(guild.owner) + " | " + str(guild.owner.id), inline=False)
+        embed.add_field(name="Members", value=len(guild.members), inline=False)
+        embed.add_field(name="Bots", value=len(guild.bots), inline=False)
+        embed.add_field(name="Humans", value=len(guild.humans), inline=False)
+        embed.add_field(name="Bots/Humans", value=round(len(guild.bots) / len(guild.humans), 2), inline=False)
+        if who_added:
+            embed.set_footer(icon_url=who_added.display_avatar.url, text=str(who_added))
+        return embed
+
+    @commands.Cog.listener("on_guild_join")
+    async def on_guild_join(self, guild):
+        who_added = None
+        try:
+            async for log in guild.audit_logs(limit=10):
+                if log.action == discord.AuditLogAction.bot_add:
+                    if log.target == self.bot.user:
+                        who_added = log.user
+        except discord.Forbidden:
+            pass
+        embed = self.format_log_embed(guild, "I joined a new Guild", who_added=who_added)
+        if self.bot.log_channel_id:
+            await self.bot.get_channel(self.bot.log_channel_id).send(embed=embed)
+
+    @commands.Cog.listener("on_guild_remove")
+    async def on_guild_remove(self, guild):
+        embed = self.format_log_embed(guild, "I was removed from a Guild")
+        if self.bot.log_channel_id:
+            await self.bot.get_channel(self.bot.log_channel_id).send(embed=embed)

@@ -71,6 +71,7 @@ class Ayane(commands.Bot):
         self.guild_ratio = 0.35
         self.guild_maxbot = 31
         self.minimum_command_interval = 86400
+        self.log_channel_id = 921577029546164325
         self.guild_whitelist = [
             110373943822540800,
             264445053596991498,
