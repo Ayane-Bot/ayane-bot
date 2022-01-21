@@ -67,7 +67,6 @@ class Ayane(commands.Bot):
         self.loop.run_until_complete(self.before_ready_once())
         self._load_cogs()
         self.db: asyncpg.Pool = self.loop.run_until_complete(self._establish_database_connection())
-        self.sus_guilds = []
         self.user_lock = {}
         self.guild_ratio = 0.35
         self.guild_maxbot = 31
@@ -95,37 +94,6 @@ class Ayane(commands.Bot):
             ):
                 sus.append(guild)
         return sus
-
-    async def wait_commands(self, guild):
-        try:
-            await self.wait_for(
-                "command_completion", timeout=self.minimum_command_interval
-            )
-        except asyncio.TimeoutError:
-
-            if guild.id not in [g.id for g in self.get_sus_guilds()]:
-                return
-            guild = self.get_guild(guild.id)
-            prct = len(guild.bots) / len(guild.members)
-            try:
-                await guild.owner.send(
-                    f"""Hey **{guild.owner.name}** looks like someone invited me in your server but I have a bad news...
-    Discord does not like servers with too many bots or with a too big proportion of them in the server, also it seems that no one used me in your server for at least {humanize.time.precisedelta(self.minimum_command_interval)}, therefore I have to leave your server.
-    I'm really sorry but don't worry too much, once the bot has been verified (keep a look out for the checkmark) you can reinvite it and everything will be fine.
-    Alternatively you can also decide to make your server respect some condions that will avoid me to leave after {humanize.time.precisedelta(self.minimum_command_interval)}.
-    (less than **{self.guild_maxbot}** bots in your server and a bots/guild_members ratio less or equal to **{self.guild_ratio * 100}%**)
-
-    **Here is some information that may help you to understand my decision.**
-    *Those information were calculated taking my presence in your server in account.*
-
-    You had **{len(guild.bots)}** bots in your server and a ratio of bots/user of **{round(prct * 100, 2)}**%"""
-                )
-
-            except:  # noqa
-                pass
-
-            self.sus_guilds.append(guild.id)
-            await guild.leave()
 
     def add_user_lock(self, lock: UserLock):
         self.user_lock.update({lock.user.id: lock})
