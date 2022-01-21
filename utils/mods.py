@@ -87,7 +87,7 @@ class ModUtils:
         if isinstance(channels, discord.abc.Messageable):
             channels=[channels]
 
-        total = 0
+        total = []
         def check(m):
                 if not user and original_message:
                     return m.id != original_message.id
@@ -105,7 +105,7 @@ class ModUtils:
             if original_message and limit:
                 limit += 1
             try:
-                total += len(await channel.purge(limit=limit, check=check, after=after, bulk=bulk))
+                total += await channel.purge(limit=limit, check=check, after=after, bulk=bulk)
             except discord.HTTPException:
                 pass
         return total
