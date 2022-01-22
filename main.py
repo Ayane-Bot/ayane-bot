@@ -83,6 +83,7 @@ class Ayane(commands.Bot):
         ]
         self.verified_message_command_guilds = [336642139381301249]
         self.verified_slash_command_guilds = []
+        print(self.owner_ids)
         self.verified_message_command_user_ids = [*self.owner_ids]
         self.verified_slash_command_user_ids = []
         self.add_check(self.check_blacklisted)
