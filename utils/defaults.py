@@ -59,7 +59,8 @@ class AyaneCommand(Command, Generic[CogT, D, T]):
             )
             or (self.message_command is None and not ctx.bot.message_commands)
         ):
-            raise DisabledCommand(f"{self.name} command cannot be run as a message command")
+            raise DisabledCommand(f"{self.name} command cannot be run as a message command.\n"
+                                  f"Please use `/{self.name}` instead.")
 
         if ctx.interaction is not None and (
             (
