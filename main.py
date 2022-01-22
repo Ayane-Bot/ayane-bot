@@ -81,9 +81,9 @@ class Ayane(commands.Bot):
             508355356376825868,
             850807820634030130,
         ]
-        self.verified_message_command_guilds = [920046322021728307]
+        self.verified_message_command_guilds = [336642139381301249]
         self.verified_slash_command_guilds = []
-        self.verified_message_command_user_ids = [813933511659618323]
+        self.verified_message_command_user_ids = [*self.owner_ids]
         self.verified_slash_command_user_ids = []
         self.add_check(self.check_blacklisted)
         self.add_check(self.check_user_lock)
