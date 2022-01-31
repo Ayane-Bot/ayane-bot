@@ -316,15 +316,16 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
 
     @commands.Cog.listener("on_message")
     async def on_message_event(self, message):
-        if message.content in (f'<@{self.bot.user.id}>', f'<@!{self.bot.user.id}>'):
-            display_prefixes = [f'`{p}`' for p in DEFAULT_PREFIXES]
-            await message.reply(
-                f"Hi **{message.author.name}**, my prefixes are "
-                f"{', '.join(display_prefixes[0:-1]) if len(display_prefixes) > 1 else display_prefixes[0]}"
-                f"{' and ' + display_prefixes[-1] if len(display_prefixes) > 1 else ''}.\n"
-                "However you will only be able to run a command by using slash commands `/`. <:ty:833356132075700254>",
-                mention_author=False
-            )
+        with contextlib.suppress(discord.HTTPException):
+            if message.content in (f'<@{self.bot.user.id}>', f'<@!{self.bot.user.id}>'):
+                display_prefixes = [f'`{p}`' for p in DEFAULT_PREFIXES]
+                await message.reply(
+                    f"Hi **{message.author.name}**, my prefixes are "
+                    f"{', '.join(display_prefixes[0:-1]) if len(display_prefixes) > 1 else display_prefixes[0]}"
+                    f"{' and ' + display_prefixes[-1] if len(display_prefixes) > 1 else ''}.\n"
+                    "However you will only be able to run a command by using slash commands `/`. <:ty:833356132075700254>",
+                    mention_author=False
+                )
 
     def format_log_embed(self, guild, title, who_added=None):
         embed = discord.Embed(timestamp=discord.utils.utcnow(), colour=self.bot.colour, title=title)
