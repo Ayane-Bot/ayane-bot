@@ -11,11 +11,6 @@ from utils.constants import APIDomainName
 from utils.exceptions import NotAuthorized, LimitReached, UserBlacklisted
 from utils.lock import UserLock
 
-
-def getcustomid():
-    return f"Ayane_{os.urandom(32).hex()}_authorcheck"
-
-
 class BaseSource(menus.ListPageSource):
     """Subclassing to change the way some method where coded
     (ex: get_max_pages not giving 'current' max pages)."""
@@ -109,11 +104,7 @@ class BaseView(discord.ui.View):
         self.ephemeral = ephemeral if self.main_interaction else False
         self.lock = None
         self.message = None
-
-    def init_custom_id(self):
-        for child in self.children:
-            if child.custom_id == "True":
-                child.custom_id = getcustomid()
+        self.no_author_check = []
 
     async def stop_paginator(self, timed_out=False):
         if (timed_out and not self.delete_after and self.message) or self.ephemeral:
@@ -134,13 +125,12 @@ class BaseView(discord.ui.View):
         except discord.DiscordException:
             pass
 
-    async def interaction_check(self, interaction):
+    async def interaction_check(self, item, interaction):
         reason = await self.bot.is_blacklisted(interaction.user)
         if reason:
             raise UserBlacklisted(interaction.user, reason=reason[0])
-        custom_id = str(interaction.data.get("custom_id"))
         if (
-                custom_id.endswith("authorcheck")
+                item not in self.no_author_check
                 and interaction.user
                 and interaction.user.id
                 not in {
@@ -189,7 +179,7 @@ class BaseView(discord.ui.View):
         send_error_message = self.bot.get_cog("Events").send_interaction_error_message
         send_unexpected_error = self.bot.get_cog("Events").send_unexpected_error
         if isinstance(error, NotAuthorized):
-            return await send_error_message(self.ctx, str(error), interaction=interaction, ephemeral=True)
+            return await send_error_message(interaction, str(error), ephemeral=True)
         elif isinstance(error, LimitReached):
             await send_error_message(
                 interaction,
@@ -229,15 +219,6 @@ class ViewMenuLauncher(BaseView):
         self.ctx = self.viewmenu.ctx
         super().__init__(ctx=self.ctx, timeout=30, **kwargs)
 
-    async def interaction_check(self, interaction):
-        if interaction.user and interaction.user.id not in {
-            self.bot.owner_id,
-            self.ctx.author.id,
-            *self.bot.owner_ids,
-        }:
-            raise NotAuthorized(self.ctx.author)
-        return True
-
     async def disable(self):
         self.confirm.disabled = True
         self.remove_item(self.delete)
@@ -276,7 +257,6 @@ class ViewMenuLauncher(BaseView):
                               f"2 buttons for the `{self.ctx.command.name}` command.",
             )
             async with self.lock(self.bot):
-                self.init_custom_id()
                 self.message = await self.ctx.send(
                     f"Click ✅ to get your ephemeral message ! (you have {humanize.time.precisedelta(int(self.timeout))})\n{f'⚠ Be careful this command may contain age-restricted content. <:YuriLaugh:846478037435809852>' if hasattr(self.ctx.command, 'nsfw') or hasattr(self.ctx, 'nsfw') else ''}",
                     view=self,
@@ -324,19 +304,17 @@ class ViewMenu(BaseView):
             max_pages = self.source.get_max_pages()
             use_last_and_first = max_pages is not None and max_pages >= 2
             if use_last_and_first:
-                self.add_item(self.go_to_first_page)  # type: ignore
-            self.add_item(self.go_to_previous_page)  # type: ignore
+                self.add_item(self.go_to_first_page)
+            self.add_item(self.go_to_previous_page)
 
-            self.add_item(self.go_to_next_page)  # type: ignore
+            self.add_item(self.go_to_next_page)
             if use_last_and_first:
-                self.add_item(self.go_to_last_page)  # type: ignore
+                self.add_item(self.go_to_last_page)
             if not self.imagemenu:
                 self.add_item(self.stop_pages)
-            self.add_item(self.numbered_page)  # type: ignore
-            # type: ignore
+            self.add_item(self.numbered_page)
 
     async def _get_kwargs_from_page(self, page: int):
-        self.init_custom_id()
         value = await discord.utils.maybe_coroutine(self.source.format_page, self, page)
         if self.imagemenu:
             self.image_info = self.source.get_infos(self.current_page)
@@ -398,7 +376,6 @@ class ViewMenu(BaseView):
     @discord.ui.button(
         emoji="<:first_track:840584439830544434>",
         style=discord.ButtonStyle.grey,
-        custom_id="True",
     )
     async def go_to_first_page(
             self, button: discord.ui.Button, interaction: discord.Interaction
@@ -409,7 +386,6 @@ class ViewMenu(BaseView):
     @discord.ui.button(
         emoji="<:before_track:840584439817699348>",
         style=discord.ButtonStyle.grey,
-        custom_id="True",
     )
     async def go_to_previous_page(
             self, button: discord.ui.Button, interaction: discord.Interaction
@@ -421,7 +397,6 @@ class ViewMenu(BaseView):
         row=1,
         emoji="<:stop_track:840584439825825802>",
         style=discord.ButtonStyle.grey,
-        custom_id="True",
     )
     async def stop_pages(
             self, button: discord.ui.Button, interaction: discord.Interaction
@@ -438,7 +413,6 @@ class ViewMenu(BaseView):
     @discord.ui.button(
         emoji="<:next_track:840584439813242951>",
         style=discord.ButtonStyle.grey,
-        custom_id="True",
     )
     async def go_to_next_page(
             self, button: discord.ui.Button, interaction: discord.Interaction
@@ -449,7 +423,6 @@ class ViewMenu(BaseView):
     @discord.ui.button(
         emoji="<:last_track:840584439813373972>",
         style=discord.ButtonStyle.grey,
-        custom_id="True",
     )
     async def go_to_last_page(
             self, button: discord.ui.Button, interaction: discord.Interaction
@@ -462,7 +435,6 @@ class ViewMenu(BaseView):
         row=1,
         label="Skip to page...",
         style=discord.ButtonStyle.success,
-        custom_id="True",
     )
     async def numbered_page(
             self, button: discord.ui.Button, interaction: discord.Interaction
@@ -527,6 +499,7 @@ class ImageMenu(ViewMenu):
         self.current_page: int = 0
         self.clear_items()
         self.add_all_items()
+        self.no_author_check = [self.add_to_favourite, self.informations]
 
     def add_all_items(self) -> None:
         super().add_all_items()
@@ -650,7 +623,6 @@ class ImageMenu(ViewMenu):
     @discord.ui.button(
         emoji="<:dust_bin:825400669867081818>",
         style=discord.ButtonStyle.grey,
-        custom_id="True",
     )
     async def delete(self, button: discord.ui.Button, interaction: discord.Interaction):
         if self.lock and self.lock.locked():
@@ -721,8 +693,6 @@ class ImageMenu(ViewMenu):
 
 
 class FavMenu(ImageMenu):
-    def add_all_items(self, **kwargs) -> None:
-        super().add_all_items()
 
     @discord.ui.button(
         emoji="❤️", label="Like or Remove", style=discord.ButtonStyle.grey
@@ -733,8 +703,6 @@ class FavMenu(ImageMenu):
         await super().add_to_favourite(button, interaction)
         if interaction.user.id == self.ctx.author.id:
             self.source.remove(self.current_page)
-            max_page = self.source.get_max_pages()
             if not self.source.entries:
                 await self.stop_paginator()
-
             await self.show_checked_page(self.current_page)

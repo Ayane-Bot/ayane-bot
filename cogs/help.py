@@ -52,13 +52,13 @@ class AyaneHelpView(paginators.ViewMenu):
             max_pages = self.source.get_max_pages()
             use_last_and_first = max_pages is not None and max_pages >= 2
             if use_last_and_first:
-                self.add_item(self.go_to_first_page)  # type: ignore
-            self.add_item(self.go_to_previous_page)  # type: ignore
+                self.add_item(self.go_to_first_page)
+            self.add_item(self.go_to_previous_page)
 
-            self.add_item(self.go_to_next_page)  # type: ignore
+            self.add_item(self.go_to_next_page)
             if use_last_and_first:
-                self.add_item(self.go_to_last_page)  # type: ignore
-            self.add_item(self.numbered_page)  # type: ignore
+                self.add_item(self.go_to_last_page)
+            self.add_item(self.numbered_page)
         self.add_item(self.stop_pages)
         self.add_item(self.go_home)
 
