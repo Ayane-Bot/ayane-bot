@@ -88,9 +88,10 @@ class BaseView(discord.ui.View):
             ephemeral=False,
             check_embeds=True,
             main_interaction=None,
+            timeout=840,
             **kwargs,
     ):
-        super().__init__(**kwargs)
+        super().__init__(timeout=timeout, **kwargs)
         if not ctx:
             raise TypeError("ctx is a required argument")
         self.ctx: commands.Context = ctx
@@ -488,9 +489,9 @@ class ViewMenu(BaseView):
 
 
 class ImageMenu(ViewMenu):
-    def __init__(self, delete_after=False, timeout=86400, **kwargs):
+    def __init__(self, delete_after=False, **kwargs):
         super().__init__(
-            timeout=timeout, delete_after=delete_after, **kwargs, imagemenu=True
+            delete_after=delete_after, **kwargs, imagemenu=True
         )
         self.fav = {}
         self.info = {}
