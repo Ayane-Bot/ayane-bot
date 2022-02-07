@@ -60,7 +60,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
                             ["True", "1", "0", "False", "false", "true"]
                         )
                     c.help = f"""{t['description']}
-{'`is_gif` argument only accept boolean, 1, 0, true, false etc..' if not c.parent else ''}"""
+{'`is_gif` and `many` arguments only accept boolean, 1, 0, true, false etc..' if not c.parent else ''}"""
             for t in rep["nsfw"]:
                 if t["name"] == str(c.help.split(" ")[-1]) and t["is_nsfw"] == bool(
                         int(c.help.split(" ")[0])
@@ -70,7 +70,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
                             ["True", "1", "0", "False", "false", "true"]
                         )
                     c.help = f"""⚠ NSFW. {t['description']}
-{'`is_gif` argument only accept boolean, 1, 0, true, false etc..' if not c.parent else ''}"""
+{'`is_gif` and `many` arguments only accept boolean, 1, 0, true, false etc..' if not c.parent else ''}"""
                     setattr(c, "nsfw", True)
 
     @staticmethod
