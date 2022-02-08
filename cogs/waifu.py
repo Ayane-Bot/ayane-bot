@@ -97,7 +97,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
                     category, gif=is_gif if not top else None, raw=True, top=top, many=many
                 )
             except waifuim.APIException as error:
-                if error.status = 404:
+                if error.status == 404:
                     return await ctx.send(error.message)
                 else:
                     raise error
