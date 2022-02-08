@@ -92,9 +92,15 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
                 gif=is_gif if not top else None, raw=True, top=top, many=many
             )
         else:
-            r = await getattr(ctx.bot.waifuclient, typ)(
-                category, gif=is_gif if not top else None, raw=True, top=top, many=many
-            )
+            try:
+                r = await getattr(ctx.bot.waifuclient, typ)(
+                    category, gif=is_gif if not top else None, raw=True, top=top, many=many
+                )
+            except waifuim.APIException as error:
+                if error.status = 404:
+                    return await ctx.send(error.message)
+                else:
+                    raise error
         end = time.perf_counter()
         request_time = round(end - start, 2)
         cleaned_category = "" if typ is None or category is None else category.capitalize()
