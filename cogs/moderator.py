@@ -184,7 +184,7 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
         If 'spam' is in the reason, all the message the member sent in the last 24 hours will be deleted.
         If you want to ban one or multiple users that are not in the guild you should use `massban` command."""
         days = 0
-        if member.guild_permissions.ban_members:
+        if isinstance(member, discord.Member) and member.guild_permissions.ban_members:
             return await ctx.send("Sorry this user also has **Ban Members** permission, "
                                   "therefore I cannot allow you to ban an other staff member")
         if reason and "spam" in reason:
@@ -194,7 +194,7 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
 
     @defaults.ayane_command(name="massban")
     @commands.has_guild_permissions(ban_members=True)
-    async def massban_(self, ctx: AyaneContext, users: commands.Greedy[discord.User], *, reason=None):
+    async def massban_(self, ctx: AyaneContext, users: commands.Greedy[discord.Member, discord.User], *, reason=None):
         """Ban multiple members at once.
         If 'spam' is in the reason, all the message the user sent in the last 24 hours will be deleted."""
 
@@ -244,7 +244,7 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
     async def kick_(self, ctx: AyaneContext, member: discord.Member, *, reason=None):
         """Kick a member"""
         days = 0
-        if member.guild_permissions.kick_members:
+        if isinstance(member, discord.Member) and member.guild_permissions.kick_members:
             return await ctx.send("Sorry this user also has **Kick Members** permission, "
                                   "therefore I cannot allow you to kick an other staff member")
         await self.modutils.kick(member, reason=reason)
@@ -252,7 +252,7 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
 
     @defaults.ayane_command(name="masskick")
     @commands.has_guild_permissions(kick_members=True)
-    async def masskick_(self, ctx: AyaneContext, users: commands.Greedy[discord.User], *, reason=None):
+    async def masskick_(self, ctx: AyaneContext, users: commands.Greedy[discord.Member, discord.User], *, reason=None):
         """Kick multiple users at once."""
         if not users:
             return await ctx.send("You need to specify at least one user who you want me to kick.")
