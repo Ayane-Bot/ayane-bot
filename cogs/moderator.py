@@ -185,7 +185,7 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
         If you want to ban one or multiple users that are not in the guild you should use `massban` command."""
         days = 0
         if isinstance(member, discord.Member) and member.guild_permissions.ban_members:
-            return await ctx.send("Sorry this user also has **Ban Members** permission, "
+            return await ctx.send(f"Sorry **{member}** also has **Ban Members** permission, "
                                   "therefore I cannot allow you to ban an other staff member")
         if reason and "spam" in reason:
             days = 1
@@ -219,14 +219,14 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
 
 
     @defaults.ayane_command(name="softban")
-    @commands.has_guild_permissions(ban_members=True)
+    @commands.has_guild_permissions(kick_members=True)
     async def softban_(self, ctx: AyaneContext, member: discord.Member, *, reason=None):
         """Softban a member
         If 'spam' is in the reason, all the message the user sent in the last 24 hours will be deleted.
         A softban is where the user gets banned but then unbanned right after."""
         days = 0
-        if member.guild_permissions.ban_members:
-            return await ctx.send("Sorry this user also has **Ban Members** permission, "
+        if member.guild_permissions.kick_members:
+            return await ctx.send(f"Sorry **{member}** also has **Kick Members** permission, "
                                   "therefore I cannot allow you to ban an other staff member")
         if reason and "spam" in reason:
             days = 1
@@ -241,7 +241,7 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
         try:
             await self.modutils.unban(ctx.guild, user, reason=reason)
         except discord.NotFound:
-            return await ctx.send("This user was not banned or has already been unbanned.")
+            return await ctx.send(f"**{user}** was not banned or has already been unbanned.")
         await ctx.send(f"**{user.name}** has been unbanned.")
 
     @defaults.ayane_command(name="kick")
@@ -250,7 +250,7 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
         """Kick a member"""
         days = 0
         if member.guild_permissions.kick_members:
-            return await ctx.send("Sorry this user also has **Kick Members** permission, "
+            return await ctx.send(f"Sorry **{member}** also has **Kick Members** permission, "
                                   "therefore I cannot allow you to kick an other staff member")
         await self.modutils.kick(member, reason=reason)
         await ctx.send(f"**{member.name}** has been kicked.")
@@ -274,12 +274,12 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
     async def mute_(self, ctx: AyaneContext, member: discord.Member, *, reason=None):
         """Mute a member"""
         if member.guild_permissions.manage_messages:
-            return await ctx.send("Sorry this user also has **Manage Messages** permission, "
+            return await ctx.send(f"Sorry **{member}** also has **Manage Messages** permission, "
                                   "therefore I cannot allow you to mute an other staff member")
         try:
             await self.modutils.mute(member, reason=reason)
         except AlreadyMuted:
-            return await ctx.send("Sorry this user is already muted.")
+            return await ctx.send(f"Sorry **{member}** is already muted.")
         await ctx.send(f"**{member.name}** has been muted.")
 
     @defaults.ayane_command(name="unmute")
@@ -289,7 +289,7 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
         try:
             await self.modutils.unmute(member, reason=reason)
         except NotMuted:
-            return await ctx.send("Sorry this user was not muted or as already been unmuted.")
+            return await ctx.send(f"Sorry **{member}** was not muted or as already been unmuted.")
         await ctx.send(f"**{member.name}** has been unmuted.")
 
     @defaults.ayane_command(name="timeout")
@@ -305,7 +305,7 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
             return await ctx.send("I couldn't parse your date.")
 
         if member.guild_permissions.moderate_members:
-            return await ctx.send("Sorry this user also has **Moderate Members** permission, "
+            return await ctx.send(f"Sorry **{member}** also has **Moderate Members** permission, "
                                   "therefore I cannot allow you to timeout an other staff member")
         if until and until <= ctx.message.created_at:
             return await ctx.send("Your date is in the past.")
