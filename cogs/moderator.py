@@ -181,7 +181,8 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
     @commands.has_guild_permissions(ban_members=True)
     async def ban_(self, ctx: AyaneContext, member: discord.Member, *, reason=None):
         """Ban a member
-        If 'spam' is in the reason, all the message the user sent in the last 24 hours will be deleted."""
+        If 'spam' is in the reason, all the message the member sent in the last 24 hours will be deleted.
+        If you want to ban one or multiple users that are not in the guild you should use `massban` command."""
         days = 0
         if member.guild_permissions.ban_members:
             return await ctx.send("Sorry this user also has **Ban Members** permission, "
@@ -193,40 +194,24 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
 
     @defaults.ayane_command(name="massban")
     @commands.has_guild_permissions(ban_members=True)
-    async def massban_(self, ctx: AyaneContext, members: commands.Greedy[discord.Member], *, reason=None):
+    async def massban_(self, ctx: AyaneContext, users: commands.Greedy[discord.User], *, reason=None):
         """Ban multiple members at once.
         If 'spam' is in the reason, all the message the user sent in the last 24 hours will be deleted."""
 
-        if members is None:
-            return await ctx.send("You need to specify who you want me to ban.")
+        if not users:
+            return await ctx.send("You need to specify at least one user who you want me to ban.")
 
         days = 0
         if reason and "spam" in reason:
             days = 1
-
-        successful: List[discord.Member] = [] # List of members who we successfully banned
-        failed_perms: List[discord.Member] = [] # List of members who we failed to ban because of permissions
-        failed_internal: List[discord.Member] = [] # List of members who we failed to ban because of an internal error (discord.Forbbiden, discord.HTTPException)
-
-        for member in members:
-            if member.guild_permissions.ban_members: # Permission check
-                failed_perms.append(member)
-                continue
-
+        ban_command = self.bot.get_command("ban")
+        for user in users:
             try:
-                await self.modutils.ban(member.guild, member, reason=reason, delete_message_days=days)
+                await ban_command(ctx, user, reason=reason)
+            except Exception as e:
+                await ctx.send(f"Sorry, I could not ban **{user}**, here is what happened.")
+                await self.bot.get_cog("Events").error_log(ctx,e)
 
-                successful.append(member)
-
-            except (discord.Forbidden, discord.HTTPException):
-                failed_internal.append(member)
-                continue
-
-        text = f"""
-Successfully banned: `{len(successful)}`/`{len(members)}` members{f'for `{reason}`.' if reason else '.'}
-Failed to ban: {', '.join([m.display_name for m in failed_perms + failed_internal]) if failed_perms or failed_internal else 'N/A'}"""
-
-        await ctx.send(text[:2000])
 
     @defaults.ayane_command(name="softban")
     @commands.has_guild_permissions(ban_members=True)
@@ -267,34 +252,17 @@ Failed to ban: {', '.join([m.display_name for m in failed_perms + failed_interna
 
     @defaults.ayane_command(name="masskick")
     @commands.has_guild_permissions(kick_members=True)
-    async def masskick_(self, ctx: AyaneContext, members: commands.Greedy[discord.Member], *, reason=None):
-        """ Kick multiple members at once."""
-        if members is None:
-            return await ctx.send("You need to specify who you want me to kick.")
-
-        successful: List[discord.Member] = []  # List of members who we successfully kicked
-        failed_perms: List[discord.Member] = []  # List of members who we failed to kick because of permissions
-        failed_internal: List[discord.Member] = []  # List of members who we failed to kick because of an internal error (discord.Forbbiden, discord.HTTPException)
-
-        for member in members:
-            if member.guild_permissions.ban_members:  # Permission check
-                failed_perms.append(member)
-                continue
-
+    async def masskick_(self, ctx: AyaneContext, users: commands.Greedy[discord.User], *, reason=None):
+        """Kick multiple users at once."""
+        if not users:
+            return await ctx.send("You need to specify at least one user who you want me to kick.")
+        kick_command = self.bot.get_command("kick")
+        for user in users:
             try:
-                await self.modutils.kick(member, reason=reason)
-
-                successful.append(member)
-
-            except (discord.Forbidden, discord.HTTPException):
-                failed_internal.append(member)
-                continue
-
-        text = f"""
-Successfully kicked: `{len(successful)}`/`{len(members)}` members{f'for `{reason}`.' if reason else '.'}
-Failed to kick: {', '.join([m.display_name for m in failed_perms + failed_internal]) if failed_perms or failed_internal else 'N/A'}"""
-
-        await ctx.send(text[:2000])
+                await kick_command(ctx, user, reason=reason)
+            except Exception as e:
+                await ctx.send(f"Sorry, I could not kick **{user}**, here is what happened.")
+                await self.bot.get_cog("Events").error_log(ctx,e)
 
     @defaults.ayane_command(name="mute")
     @commands.has_guild_permissions(manage_messages=True)
