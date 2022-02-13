@@ -81,7 +81,7 @@ class Ayane(commands.Bot):
             508355356376825868,
             850807820634030130,
         ]
-        self.verified_message_command_guilds = [336642139381301249]
+        self.verified_message_command_guilds = [336642139381301249, 800449566037114892]
         self.verified_slash_command_guilds = []
         print(self.owner_ids)
         self.verified_message_command_user_ids = [*self.owner_ids]
