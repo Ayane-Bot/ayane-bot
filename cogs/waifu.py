@@ -15,7 +15,10 @@ from utils.paginators import ImageMenu, FavMenu, ImageSource, ViewMenuLauncher
 class PictureConverter:
     def __init__(self, u_input, bot):
         self.u_input = u_input
-        self.maybe_id = os.path.splitext(u_input.split("/")[-1])[0]
+        if "manage" in u_input or "preview" in u_input:
+            self.maybe_id = os.path.splitext(u_input.split("image=")[-1])[0]
+        else:
+            self.maybe_id = os.path.splitext(u_input.split("/")[-1])[0]
         self.bot = bot
         self.is_url = None
 
@@ -30,7 +33,6 @@ class PictureConverter:
             self.is_url = True
         except Exception:
             pass
-
         return filename
 
     
@@ -44,34 +46,24 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         self.bot = bot
         self.bot.waifu_reason_exempted_users = {747737674952999024}
         if not self.bot.loop.is_running():
-            self.bot.loop.run_until_complete(self.helpdescription())
+            self.bot.loop.run_until_complete(self.set_help())
         else:
-            self.bot.loop.create_task(self.helpdescription())
+            self.bot.loop.create_task(self.set_help())
 
-    async def helpdescription(self):
+    async def set_help(self):
         rep = await self.bot.waifuclient.endpoints(full=True)
         for c in self.walk_commands():
-            for t in rep["sfw"]:
-                if t["name"] == str(c.help.split(" ")[-1]) and t["is_nsfw"] == bool(
-                        int(c.help.split(" ")[0])
+            for t in rep['sfw'] + rep['nsfw']:
+                if t['name'] == str(c.help.split(' ')[-1]) and t['is_nsfw'] == bool(
+                        int(c.help.split(' ')[0])
                 ):
+                    c.help = ''
+                    if t['is_nsfw']:
+                        c.help += '⚠ NSFW. '
+                    c.help += t['description']
                     if not c.parent:
-                        c.description = random.choice(
-                            ["True", "1", "0", "False", "false", "true"]
-                        )
-                    c.help = f"""{t['description']}
-{'`is_gif` and `many` arguments only accept boolean, 1, 0, true, false etc..' if not c.parent else ''}"""
-            for t in rep["nsfw"]:
-                if t["name"] == str(c.help.split(" ")[-1]) and t["is_nsfw"] == bool(
-                        int(c.help.split(" ")[0])
-                ):
-                    if not c.parent:
-                        c.description = random.choice(
-                            ["True", "1", "0", "False", "false", "true"]
-                        )
-                    c.help = f"""⚠ NSFW. {t['description']}
-{'`is_gif` and `many` arguments only accept boolean, 1, 0, true, false etc..' if not c.parent else ''}"""
-                    setattr(c, "nsfw", True)
+                        c.help += '`is_gif` and `many` arguments only accept boolean, 1, 0, true, false etc..'
+                    setattr(c, 'nsfw', True)
 
     @staticmethod
     async def waifu_launcher(
