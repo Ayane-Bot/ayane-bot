@@ -64,6 +64,8 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
                     if not c.parent:
                         c.help += '`is_gif` and `many` arguments only accept boolean, 1, 0, true, false etc..'
                     setattr(c, 'nsfw', True)
+                    if not c.help:
+                        c.help = None
 
     @staticmethod
     async def waifu_launcher(
