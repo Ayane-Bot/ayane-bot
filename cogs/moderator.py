@@ -210,6 +210,8 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
         not_banned = []
         success = []
         for user in users:
+            if user in not_banned or user in success:
+                continue
             if isinstance(user, discord.Member) and user.guild_permissions.ban_members:
                 not_banned.append(user)
                 continue
@@ -267,6 +269,8 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
         not_kicked = []
         success = []
         for member in members:
+            if member in not_kicked or member in success:
+                continue
             if member.guild_permissions.kick_members:
                 not_kicked.append(member)
                 continue
@@ -275,8 +279,8 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
                 success.append(member)
             except:
                 not_kicked.append(member)
-        await ctx.send(f"Kicked users : {', '.join([f'**{u.name}**' for u in success])}\n\n"
-                       f"The following users couldn't be kicked : {', '.join([f'**{u.name}**' for u in not_kicked])}")
+        await ctx.send(f"Kicked members : {', '.join([f'**{u.name}**' for u in success])}\n\n"
+                       f"The following members couldn't be kicked : {', '.join([f'**{u.name}**' for u in not_kicked])}")
 
     @defaults.ayane_command(name="mute")
     @commands.has_guild_permissions(manage_messages=True)
