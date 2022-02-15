@@ -202,20 +202,24 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
         ):
         """Ban multiple members at once.
         If 'spam' is in the reason, all the message the user sent in the last 24 hours will be deleted."""
-
         if not users:
             return await ctx.send("You need to specify at least one user who you want me to ban.")
-
         days = 0
         if reason and "spam" in reason:
             days = 1
-        ban_command = self.bot.get_command("ban")
+        not_banned = []
+        success = []
         for user in users:
+            if isinstance(user, discord.Member) and user.guild_permissions.ban_members:
+                not_banned.append(user)
+                continue
             try:
-                await ban_command(ctx, user, reason=reason)
-            except Exception as e:
-                await ctx.send(f"Sorry, I could not ban **{user}**, here is what happened.")
-                await self.bot.get_cog("Events").error_log(ctx,e)
+                await self.modutils.ban(ctx.guild, user, reason=reason, delete_message_days=days)
+                success.append(user)
+            except:
+                not_banned.append(user)
+        await ctx.send(f"Banned users : {', '.join([f'**{u.name}**' for u in success])}\n\n"
+                       f"The following users couldn't be banned : {', '.join([f'**{u.name}**' for u in not_banned])}")
 
 
     @defaults.ayane_command(name="softban")
@@ -248,7 +252,6 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
     @commands.has_guild_permissions(kick_members=True)
     async def kick_(self, ctx: AyaneContext, member: discord.Member, *, reason=None):
         """Kick a member"""
-        days = 0
         if member.guild_permissions.kick_members:
             return await ctx.send(f"Sorry **{member}** also has **Kick Members** permission, "
                                   "therefore I cannot allow you to kick an other staff member")
@@ -257,17 +260,23 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
 
     @defaults.ayane_command(name="masskick")
     @commands.has_guild_permissions(kick_members=True)
-    async def masskick_(self, ctx: AyaneContext, users: commands.Greedy[discord.Member], *, reason=None):
-        """Kick multiple users at once."""
-        if not users:
-            return await ctx.send("You need to specify at least one user who you want me to kick.")
-        kick_command = self.bot.get_command("kick")
-        for user in users:
+    async def masskick_(self, ctx: AyaneContext, members: commands.Greedy[discord.Member], *, reason=None):
+        """Kick multiple members at once."""
+        if not members:
+            return await ctx.send("You need to specify at least one member who you want me to kick.")
+        not_kicked = []
+        success = []
+        for member in members:
+            if member.guild_permissions.kick_members:
+                not_kicked.append(member)
+                continue
             try:
-                await kick_command(ctx, user, reason=reason)
-            except Exception as e:
-                await ctx.send(f"Sorry, I could not kick **{user}**, here is what happened.")
-                await self.bot.get_cog("Events").error_log(ctx,e)
+                await self.modutils.kick(member, reason=reason)
+                success.append(member)
+            except:
+                not_kicked.append(member)
+        await ctx.send(f"Kicked users : {', '.join([f'**{u.name}**' for u in success])}\n\n"
+                       f"The following users couldn't be kicked : {', '.join([f'**{u.name}**' for u in not_kicked])}")
 
     @defaults.ayane_command(name="mute")
     @commands.has_guild_permissions(manage_messages=True)
