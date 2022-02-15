@@ -60,7 +60,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
                     c.help = ''
                     if t['is_nsfw']:
                         c.help += '⚠ NSFW. '
-                    c.help += t['description']
+                    c.help += t['description']+'\n'
                     if not c.parent:
                         c.help += '`is_gif` and `many` arguments only accept boolean, 1, 0, true, false etc..'
                     setattr(c, 'nsfw', True)
