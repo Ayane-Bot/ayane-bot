@@ -28,20 +28,22 @@ class PictureConverter:
             rep = await self.bot.session.get(
                 self.u_input, headers={"Referer": "https://pixiv.net"}
             )
-            content = await rep.read()
-            filename = xxhash.xxh3_64_hexdigest(content)
-            self.is_url = True
-        except Exception:
+            if "image" in rep.headers.get("content-type", ""):
+                content = await rep.read()
+                filename = xxhash.xxh3_64_hexdigest(content)
+                self.is_url = True
+        except:
             pass
         return filename
 
-    
+
 def setup(bot):
     bot.add_cog(Waifu(bot))
-    
+
 
 class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot waifu API commands and some others.'):
     """The bot waifu API commands and some others."""
+
     def __init__(self, bot):
         self.bot = bot
         self.bot.waifu_reason_exempted_users = {747737674952999024}
@@ -60,7 +62,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
                     c.help = ''
                     if t['is_nsfw']:
                         c.help += '⚠ NSFW. '
-                    c.help += t['description']+'\n'
+                    c.help += t['description'] + '\n'
                     if not c.parent:
                         c.help += '`is_gif` and `many` arguments only accept boolean, 1, 0, true, false etc..'
                     setattr(c, 'nsfw', True)
