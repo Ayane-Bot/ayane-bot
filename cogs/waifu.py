@@ -56,11 +56,9 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         rep = await self.bot.waifuclient.endpoints(full=True)
         for c in self.walk_commands():
             for t in rep['sfw'] + rep['nsfw']:
-                if t['name'] == str(c.help.split(' ')[-1]) and t['is_nsfw'] == bool(
-                        int(c.help.split(' ')[0])
-                ):
+                if t['name'] == str(c.help.split(' ')[-1]):
                     c.help = ''
-                    if t['is_nsfw']:
+                    if c.help.split(' ')[0]:
                         c.help += '⚠ NSFW. '
                     c.help += t['description'] + '\n'
                     if not c.parent:
@@ -72,35 +70,41 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
     @staticmethod
     async def waifu_launcher(
             ctx,
-            typ,
-            category,
+            is_nsfw=None,
+            selected_tags=None,
+            excluded_tags=None,
             is_gif=None,
             is_ephemeral=False,
-            top=None,
-            many=False
+            order_by=None,
+            many=None,
+            full=None,
+
     ):
         """Used to easily run most of the command for the Waifu cog"""
+        fav_order = "FAVOURITES"
         if ctx.interaction:
             await ctx.interaction.response.defer(ephemeral=is_ephemeral)
         start = time.perf_counter()
-        if typ is None or category is None:
-            r = await getattr(ctx.bot.waifuclient, "random")(
-                gif=is_gif if not top else None, raw=True, top=top, many=many
+        try:
+            r = await ctx.bot.waifuclient.random(
+                selected_tags=selected_tags,
+                excluded_tags=excluded_tags,
+                gif=is_gif if not order_by == fav_order else None,
+                raw=True,
+                order_by=order_by,
+                many=many,
+                full=full,
+                is_nsfw=is_nsfw,
             )
-        else:
-            try:
-                r = await getattr(ctx.bot.waifuclient, typ)(
-                    category, gif=is_gif if not top else None, raw=True, top=top, many=many
-                )
-            except waifuim.APIException as error:
-                if error.status == 404:
-                    return await ctx.send(error.message)
-                else:
-                    raise error
+        except waifuim.APIException as error:
+            if error.status == 404:
+                return await ctx.send(error.message)
+            else:
+                raise error
         end = time.perf_counter()
         request_time = round(end - start, 2)
-        cleaned_category = "" if typ is None or category is None else category.capitalize()
-        category = "Top " + cleaned_category if top else cleaned_category
+        cleaned_category = "" if len(selected_tags) != 1 else selected_tags[0]
+        category = "Top " + cleaned_category if order_by == fav_order else cleaned_category
         category = (
             f"{ctx.invoked_with.capitalize()} best {cleaned_category}"
             if ctx.invoked_with.lower() in ctx.command.aliases
@@ -113,7 +117,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
                     title=category,
                     per_page=1,
                     user=ctx.author,
-                    request_time=None if top else request_time,
+                    request_time=None if order_by == fav_order else request_time,
                 ),
                 ctx=ctx,
                 ephemeral=is_ephemeral,
@@ -126,20 +130,42 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx,
             is_ephemeral: bool = commands.Option(
                 default=False,
-                description="Wether or not you want the message to be ephemeral",
+                description="Whether you want the message to be ephemeral",
             ),
             many: bool = commands.Option(
                 default=None, description="If provided display many images."
             ),
             is_gif: bool = commands.Option(
                 default=None,
-                description="if provided, force or prevent the API to return .gif files.",
+                description="If provided, force or prevent the API to return .gif files.",
             ),
     ):
         """0 waifu"""
         category = "waifu"
         await self.waifu_launcher(
-            ctx, "sfw", category, is_gif=is_gif, is_ephemeral=is_ephemeral, many=many
+            ctx, selected_tags=[category], is_gif=is_gif, is_ephemeral=is_ephemeral, many=many, is_nsfw=False,
+        )
+
+    @defaults.ayane_command()
+    async def hwaifu(
+            self,
+            ctx,
+            is_ephemeral: bool = commands.Option(
+                default=False,
+                description="Whether you want the message to be ephemeral",
+            ),
+            many: bool = commands.Option(
+                default=None, description="If provided display many images."
+            ),
+            is_gif: bool = commands.Option(
+                default=None,
+                description="If provided, force or prevent the API to return .gif files.",
+            ),
+    ):
+        """1 waifu"""
+        category = "waifu"
+        await self.waifu_launcher(
+            ctx, selected_tags=[category], is_gif=is_gif, is_ephemeral=is_ephemeral, many=many, is_nsfw=True,
         )
 
     @defaults.ayane_command(aliases=["proguy", "progirl"])
@@ -148,20 +174,20 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx,
             is_ephemeral: bool = commands.Option(
                 default=False,
-                description="Wether or not you want the message to be ephemeral",
+                description="Whether you want the message to be ephemeral",
             ),
             many: bool = commands.Option(
                 default=None, description="If provided display many images."
             ),
             is_gif: bool = commands.Option(
                 default=None,
-                description="if provided, force or prevent the API to return .gif files.",
+                description="If provided, force or prevent the API to return .gif files.",
             ),
     ):
         """0 maid"""
         category = "maid"
         await self.waifu_launcher(
-            ctx, "sfw", category, is_gif=is_gif, is_ephemeral=is_ephemeral, many=many
+            ctx, selected_tags=[category], is_gif=is_gif, is_ephemeral=is_ephemeral, many=many, is_nsfw=False,
         )
 
     @defaults.ayane_command(description="c19af2c9a399d0a3")
@@ -172,7 +198,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             file_id_or_url,
             is_ephemeral: bool = commands.Option(
                 default=False,
-                description="Wether or not you want the message to be ephemeral",
+                description="Whether you want the message to be ephemeral",
             ),
     ):
         """🔗 Send you the picture related to the ID or the url you provided, if there is matches.
@@ -211,7 +237,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             else tags[0]
         )
 
-        if tag["is_nsfw"]:
+        if matches["images"][0]["is_nsfw"]:
             if not ctx.channel.is_nsfw():
                 raise commands.NSFWChannelRequired(ctx.channel)
 
@@ -251,7 +277,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx,
             is_ephemeral: bool = commands.Option(
                 default=False,
-                description="Wether or not you want the message to be ephemeral",
+                description="Whether you want the message to be ephemeral",
             ),
     ):
         """🔗 Disable all filters."""
@@ -302,7 +328,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
                 )
             else:
                 raise e
-        liste_im = [im for im in images["images"] if not im["tags"][0]["is_nsfw"]]
+        liste_im = [im for im in images["images"] if not im["is_nsfw"]]
         if not liste_im:
             return await ctx.send(
                 "Sorry I cannot display any picture in your gallery because they do not match the current filter."
@@ -341,7 +367,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
                 )
             else:
                 raise e
-        liste_im = [im for im in images["images"] if im["tags"][0]["is_nsfw"]]
+        liste_im = [im for im in images["images"] if im["is_nsfw"]]
         if not liste_im:
             return await ctx.send(
                 "Sorry I cannot display any picture in your gallery because they do not match the current filter."
@@ -363,7 +389,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
     async def top(self, ctx):
         """🔗 Display the top images of a specific tag on the API site.
         to see the list of subcommands (aka tags you can use) see `help top`
-        Little tips, the default tag for an sfw image is `waifu` and the default one for an nsfw image is `ero`"""
+        Little tips, the default tag for a sfw image is `waifu` and the default one for a nsfw image is `ero`"""
         return await ctx.send(
             f"""Sorry you did not provide a valid subcommand, please choose one of the following : {' '.join([f"`{c.name}`" for c in ctx.command.walk_commands()])}."""
         )
@@ -375,16 +401,14 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx,
             is_ephemeral: bool = commands.Option(
                 default=False,
-                description="Wether or not you want the message to be ephemeral",
+                description="Whether or not you want the message to be ephemeral",
             ),
     ):
         """The top Images overall.
         You can report the picture with the report button (if it contains lolis or if the image is not related to the command title for example).
         Abusing this feature will get you blacklisted..
         `is_ephemeral` argument only work with slash commands."""
-        await self.waifu_launcher(
-            ctx, None, None, is_ephemeral=is_ephemeral, top=True, many=True
-        )
+        await self.waifu_launcher(ctx, is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True)
 
     @top.ayane_command(name="waifu")
     async def waifu_(
@@ -392,13 +416,13 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx,
             is_ephemeral: bool = commands.Option(
                 default=False,
-                description="Wether or not you want the message to be ephemeral",
+                description="Whether or not you want the message to be ephemeral",
             ),
     ):
         """0 waifu"""
         category = "waifu"
         await self.waifu_launcher(
-            ctx, "sfw", category, is_ephemeral=is_ephemeral, top=True, many=True
+            ctx, selected_tags=["waifu"], is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True, is_nsfw=True,
         )
 
     @top.ayane_command(name="maid")
@@ -407,13 +431,13 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx,
             is_ephemeral: bool = commands.Option(
                 default=False,
-                description="Wether or not you want the message to be ephemeral",
+                description="Whether or not you want the message to be ephemeral",
             ),
     ):
         """0 maid"""
         category = "maid"
         await self.waifu_launcher(
-            ctx, "sfw", category, is_ephemeral=is_ephemeral, top=True, many=True
+            ctx, selected_tags=["waifu"], is_ephemeral=is_ephemeral, top=True, many=True, is_nsfw=False,
         )
 
     @top.ayane_command(name="ero")
@@ -423,13 +447,13 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx,
             is_ephemeral: bool = commands.Option(
                 default=False,
-                description="Wether or not you want the message to be ephemeral",
+                description="Whether or not you want the message to be ephemeral",
             ),
     ):
         """1 ero"""
         category = "ero"
         await self.waifu_launcher(
-            ctx, "nsfw", category, is_ephemeral=is_ephemeral, top=True, many=True
+            ctx, selected_tags=['ero'], is_ephemeral=is_ephemeral, top=True, many=True, is_nsfw=True,
         )
 
     @top.ayane_command(name="hentai")
@@ -439,7 +463,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx,
             is_ephemeral: bool = commands.Option(
                 default=False,
-                description="Wether or not you want the message to be ephemeral",
+                description="Whether or not you want the message to be ephemeral",
             ),
     ):
         """1 hentai"""
