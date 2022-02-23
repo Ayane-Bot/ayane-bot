@@ -400,7 +400,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """0 waifu"""
         category = "waifu"
         await self.waifu_launcher(
-            ctx, selected_tags=["waifu"], is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True, is_nsfw=True,
+            ctx, selected_tags=["waifu"], is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True, is_nsfw=False,
         )
 
     @top.ayane_command(name="maid")
