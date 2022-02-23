@@ -146,28 +146,6 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx, selected_tags=[category], is_gif=is_gif, is_ephemeral=is_ephemeral, many=many, is_nsfw=False,
         )
 
-    @defaults.ayane_command()
-    async def hwaifu(
-            self,
-            ctx,
-            is_ephemeral: bool = commands.Option(
-                default=False,
-                description="Whether you want the message to be ephemeral",
-            ),
-            many: bool = commands.Option(
-                default=None, description="If provided display many images."
-            ),
-            is_gif: bool = commands.Option(
-                default=None,
-                description="If provided, force or prevent the API to return .gif files.",
-            ),
-    ):
-        """1 waifu"""
-        category = "waifu"
-        await self.waifu_launcher(
-            ctx, selected_tags=[category], is_gif=is_gif, is_ephemeral=is_ephemeral, many=many, is_nsfw=True,
-        )
-
     @defaults.ayane_command(aliases=["proguy", "progirl"])
     async def maid(
             self,
@@ -437,7 +415,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """0 maid"""
         category = "maid"
         await self.waifu_launcher(
-            ctx, selected_tags=["waifu"], is_ephemeral=is_ephemeral, top=True, many=True, is_nsfw=False,
+            ctx, selected_tags=["waifu"], is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True, is_nsfw=False,
         )
 
     @top.ayane_command(name="ero")
@@ -453,7 +431,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """1 ero"""
         category = "ero"
         await self.waifu_launcher(
-            ctx, selected_tags=['ero'], is_ephemeral=is_ephemeral, top=True, many=True, is_nsfw=True,
+            ctx, selected_tags=[category], is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True, is_nsfw=True,
         )
 
     @top.ayane_command(name="hentai")
@@ -469,7 +447,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """1 hentai"""
         category = "hentai"
         await self.waifu_launcher(
-            ctx, "nsfw", category, is_ephemeral=is_ephemeral, top=True, many=True
+            ctx, selected_tags=[category], is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True, is_nsfw=True,
         )
 
     @top.ayane_command(name="paizuri")
@@ -485,7 +463,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """1 paizuri"""
         category = "paizuri"
         await self.waifu_launcher(
-            ctx, "nsfw", category, is_ephemeral=is_ephemeral, top=True, many=True
+            ctx, selected_tags=[category], is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True, is_nsfw=True,
         )
 
     @top.ayane_command(name="ecchi")
@@ -501,11 +479,10 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """1 ecchi"""
         category = "ecchi"
         await self.waifu_launcher(
-            ctx, "nsfw", category, is_ephemeral=is_ephemeral, top=True, many=True
+            ctx, selected_tags=[category], is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True, is_nsfw=True,
         )
 
     @top.ayane_command(aliases=["boobs", "tits"], name="oppai")
-    @commands.is_nsfw()
     async def oppai_(
             self,
             ctx,
@@ -517,7 +494,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """1 oppai"""
         category = "oppai"
         await self.waifu_launcher(
-            ctx, "nsfw", category, is_ephemeral=is_ephemeral, top=True, many=True
+            ctx, selected_tags=[category], is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True, is_nsfw=False,
         )
 
     @top.ayane_command(name="hmaid")
@@ -533,12 +510,12 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """1 maid"""
         category = "maid"
         await self.waifu_launcher(
-            ctx, "nsfw", category, is_ephemeral=is_ephemeral, top=True, many=True
+            ctx, selected_tags=[category], is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True, is_nsfw=True,
         )
 
-    @top.ayane_command(name="uniform")
+    @top.ayane_command(name="huniform")
     @commands.is_nsfw()
-    async def uniform_(
+    async def huniform_(
             self,
             ctx,
             is_ephemeral: bool = commands.Option(
@@ -549,7 +526,22 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """1 uniform"""
         category = "uniform"
         await self.waifu_launcher(
-            ctx, "nsfw", category, is_ephemeral=is_ephemeral, top=True, many=True
+            ctx, selected_tags=[category], is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True, is_nsfw=True,
+        )
+
+    @top.ayane_command(name="uniform")
+    async def uniform_(
+            self,
+            ctx,
+            is_ephemeral: bool = commands.Option(
+                default=False,
+                description="Wether or not you want the message to be ephemeral",
+            ),
+    ):
+        """0 uniform"""
+        category = "uniform"
+        await self.waifu_launcher(
+            ctx, selected_tags=[category], is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True, is_nsfw=False,
         )
 
     @top.ayane_command(name="ass")
@@ -565,7 +557,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """1 ass"""
         category = "ass"
         await self.waifu_launcher(
-            ctx, "nsfw", category, is_ephemeral=is_ephemeral, top=True, many=True
+            ctx, selected_tags=[category], is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True, is_nsfw=True,
         )
 
     @top.ayane_command(name="milf")
@@ -581,10 +573,10 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """1 milf"""
         category = "milf"
         await self.waifu_launcher(
-            ctx, "nsfw", category, is_ephemeral=is_ephemeral, top=True, many=True
+            ctx, selected_tags=[category], is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True, is_nsfw=True,
         )
 
-    @top.ayane_command(name="selfies", aliases=["selfie"])
+    @top.ayane_command(name="hselfies", aliases=["hselfie"])
     @commands.is_nsfw()
     async def selfies_(
             self,
@@ -597,7 +589,21 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """1 selfies"""
         category = "selfies"
         await self.waifu_launcher(
-            ctx, "nsfw", category, is_ephemeral=is_ephemeral, top=True, many=True
+            ctx, selected_tags=[category], is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True, is_nsfw=True,
+        )
+    @top.ayane_command(name="selfies", aliases=["selfie"])
+    async def selfies_(
+            self,
+            ctx,
+            is_ephemeral: bool = commands.Option(
+                default=False,
+                description="Wether or not you want the message to be ephemeral",
+            ),
+    ):
+        """0 selfies"""
+        category = "selfies"
+        await self.waifu_launcher(
+            ctx, selected_tags=[category], is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True, is_nsfw=False,
         )
 
     @top.ayane_command(name="oral")
@@ -613,8 +619,9 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """1 oral"""
         category = "oral"
         await self.waifu_launcher(
-            ctx, "nsfw", category, is_ephemeral=is_ephemeral, top=True, many=True
+            ctx, selected_tags=[category], is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True, is_nsfw=False,
         )
+
 
     """Normal commands"""
 
@@ -638,7 +645,13 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """1 ero"""
         category = "ero"
         await self.waifu_launcher(
-            ctx, "nsfw", category, is_gif=is_gif, is_ephemeral=is_ephemeral, many=many
+            ctx,
+            selected_tags=[category],
+            is_ephemeral=is_ephemeral,
+            order_by="FAVOURITES",
+            many=many,
+            is_gif=is_gif,
+            is_nsfw=True,
         )
 
     @defaults.ayane_command()
@@ -661,7 +674,13 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """1 hentai"""
         category = "hentai"
         await self.waifu_launcher(
-            ctx, "nsfw", category, is_gif=is_gif, is_ephemeral=is_ephemeral, many=many
+            ctx,
+            selected_tags=[category],
+            is_ephemeral=is_ephemeral,
+            order_by="FAVOURITES",
+            many=many,
+            is_gif=is_gif,
+            is_nsfw=True,
         )
 
     @defaults.ayane_command()
@@ -684,7 +703,13 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """1 paizuri"""
         category = "paizuri"
         await self.waifu_launcher(
-            ctx, "nsfw", category, is_gif=is_gif, is_ephemeral=is_ephemeral, many=many
+            ctx,
+            selected_tags=[category],
+            is_ephemeral=is_ephemeral,
+            order_by="FAVOURITES",
+            many=many,
+            is_gif=is_gif,
+            is_nsfw=True,
         )
 
     @defaults.ayane_command()
@@ -707,7 +732,13 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """1 ecchi"""
         category = "ecchi"
         await self.waifu_launcher(
-            ctx, "nsfw", category, is_gif=is_gif, is_ephemeral=is_ephemeral, many=many
+            ctx,
+            selected_tags=[category],
+            is_ephemeral=is_ephemeral,
+            order_by="FAVOURITES",
+            many=many,
+            is_gif=is_gif,
+            is_nsfw=True,
         )
 
     @defaults.ayane_command(
@@ -732,7 +763,13 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """1 oppai"""
         category = "oppai"
         await self.waifu_launcher(
-            ctx, "nsfw", category, is_gif=is_gif, is_ephemeral=is_ephemeral, many=many
+            ctx,
+            selected_tags=[category],
+            is_ephemeral=is_ephemeral,
+            order_by="FAVOURITES",
+            many=many,
+            is_gif=is_gif,
+            is_nsfw=True,
         )
 
     @defaults.ayane_command()
@@ -755,12 +792,18 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """1 maid"""
         category = "maid"
         await self.waifu_launcher(
-            ctx, "nsfw", category, is_gif=is_gif, is_ephemeral=is_ephemeral, many=many
+            ctx,
+            selected_tags=[category],
+            is_ephemeral=is_ephemeral,
+            order_by="FAVOURITES",
+            many=many,
+            is_gif=is_gif,
+            is_nsfw=True,
         )
 
     @defaults.ayane_command()
     @commands.is_nsfw()
-    async def uniform(
+    async def huniform(
             self,
             ctx,
             is_ephemeral: bool = commands.Option(
@@ -778,7 +821,41 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """1 uniform"""
         category = "uniform"
         await self.waifu_launcher(
-            ctx, "nsfw", category, is_gif=is_gif, is_ephemeral=is_ephemeral, many=many
+            ctx,
+            selected_tags=[category],
+            is_ephemeral=is_ephemeral,
+            order_by="FAVOURITES",
+            many=many,
+            is_gif=is_gif,
+            is_nsfw=True,
+        )
+
+    @defaults.ayane_command()
+    async def uniform(
+            self,
+            ctx,
+            is_ephemeral: bool = commands.Option(
+                default=False,
+                description="Wether or not you want the message to be ephemeral",
+            ),
+            many: bool = commands.Option(
+                default=None, description="If provided display many images."
+            ),
+            is_gif: bool = commands.Option(
+                default=None,
+                description="if provided, force or prevent the API to return .gif files.",
+            ),
+    ):
+        """0 uniform"""
+        category = "uniform"
+        await self.waifu_launcher(
+            ctx,
+            selected_tags=[category],
+            is_ephemeral=is_ephemeral,
+            order_by="FAVOURITES",
+            many=many,
+            is_gif=is_gif,
+            is_nsfw=False,
         )
 
     @defaults.ayane_command()
@@ -801,7 +878,13 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """1 ass"""
         category = "ass"
         await self.waifu_launcher(
-            ctx, "nsfw", category, is_gif=is_gif, is_ephemeral=is_ephemeral, many=many
+            ctx,
+            selected_tags=[category],
+            is_ephemeral=is_ephemeral,
+            order_by="FAVOURITES",
+            many=many,
+            is_gif=is_gif,
+            is_nsfw=True,
         )
 
     @defaults.ayane_command()
@@ -824,12 +907,18 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """1 milf"""
         category = "milf"
         await self.waifu_launcher(
-            ctx, "nsfw", category, is_gif=is_gif, is_ephemeral=is_ephemeral, many=many
+            ctx,
+            selected_tags=[category],
+            is_ephemeral=is_ephemeral,
+            order_by="FAVOURITES",
+            many=many,
+            is_gif=is_gif,
+            is_nsfw=True,
         )
 
-    @defaults.ayane_command(aliases=["selfie"])
+    @defaults.ayane_command(aliases=["hselfie"])
     @commands.is_nsfw()
-    async def selfies(
+    async def hselfies(
             self,
             ctx,
             is_ephemeral: bool = commands.Option(
@@ -847,7 +936,42 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """1 selfies"""
         category = "selfies"
         await self.waifu_launcher(
-            ctx, "nsfw", category, is_gif=is_gif, is_ephemeral=is_ephemeral, many=many
+            ctx,
+            selected_tags=[category],
+            is_ephemeral=is_ephemeral,
+            order_by="FAVOURITES",
+            many=many,
+            is_gif=is_gif,
+            is_nsfw=True,
+        )
+
+    @defaults.ayane_command(aliases=["hselfie"])
+    @commands.is_nsfw()
+    async def selfies(
+            self,
+            ctx,
+            is_ephemeral: bool = commands.Option(
+                default=False,
+                description="Wether or not you want the message to be ephemeral",
+            ),
+            many: bool = commands.Option(
+                default=None, description="If provided display many images."
+            ),
+            is_gif: bool = commands.Option(
+                default=None,
+                description="if provided, force or prevent the API to return .gif files.",
+            ),
+    ):
+        """0 selfies"""
+        category = "selfies"
+        await self.waifu_launcher(
+            ctx,
+            selected_tags=[category],
+            is_ephemeral=is_ephemeral,
+            order_by="FAVOURITES",
+            many=many,
+            is_gif=is_gif,
+            is_nsfw=False,
         )
 
     @defaults.ayane_command()
@@ -870,7 +994,13 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """1 oral"""
         category = "oral"
         await self.waifu_launcher(
-            ctx, "nsfw", category, is_gif=is_gif, is_ephemeral=is_ephemeral, many=many
+            ctx,
+            selected_tags=[category],
+            is_ephemeral=is_ephemeral,
+            order_by="FAVOURITES",
+            many=many,
+            is_gif=is_gif,
+            is_nsfw=True,
         )
 
     @defaults.ayane_command(aliases=["stella"])
