@@ -578,7 +578,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
 
     @top.ayane_command(name="hselfies", aliases=["hselfie"])
     @commands.is_nsfw()
-    async def selfies_(
+    async def hselfies_(
             self,
             ctx,
             is_ephemeral: bool = commands.Option(
@@ -945,8 +945,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             is_nsfw=True,
         )
 
-    @defaults.ayane_command(aliases=["hselfie"])
-    @commands.is_nsfw()
+    @defaults.ayane_command(aliases=["selfie"])
     async def selfies(
             self,
             ctx,
