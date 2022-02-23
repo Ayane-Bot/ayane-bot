@@ -669,7 +669,7 @@ class ImageMenu(ViewMenu):
         except waifuim.exceptions.APIException as e:
             if e.status != 404:
                 raise e
-        numberfav = self.image_info["like"]
+        numberfav = self.image_info["favourites"]
         sd_part = "If the image doesn't have any source, and you really want it," \
                   "please use **[Saucenao](https://saucenao.com/)**," \
                   f"Join the [support server]({self.bot.server_invite}) and share us the new source."
@@ -696,7 +696,7 @@ class ImageMenu(ViewMenu):
 class FavMenu(ImageMenu):
 
     @discord.ui.button(
-        emoji="❤️", label="Like or Remove", style=discord.ButtonStyle.grey
+        emoji="❤️", label="Favourite or Remove", style=discord.ButtonStyle.grey
     )
     async def add_to_favourite(
             self, button: discord.ui.Button, interaction: discord.Interaction
