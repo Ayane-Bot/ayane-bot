@@ -103,7 +103,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
                 raise error
         end = time.perf_counter()
         request_time = round(end - start, 2)
-        cleaned_category = "" if len(selected_tags) != 1 else selected_tags[0]
+        cleaned_category = "" if len(selected_tags) != 1 else selected_tags[0].capitalize()
         category = "Top " + cleaned_category if order_by == fav_order else cleaned_category
         category = (
             f"{ctx.invoked_with.capitalize()} best {cleaned_category}"
