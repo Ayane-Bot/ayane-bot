@@ -237,7 +237,7 @@ class Help(defaults.AyaneCog, brief='The bot help command'):
         self.bot: Ayane = bot
         self.bot.help_command = AyaneHelpCommand(
             command_attrs=dict(slash_command=not LOCAL, 
-                               message_command=LOCAL)
+                               message_command=True)
         )
 
     def cog_unload(self) -> None:
