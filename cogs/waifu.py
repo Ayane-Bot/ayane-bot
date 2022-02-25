@@ -438,8 +438,8 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx, selected_tags=[category], is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True, is_nsfw=True,
         )
 
-    @top.ayane_command(aliases=["boobs", "tits"], name="oppai")
-    async def oppai_(
+    @top.ayane_command(aliases=["boobs", "tits", "breast"], name="breast")
+    async def breast_(
             self,
             ctx,
             is_ephemeral: bool = commands.Option(
@@ -447,8 +447,8 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
                 description="Wether or not you want the message to be ephemeral",
             ),
     ):
-        """1 oppai"""
-        category = "oppai"
+        """1 breast"""
+        category = "breast"
         await self.waifu_launcher(
             ctx, selected_tags=[category], is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True, is_nsfw=False,
         )
@@ -740,8 +740,8 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
     @defaults.ayane_command(
         aliases=["boobs", "tits", "perez"],
     )
-    @commands.is_nsfw()
-    async def oppai(
+    @commands.is_nsfw(aliases=["boobs", "tits", "oppai"])
+    async def breast(
             self,
             ctx,
             is_ephemeral: bool = commands.Option(
@@ -756,8 +756,8 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
                 description="if provided, force or prevent the API to return .gif files.",
             ),
     ):
-        """1 oppai"""
-        category = "oppai"
+        """1 breast"""
+        category = "breast"
         await self.waifu_launcher(
             ctx,
             selected_tags=[category],
