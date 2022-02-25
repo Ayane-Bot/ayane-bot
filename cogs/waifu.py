@@ -438,7 +438,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx, selected_tags=[category], is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True, is_nsfw=True,
         )
 
-    @top.ayane_command(aliases=["boobs", "tits", "breast"], name="breast")
+    @top.ayane_command(aliases=["boobs", "tits", "oppai"], name="breast")
     async def breast_(
             self,
             ctx,
@@ -547,6 +547,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         await self.waifu_launcher(
             ctx, selected_tags=[category], is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True, is_nsfw=True,
         )
+
     @top.ayane_command(name="selfies", aliases=["selfie"])
     async def selfies_(
             self,
@@ -577,7 +578,6 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         await self.waifu_launcher(
             ctx, selected_tags=[category], is_ephemeral=is_ephemeral, order_by="FAVOURITES", many=True, is_nsfw=False,
         )
-
 
     """Normal commands"""
 
@@ -740,7 +740,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
     @defaults.ayane_command(
         aliases=["boobs", "tits", "perez"],
     )
-    @commands.is_nsfw()
+    @commands.is_nsfw(aliases=["boobs", "tits", "perez", "oppai"])
     async def breast(
             self,
             ctx,
