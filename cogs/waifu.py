@@ -740,7 +740,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
     @defaults.ayane_command(
         aliases=["boobs", "tits", "perez"],
     )
-    @commands.is_nsfw(aliases=["boobs", "tits", "oppai"])
+    @commands.is_nsfw()
     async def breast(
             self,
             ctx,
