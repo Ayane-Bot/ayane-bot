@@ -124,50 +124,6 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             )
         ).start()
 
-    @defaults.ayane_command()
-    async def waifu(
-            self,
-            ctx,
-            is_ephemeral: bool = commands.Option(
-                default=False,
-                description="Whether you want the message to be ephemeral",
-            ),
-            many: bool = commands.Option(
-                default=None, description="If provided display many images."
-            ),
-            is_gif: bool = commands.Option(
-                default=None,
-                description="If provided, force or prevent the API to return .gif files.",
-            ),
-    ):
-        """0 waifu"""
-        category = "waifu"
-        await self.waifu_launcher(
-            ctx, selected_tags=[category], is_gif=is_gif, is_ephemeral=is_ephemeral, many=many, is_nsfw=False,
-        )
-
-    @defaults.ayane_command(aliases=["proguy", "progirl"])
-    async def maid(
-            self,
-            ctx,
-            is_ephemeral: bool = commands.Option(
-                default=False,
-                description="Whether you want the message to be ephemeral",
-            ),
-            many: bool = commands.Option(
-                default=None, description="If provided display many images."
-            ),
-            is_gif: bool = commands.Option(
-                default=None,
-                description="If provided, force or prevent the API to return .gif files.",
-            ),
-    ):
-        """0 maid"""
-        category = "maid"
-        await self.waifu_launcher(
-            ctx, selected_tags=[category], is_gif=is_gif, is_ephemeral=is_ephemeral, many=many, is_nsfw=False,
-        )
-
     @defaults.ayane_command(description="c19af2c9a399d0a3")
     @commands.cooldown(1, float(3), commands.BucketType.user)
     async def pics(
@@ -625,6 +581,50 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
 
     """Normal commands"""
 
+    @defaults.ayane_command()
+    async def waifu(
+            self,
+            ctx,
+            is_ephemeral: bool = commands.Option(
+                default=False,
+                description="Whether you want the message to be ephemeral",
+            ),
+            many: bool = commands.Option(
+                default=None, description="If provided display many images."
+            ),
+            is_gif: bool = commands.Option(
+                default=None,
+                description="If provided, force or prevent the API to return .gif files.",
+            ),
+    ):
+        """0 waifu"""
+        category = "waifu"
+        await self.waifu_launcher(
+            ctx, selected_tags=[category], is_gif=is_gif, is_ephemeral=is_ephemeral, many=many, is_nsfw=False,
+        )
+
+    @defaults.ayane_command(aliases=["proguy", "progirl"])
+    async def maid(
+            self,
+            ctx,
+            is_ephemeral: bool = commands.Option(
+                default=False,
+                description="Whether you want the message to be ephemeral",
+            ),
+            many: bool = commands.Option(
+                default=None, description="If provided display many images."
+            ),
+            is_gif: bool = commands.Option(
+                default=None,
+                description="If provided, force or prevent the API to return .gif files.",
+            ),
+    ):
+        """0 maid"""
+        category = "maid"
+        await self.waifu_launcher(
+            ctx, selected_tags=[category], is_gif=is_gif, is_ephemeral=is_ephemeral, many=many, is_nsfw=False,
+        )
+
     @defaults.ayane_command(aliases=["dank"])
     @commands.is_nsfw()
     async def ero(
@@ -648,7 +648,6 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx,
             selected_tags=[category],
             is_ephemeral=is_ephemeral,
-            order_by="FAVOURITES",
             many=many,
             is_gif=is_gif,
             is_nsfw=True,
@@ -677,7 +676,6 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx,
             selected_tags=[category],
             is_ephemeral=is_ephemeral,
-            order_by="FAVOURITES",
             many=many,
             is_gif=is_gif,
             is_nsfw=True,
@@ -706,7 +704,6 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx,
             selected_tags=[category],
             is_ephemeral=is_ephemeral,
-            order_by="FAVOURITES",
             many=many,
             is_gif=is_gif,
             is_nsfw=True,
@@ -735,7 +732,6 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx,
             selected_tags=[category],
             is_ephemeral=is_ephemeral,
-            order_by="FAVOURITES",
             many=many,
             is_gif=is_gif,
             is_nsfw=True,
@@ -766,7 +762,6 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx,
             selected_tags=[category],
             is_ephemeral=is_ephemeral,
-            order_by="FAVOURITES",
             many=many,
             is_gif=is_gif,
             is_nsfw=True,
@@ -795,7 +790,6 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx,
             selected_tags=[category],
             is_ephemeral=is_ephemeral,
-            order_by="FAVOURITES",
             many=many,
             is_gif=is_gif,
             is_nsfw=True,
@@ -824,7 +818,6 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx,
             selected_tags=[category],
             is_ephemeral=is_ephemeral,
-            order_by="FAVOURITES",
             many=many,
             is_gif=is_gif,
             is_nsfw=True,
@@ -852,7 +845,6 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx,
             selected_tags=[category],
             is_ephemeral=is_ephemeral,
-            order_by="FAVOURITES",
             many=many,
             is_gif=is_gif,
             is_nsfw=False,
@@ -881,7 +873,6 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx,
             selected_tags=[category],
             is_ephemeral=is_ephemeral,
-            order_by="FAVOURITES",
             many=many,
             is_gif=is_gif,
             is_nsfw=True,
@@ -910,7 +901,6 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx,
             selected_tags=[category],
             is_ephemeral=is_ephemeral,
-            order_by="FAVOURITES",
             many=many,
             is_gif=is_gif,
             is_nsfw=True,
@@ -939,7 +929,6 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx,
             selected_tags=[category],
             is_ephemeral=is_ephemeral,
-            order_by="FAVOURITES",
             many=many,
             is_gif=is_gif,
             is_nsfw=True,
@@ -967,7 +956,6 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx,
             selected_tags=[category],
             is_ephemeral=is_ephemeral,
-            order_by="FAVOURITES",
             many=many,
             is_gif=is_gif,
             is_nsfw=False,
@@ -996,7 +984,6 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx,
             selected_tags=[category],
             is_ephemeral=is_ephemeral,
-            order_by="FAVOURITES",
             many=many,
             is_gif=is_gif,
             is_nsfw=True,
