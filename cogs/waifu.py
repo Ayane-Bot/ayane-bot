@@ -55,7 +55,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
     async def set_help(self):
         rep = await self.bot.waifuclient.endpoints(full=True)
         for c in self.walk_commands():
-            for t in rep['versatile'] + rep['nsfw']:
+            for t in rep['versatil'] + rep['nsfw']:
                 if t['name'] == str(c.help.split(' ')[-1]):
                     c.help = ''
                     if c.help.split(' ')[0]:
