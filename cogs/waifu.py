@@ -57,8 +57,9 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         for c in self.walk_commands():
             for t in rep['versatile'] + rep['nsfw']:
                 if t['name'] == str(c.help.split(' ')[-1]):
+                    is_nsfw = c.help.split(' ')[0]
                     c.help = ''
-                    if c.help.split(' ')[0]:
+                    if is_nsfw:
                         c.help += '⚠ NSFW. '
                     c.help += t['description'] + '\n'
                     if not c.parent:
