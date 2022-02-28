@@ -347,7 +347,6 @@ class ViewMenu(BaseView):
         max_page = self.source.get_max_pages()
         try:
             if max_page is None:
-                # If it doesn't give maximum pages, it cannot be checked
                 await self.show_page(page_number)
             elif page_number >= max_page:
                 await self.show_page(max_page - 1)
@@ -356,7 +355,6 @@ class ViewMenu(BaseView):
             elif max_page > page_number >= 0:
                 await self.show_page(page_number)
         except IndexError:
-            # An error happened that can be handled, so ignore it.
             pass
 
     async def start(self):
@@ -429,7 +427,6 @@ class ViewMenu(BaseView):
             self, button: discord.ui.Button, interaction: discord.Interaction
     ):
         """go to the last page"""
-        # The call here is safe because it's guarded by skip_if
         await self.show_page(self.source.get_max_pages() - 1)
 
     @discord.ui.button(
