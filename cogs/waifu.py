@@ -57,7 +57,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         for c in self.walk_commands():
             for t in rep['versatile'] + rep['nsfw']:
                 if t['name'] == str(c.help.split(' ')[-1]):
-                    is_nsfw = c.help.split(' ')[0]
+                    is_nsfw = bool(int(c.help.split(' ')[0]))
                     c.help = ''
                     if is_nsfw:
                         c.help += '⚠ NSFW. '
@@ -990,7 +990,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             is_nsfw=True,
         )
 
-    @defaults.ayane_command(aliases=["stella"])
+    @defaults.ayane_command(aliases=["stella"], enabled=False)
     async def femboy(self, ctx):
         """Get a femboy image from api.shiro.gg"""
         start = time.perf_counter()
