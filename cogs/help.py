@@ -150,12 +150,12 @@ class AyaneHelpCommand(commands.HelpCommand):
             embed = discord.Embed(colour=self.context.bot.colour)
             if group:
                 embed.title = f"{cog_or_group.qualified_name.capitalize()}"
-                embed.description = f"Use `{self.context.clean_prefix}help <subcommand>`" \
+                embed.description = f"Use `{self.context.clean_prefix}help <subcommand>` " \
                                     f"for more information about a subcommand.\n\n" \
                                     f"{cog_or_group.help or 'No help provided.'}\n\n{com_description}"
             else:
                 embed.title = f"{cog_or_group.emoji} {cog_or_group.qualified_name.capitalize()}"
-                embed.description = f"Use `{self.context.clean_prefix}help <command>`" \
+                embed.description = f"Use `{self.context.clean_prefix}help <command>` " \
                                     f"for more information about a command.\n\n" \
                                     f"{com_description}"
 
