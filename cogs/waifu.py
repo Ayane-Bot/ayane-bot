@@ -154,7 +154,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         file_id = await converter.url_to_id()
         start = time.perf_counter()
         try:
-            matches = await self.bot.waifuclient.info(images=[file_id])
+            matches = await self.bot.waifuclient.info([file_id], raw=True)
         except waifuim.APIException as e:
             if e.status == 404:
                 embed = discord.Embed(title="❌ File not found",
