@@ -517,17 +517,8 @@ class ImageMenu(ViewMenu):
             usersdict[user.id] += 1
 
     async def editfav(self, image_name, image, user):
-        t = await self.bot.waifuclient.fav(user_id=user.id, toggle=[image_name])
-        inserted = image_name in t.get("inserted") and image_name not in t.get(
-            "deleted"
-        )
-        deleted = image_name in t.get("deleted") and image_name not in t.get("inserted")
-        if inserted:
-            mes = "**added** to"
-        elif deleted:
-            mes = "**removed** from"
-        else:
-            raise RuntimeError("The image is not in either inserted or deleted")
+        t = await self.bot.waifuclient.fav_toggle(user_id=user.id, image=image_name)
+        mes = "**added to**" if t["state"] == "INSERTED" else "**removed from**"
         return f"Alright **{user.name}**, the [image](https://{APIDomainName}/preview/?image={image}), " \
                f"has successfully been {mes} your Gallery.\n" \
                f"You can look at your Gallery [here](https://{APIDomainName}/fav/) " \
