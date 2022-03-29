@@ -11,6 +11,11 @@ from utils.constants import APIDomainName
 from utils.exceptions import NotAuthorized, LimitReached, UserBlacklisted
 from utils.lock import UserLock
 
+
+def getcustomid():
+    return f"Ayane_{os.urandom(32).hex()}_author_check"
+
+
 class BaseSource(menus.ListPageSource):
     """Subclassing to change the way some method where coded
     (ex: get_max_pages not giving 'current' max pages)."""
@@ -83,26 +88,21 @@ class ImageSource(BaseSource):
 class BaseView(discord.ui.View):
     def __init__(
             self,
-            ctx=None,
+            *,
+            main_interaction,
             delete_after=True,
             ephemeral=False,
             check_embeds=True,
-            main_interaction=None,
             timeout=840,
             **kwargs,
     ):
         super().__init__(timeout=timeout, **kwargs)
-        if not ctx:
-            raise TypeError("ctx is a required argument")
-        self.ctx: commands.Context = ctx
-        self.bot = self.ctx.bot
+        self.main_interaction = main_interaction
+        self.bot = self.main_interaction.client
         self.delete_after = delete_after
         self.check_embeds = check_embeds
         self.asked_for_ephemeral = ephemeral
-        self.main_interaction = (
-            main_interaction if main_interaction else self.ctx.interaction
-        )
-        self.ephemeral = ephemeral if self.main_interaction else False
+        self.ephemeral = ephemeral
         self.lock = None
         self.message = None
         self.no_author_check = []
@@ -122,21 +122,26 @@ class BaseView(discord.ui.View):
         try:
             if (self.delete_after or not timed_out) and not self.ephemeral:
                 await self.message.delete()
-            await self.ctx.message.add_reaction("<:verified_purple:840584369294671902>")
         except discord.DiscordException:
             pass
 
-    async def interaction_check(self, item, interaction):
+    def init_custom_id(self):
+        for child in self.children:
+            if child.custom_id == "True":
+                child.custom_id = getcustomid()
+
+    async def interaction_check(self, interaction):
         reason = await self.bot.is_blacklisted(interaction.user)
         if reason:
             raise UserBlacklisted(interaction.user, reason=reason[0])
+        custom_id = str(interaction.data.get("custom_id"))
         if (
-                item not in self.no_author_check
+                custom_id.endswith("author_check")
                 and interaction.user
                 and interaction.user.id
                 not in {
             self.bot.owner_id,
-            self.ctx.author.id,
+            self.main_interaction.user.id,
             *self.bot.owner_ids,
         }
         ):
@@ -144,32 +149,18 @@ class BaseView(discord.ui.View):
         return True
 
     async def send_view(self, *args, **kwargs):
-
-        if self.main_interaction:
-            if self.main_interaction.response.is_done():
-                return await self.main_interaction.edit_original_message(
-                    *args, **kwargs, view=self
-                )
-            else:
-                await self.main_interaction.response.send_message(
-                    *args,
-                    **kwargs,
-                    ephemeral=self.ephemeral,
-                    view=self
-                )
-            return await self.main_interaction.original_message()
-
-        ref = (
-            self.ctx.message.reference.resolved if self.ctx.message.reference else None
+        self.init_custom_id()
+        if self.main_interaction.response.is_done():
+            return await self.main_interaction.edit_original_message(
+                *args, **kwargs, view=self
+            )
+        await self.main_interaction.response.send_message(
+            *args,
+            **kwargs,
+            ephemeral=self.ephemeral,
+            view=self
         )
-        if ref:
-            if isinstance(ref, discord.DeletedReferencedMessage):
-                ref = None
-        return (
-            await self.ctx.send(*args, **kwargs, view=self)
-            if not ref
-            else await ref.reply(*args, **kwargs, view=self)
-        )
+        return await self.main_interaction.original_message()
 
     async def on_timeout(self):
         await self.stop_paginator(timed_out=True)
@@ -211,59 +202,6 @@ class BaseView(discord.ui.View):
             )
         else:
             await send_unexpected_error(self.ctx, error, user=interaction.user, interaction=interaction, ephemeral=True)
-
-
-class ViewMenuLauncher(BaseView):
-    def __init__(self, viewmenu=None, **kwargs):
-        self.result = False
-        self.viewmenu = viewmenu
-        self.ctx = self.viewmenu.ctx
-        super().__init__(ctx=self.ctx, timeout=30, **kwargs)
-
-    async def disable(self):
-        self.confirm.disabled = True
-        self.remove_item(self.delete)
-        await self.message.edit(
-            view=self,
-            content="This message will disappear once you **properly** close the paginator,"
-                    "use the stop (square or dustbin) button to do so.",
-        )
-
-    @discord.ui.button(emoji="✅", style=discord.ButtonStyle.grey)
-    async def confirm(
-            self, button: discord.ui.Button, interaction: discord.Interaction
-    ):
-        """go to the first page"""
-        self.viewmenu.main_interaction = interaction
-        self.viewmenu.ephemeral = True
-        self.result = True
-        await self.viewmenu.start()
-        await self.disable()
-        await self.viewmenu.wait()
-        await self.stop_paginator()
-
-    @discord.ui.button(emoji="<:dust_bin:825400669867081818>", style=discord.ButtonStyle.grey)
-    async def delete(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await self.stop_paginator()
-
-    async def on_timeout(self):
-        if not self.result:
-            await self.stop_paginator()
-
-    async def start(self):
-        if self.viewmenu.asked_for_ephemeral and not self.viewmenu.main_interaction:
-            self.lock = UserLock(
-                self.ctx.author,
-                error_message=f"I am already waiting for you to choose one of the"
-                              f"2 buttons for the `{self.ctx.command.name}` command.",
-            )
-            async with self.lock(self.bot):
-                self.message = await self.ctx.send(
-                    f"Click ✅ to get your ephemeral message ! (you have {humanize.time.precisedelta(int(self.timeout))})\n{f'⚠ Be careful this command may contain age-restricted content. <:YuriLaugh:846478037435809852>' if hasattr(self.ctx.command, 'nsfw') or hasattr(self.ctx, 'nsfw') else ''}",
-                    view=self,
-                )
-        else:
-            await self.viewmenu.start()
 
 
 class ViewMenu(BaseView):
@@ -359,10 +297,15 @@ class ViewMenu(BaseView):
 
     async def start(self):
         if (
-                self.check_embeds
-                and not self.ctx.channel.permissions_for(self.ctx.me).embed_links
+                self.check_embeds and self.main_interaction.guild
+                and not self.main_interaction.channel.permissions_for(self.main_interaction.guild.me).embed_links
         ):
-            await self.ctx.send(
+            if self.main_interaction.response.is_done():
+                await self.main_interaction.followup.send(
+                    "Bot does not have embed links permission in this channel."
+                )
+                return
+            await self.main_interaction.response.send_message(
                 "Bot does not have embed links permission in this channel."
             )
             return
@@ -375,9 +318,10 @@ class ViewMenu(BaseView):
     @discord.ui.button(
         emoji="<:first_track:840584439830544434>",
         style=discord.ButtonStyle.grey,
+        custom_id="True",
     )
     async def go_to_first_page(
-            self, button: discord.ui.Button, interaction: discord.Interaction
+            self, button: discord.ui.Button, interaction: discord.Interaction,
     ):
         """go to the first page"""
         await self.show_page(0)
@@ -385,6 +329,7 @@ class ViewMenu(BaseView):
     @discord.ui.button(
         emoji="<:before_track:840584439817699348>",
         style=discord.ButtonStyle.grey,
+        custom_id="True",
     )
     async def go_to_previous_page(
             self, button: discord.ui.Button, interaction: discord.Interaction
@@ -396,6 +341,7 @@ class ViewMenu(BaseView):
         row=1,
         emoji="<:stop_track:840584439825825802>",
         style=discord.ButtonStyle.grey,
+        custom_id="True",
     )
     async def stop_pages(
             self, button: discord.ui.Button, interaction: discord.Interaction
@@ -412,6 +358,7 @@ class ViewMenu(BaseView):
     @discord.ui.button(
         emoji="<:next_track:840584439813242951>",
         style=discord.ButtonStyle.grey,
+        custom_id="True",
     )
     async def go_to_next_page(
             self, button: discord.ui.Button, interaction: discord.Interaction
@@ -422,6 +369,7 @@ class ViewMenu(BaseView):
     @discord.ui.button(
         emoji="<:last_track:840584439813373972>",
         style=discord.ButtonStyle.grey,
+        custom_id="True",
     )
     async def go_to_last_page(
             self, button: discord.ui.Button, interaction: discord.Interaction
@@ -433,6 +381,7 @@ class ViewMenu(BaseView):
         row=1,
         label="Skip to page...",
         style=discord.ButtonStyle.success,
+        custom_id="True",
     )
     async def numbered_page(
             self, button: discord.ui.Button, interaction: discord.Interaction
@@ -497,7 +446,6 @@ class ImageMenu(ViewMenu):
         self.current_page: int = 0
         self.clear_items()
         self.add_all_items()
-        self.no_author_check = [self.add_to_favourite, self.informations]
 
     def add_all_items(self) -> None:
         super().add_all_items()
@@ -524,7 +472,7 @@ class ImageMenu(ViewMenu):
                f"You can look at your Gallery [here](https://{APIDomainName}/fav/) " \
                "after logging in with your discord account, or by using the `favourite` command. "
 
-    @discord.ui.button(emoji="⚠", label="Report", style=discord.ButtonStyle.grey)
+    @discord.ui.button(emoji="⚠", label="Report", style=discord.ButtonStyle.grey,custom_id="True",)
     async def report(
             self, button: discord.ui.Button, interaction: discord.Interaction
     ):
@@ -544,7 +492,7 @@ class ImageMenu(ViewMenu):
                 colour=discord.Colour.random(),
                 description=f"**Please read carefully !**\nHi **{interaction.user.name}**, you "
                             f"have **{humanize.time.precisedelta(timeout_verif)}** to send me a message "
-                            "containing your description of the problem.\nPlease report the image if it " 
+                            "containing your description of the problem.\nPlease report the image if it "
                             "__contains lolis__ or if it is __not related to the command title__.\n"
                             "After this time the operation will be aborted.\n"
                             "If you want to get back on your decision send `cancel`.\n\n"
@@ -556,6 +504,7 @@ class ImageMenu(ViewMenu):
                 while True:
                     def check_u(msg):
                         return interaction.user.id == msg.author.id and msg.channel.id == self.ctx.channel.id
+
                     try:
                         message_user = await self.bot.wait_for("message", timeout=float(timeout_verif), check=check_u)
                     except asyncio.TimeoutError:
@@ -576,7 +525,7 @@ class ImageMenu(ViewMenu):
                                 ephemeral=True
                             )
                             continue
-                        report_desc = message_user.content.replace(f'<@{self.bot.user.id}>','').replace(
+                        report_desc = message_user.content.replace(f'<@{self.bot.user.id}>', '').replace(
                             f'<@!{self.bot.user.id}>',
                             ''
                         )
@@ -612,6 +561,7 @@ class ImageMenu(ViewMenu):
     @discord.ui.button(
         emoji="<:dust_bin:825400669867081818>",
         style=discord.ButtonStyle.grey,
+        custom_id="True",
     )
     async def delete(self, button: discord.ui.Button, interaction: discord.Interaction):
         if self.lock and self.lock.locked():
