@@ -8,7 +8,7 @@ from discord.ext import commands, menus
 import os
 
 from utils.constants import APIDomainName
-from utils.modals import ActionModal
+from utils.modals import ReportModal
 from utils.exceptions import NotAuthorized, LimitReached, UserBlacklisted, NotOwner
 from utils.lock import UserLock
 
@@ -359,51 +359,7 @@ class ViewMenu(BaseView):
     )
     async def numbered_page(self, interaction: discord.Interaction, button: discord.ui.Button):
         """lets you type a page number to go to"""
-        if self.lock and self.lock.locked():
-            await interaction.response.send_message(
-                "I am already waiting for your response...", ephemeral=True
-            )
-            return
-
-        if self.message is None:
-            return
-        self.lock = UserLock(interaction.user)
-        async with self.lock(self.bot):
-            channel = self.message.channel
-            author_id = interaction.user and interaction.user.id
-            await interaction.response.send_message(
-                "Please give me the page number you want to go or cancel with `cancel`.",
-                ephemeral=True,
-            )
-
-            def message_check(m):
-                return m.author.id == author_id and channel.id == m.channel.id
-
-            while True:
-                try:
-                    msg = await self.bot.wait_for(
-                        "message", check=message_check, timeout=30.0
-                    )
-                except asyncio.TimeoutError:
-                    return await interaction.followup.send(
-                        "Operation has been canceled", ephemeral=True
-                    )
-                else:
-                    if msg.content.lower() == "cancel":
-                        return await interaction.followup.send(
-                            "The operation has been canceled", ephemeral=True
-                        )
-                    if not msg.content.isdigit():
-                        continue
-                    page = int(msg.content)
-                    maxpage = self.source.get_max_pages()
-                    if page > maxpage:
-                        page = maxpage
-
-                    if page < 1:
-                        page = 1
-
-                    return await self.show_checked_page(page - 1)
+        await interaction.response.send_modal(PagePromptModal(view=self,))
 
 
 class ImageMenu(ViewMenu):
@@ -446,72 +402,7 @@ class ImageMenu(ViewMenu):
 
     @discord.ui.button(emoji="⚠", label="Report", style=discord.ButtonStyle.grey, custom_id="True", )
     async def report(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if self.lock and self.lock.locked():
-            return await interaction.response.send_message("I am already waiting for your response...", ephemeral=True)
-        if interaction.user.id in {*self.bot.waifu_reason_exempted_users, self.bot.owner_id, *self.bot.owner_ids}:
-            desc = "Owner report." if interaction.user.id in self.bot.owner_ids else "No reason required for this user."
-            await self.bot.waifu_client.report(self.image_info.file, user_id=interaction.user.id, description=desc)
-            await interaction.response.send_message(
-                "Your report has successfully been sent. Thank you for your help!",
-                ephemeral=True,
-            )
-        else:
-            timeout_verif = 45
-            embed = discord.Embed(
-                title="Can you describe me the problem with this image ?",
-                colour=discord.Colour.random(),
-                description=f"**Please read carefully !**\nHi **{interaction.user.name}**, you "
-                            f"have **{humanize.time.precisedelta(timeout_verif)}** to send me a message "
-                            "containing your description of the problem.\nPlease report the image if it "
-                            "__contains lolis__ or if it is __not related to the command title__.\n"
-                            "After this time the operation will be aborted.\n"
-                            "If you want to get back on your decision send `cancel`.\n\n"
-                            "⚠ You will need to **mention me** for discord to let me access the message content.",
-            )
-            await interaction.response.send_message(embed=embed, ephemeral=True)
-            self.lock = UserLock(interaction.user)
-            async with self.lock(self.bot):
-                while True:
-                    def check_u(msg):
-                        return interaction.user.id == msg.author.id and msg.channel.id == self.ctx.channel.id
-
-                    try:
-                        message_user = await self.bot.wait_for("message", timeout=float(timeout_verif), check=check_u)
-                    except asyncio.TimeoutError:
-                        return await interaction.followup.send(
-                            "You took too much time to respond, the operation has been canceled.",
-                            ephemeral=True,
-                        )
-                    else:
-                        if (await self.bot.get_context(message_user)).valid:
-                            print("test")
-                            continue
-                        if "cancel" == message_user.content.lower():
-                            return await interaction.followup.send("The operation has been canceled.", ephemeral=True)
-                        if len(message_user.content) > 200:
-                            await interaction.followup.send(
-                                "Your reason is to big, please send a shorter description.",
-                                ephemeral=True
-                            )
-                            continue
-                        report_desc = message_user.content.replace(f'<@{self.bot.user.id}>', '').replace(
-                            f'<@!{self.bot.user.id}>',
-                            ''
-                        )
-                        await self.bot.waifu_client.report(
-                            self.image_info.file,
-                            user_id=interaction.user.id,
-                            description=report_desc.strip(" "),
-                        )
-                        await interaction.followup.send(
-                            "Your report has successfully been sent. Thank you for your help!",
-                            ephemeral=True,
-                        )
-                        break
-        self.source.remove(self.current_page)
-        if not self.source.entries:
-            await self.stop_paginator()
-        return await self.show_checked_page(self.current_page)
+        await interaction.response.send_modal(ReportModal(view=self))
 
     @discord.ui.button(emoji="❤", style=discord.ButtonStyle.grey)
     async def add_to_favourite(self, interaction: discord.Interaction, button: discord.ui.Button):
