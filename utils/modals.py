@@ -1,11 +1,14 @@
 import discord
 
-class BaseModal(discord.ui.Modal)
-    def __init__(self, *,  view, title="No Title", **kwargs):
+
+class BaseModal(discord.ui.Modal):
+    def __init__(self, *, view, title="No Title", **kwargs):
         super().__init__(title=title, **kwargs)
         self.view = view
-    async def on_error(self, error: Exception, interaction: Interaction) -> None:
+
+    async def on_error(self, error: Exception, interaction) -> None:
         await self.view.on_error(error, None, interaction)
+
 
 class ReportModal(BaseModal):
     def __init__(self, **kwargs):
@@ -37,7 +40,7 @@ class PagePrompterModal(BaseModal):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.max_page = self.view.source.get_max_page() - 1
-        self.title=f"Select a page number between 1 and {self.max_page}"
+        self.title = f"Select a page number between 1 and {self.max_page}"
         self.page = discord.ui.TextInput(
             "Page",
             min_length=1,
@@ -49,4 +52,4 @@ class PagePrompterModal(BaseModal):
             page = int(self.page.value)
         except ValueError:
             return await interaction.response.send_message(f"{self.page.value} is not a valid page")
-        await self.view.show_checked_page(int(self.page.value))
+        await self.view.show_checked_page(page)

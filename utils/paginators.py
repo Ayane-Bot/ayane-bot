@@ -1,14 +1,11 @@
-import asyncio
-
 import discord
-import humanize.time
 import waifuim
 from discord.ext import commands, menus
 
 import os
 
 from utils.constants import APIDomainName
-from utils.modals import ReportModal
+from utils.modals import ReportModal, PagePrompterModal
 from utils.exceptions import NotAuthorized, LimitReached, UserBlacklisted, NotOwner
 from utils.lock import UserLock
 
@@ -359,7 +356,7 @@ class ViewMenu(BaseView):
     )
     async def numbered_page(self, interaction: discord.Interaction, button: discord.ui.Button):
         """lets you type a page number to go to"""
-        await interaction.response.send_modal(PagePromptModal(view=self,))
+        await interaction.response.send_modal(PagePrompterModal(view=self))
 
 
 class ImageMenu(ViewMenu):
