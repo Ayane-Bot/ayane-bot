@@ -2,6 +2,7 @@ import datetime
 from utils.exceptions import AlreadyMuted, NotMuted
 import discord
 
+
 class ModUtils:
     def __init__(self, reason_format: str = "You have been $action from **$guild**\n```Reason: $reason```"):
         self.reason_format = reason_format
@@ -22,7 +23,7 @@ class ModUtils:
         return role
 
     def format_sanction_reason(self, guild, reason, action):
-        return self.reason_format.replace("$action", action).replace("$reason", reason).replace("$guild",guild.name)
+        return self.reason_format.replace("$action", action).replace("$reason", reason).replace("$guild", guild.name)
 
     async def ban(self, guild, user, reason=None, delete_message_days=1):
         await guild.ban(user, reason=reason, delete_message_days=delete_message_days)
@@ -30,6 +31,7 @@ class ModUtils:
             await user.send(self.format_sanction_reason(guild, str(reason), "Banned"))
         except discord.HTTPException:
             pass
+
     async def unban(self, guild, user, reason=None):
         await guild.unban(user, reason=reason)
         try:
@@ -37,7 +39,7 @@ class ModUtils:
         except discord.HTTPException:
             pass
 
-    async def kick(self, member, reason=None ,delete_last_day=False, bypass_staff=False):
+    async def kick(self, member, reason=None, delete_last_day=False, bypass_staff=False):
         if member.guild.get_member(member.id):
             await member.kick(reason=reason)
             try:
@@ -56,7 +58,7 @@ class ModUtils:
             role = await self.set_muted_role(member.guild)
             if role in member.roles:
                 raise AlreadyMuted
-            await member.add_roles(role ,reason=reason)
+            await member.add_roles(role, reason=reason)
             try:
                 await member.send(self.format_sanction_reason(member.guild, str(reason), "Muted"))
             except discord.HTTPException:
@@ -67,7 +69,7 @@ class ModUtils:
                 await self.purge(member.guild.text_channels,
                                  after=discord.utils.utcnow() - datetime.timedelta(days=1),
                                  user=member,
-                )
+                                 )
 
     async def unmute(self, member, reason=None):
         if member.guild.get_member(member.id):
@@ -83,19 +85,21 @@ class ModUtils:
             for category in member.guild.categories:
                 await category.set_permissions(role, send_messages=False, connect=False)
 
-    async def purge(self,channels, limit=None, after=None, user=None, original_message = None):
+    async def purge(self, channels, limit=None, after=None, user=None, original_message=None):
         if isinstance(channels, discord.abc.Messageable):
-            channels=[channels]
+            channels = [channels]
 
         total = []
+
         def check(m):
-                if not user and original_message:
-                    return m.id != original_message.id
-                elif user and not original_message:
-                    return m.author.id == user.id
-                elif user and original_message:
-                    return m.author.id == user.id and m.id != original_message.id
-                return True
+            if not user and original_message:
+                return m.id != original_message.id
+            elif user and not original_message:
+                return m.author.id == user.id
+            elif user and original_message:
+                return m.author.id == user.id and m.id != original_message.id
+            return True
+
         for channel in channels:
             bulk = True
             if (user and user.id == channel.guild.me.id and not channel.permissions_for(
@@ -109,7 +113,3 @@ class ModUtils:
             except discord.HTTPException:
                 pass
         return total
-
-
-
-

@@ -9,7 +9,7 @@ from discord.ext import commands
 
 from utils import defaults
 from utils.exceptions import APIServerError
-from utils.paginators import ImageMenu, FavMenu, ImageSource, ViewMenuLauncher
+from utils.paginators import is_image_menu, FavMenu, ImageSource, ViewMenuLauncher
 
 
 class PictureConverter:
@@ -53,7 +53,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             self.bot.loop.create_task(self.set_help())
 
     async def set_help(self):
-        rep = await self.bot.waifuclient.endpoints(full=True)
+        rep = await self.bot.waifu_client.endpoints(full=True)
         for c in self.walk_commands():
             for t in rep['versatile'] + rep['nsfw']:
                 if t['name'] == str(c.help.split(' ')[-1]):
@@ -87,7 +87,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             await ctx.interaction.response.defer(ephemeral=is_ephemeral)
         start = time.perf_counter()
         try:
-            r = await ctx.bot.waifuclient.random(
+            r = await ctx.bot.waifu_client.random(
                 selected_tags=selected_tags,
                 excluded_tags=excluded_tags,
                 gif=is_gif if not order_by == fav_order else None,
@@ -112,7 +112,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             else category
         )
         await ViewMenuLauncher(
-            viewmenu=ImageMenu(
+            viewmenu=is_image_menu(
                 source=ImageSource(
                     r["images"],
                     title=category,
@@ -140,7 +140,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         This will work only if the image is strictly the same.
         Passing an image that have been compressed or went trough any process that might alter its content will not work
         **please note that using [Saucenao](https://saucenao.com)** to find the original **file** url is recommended.
-        This command will display the image you want from the bot's image API (for more informations use `ayapi`).
+        This command will display the image you want from the bot's image API (for more information use `ayapi`).
         The ID is corresponding to the filename of the picture (without the extension), but you can still pass any url.
         `is_ephemeral` argument only work with slash commands."""
         file_id_or_url = (
@@ -154,7 +154,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         file_id = await converter.url_to_id()
         start = time.perf_counter()
         try:
-            matches = await self.bot.waifuclient.info([file_id], raw=True)
+            matches = await self.bot.waifu_client.info([file_id], raw=True)
         except waifuim.APIException as e:
             if e.status == 404:
                 embed = discord.Embed(title="❌ File not found",
@@ -177,7 +177,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
                 raise commands.NSFWChannelRequired(ctx.channel)
 
         return await ViewMenuLauncher(
-            viewmenu=ImageMenu(
+            viewmenu=is_image_menu(
                 source=ImageSource(
                     matches["images"],
                     user=ctx.author,
@@ -217,7 +217,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
     ):
         """🔗 Disable all filters."""
         try:
-            images = await self.bot.waifuclient.fav(user_id=ctx.author.id)
+            images = await self.bot.waifu_client.fav(user_id=ctx.author.id)
         except waifuim.APIException as e:
             if e.status == 404:
                 return await ctx.send(
@@ -255,7 +255,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
     ):
         """🔗 Activate sfw filter"""
         try:
-            images = await self.bot.waifuclient.fav(user_id=ctx.author.id)
+            images = await self.bot.waifu_client.fav(user_id=ctx.author.id)
         except waifuim.APIException as e:
             if e.status == 404:
                 return await ctx.send(
@@ -294,7 +294,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
         """⚠🔗 NSFW. Activate nsfw filter
         sfw filter will be force applied if requesting in an non nsfw channel (only if you are not using a slash-command, otherwise is_ephemeral will be activated instead)."""
         try:
-            images = await self.bot.waifuclient.fav(user_id=ctx.author.id)
+            images = await self.bot.waifu_client.fav(user_id=ctx.author.id)
         except waifuim.APIException as e:
             if e.status == 404:
                 return await ctx.send(

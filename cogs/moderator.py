@@ -133,7 +133,7 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
         self.antispam = defaultdict(AntiSpam)
 
     async def get_guild_mod(self, guild_id):
-        return await self.bot.db.fetchval("SELECT anti_spam_mode FROM registered_guild WHERE id=$1", guild_id)
+        return await self.bot.pool.fetchval("SELECT anti_spam_mode FROM registered_guild WHERE id=$1", guild_id)
 
     @commands.Cog.listener("on_message")
     async def on_message_event(self, message):
@@ -168,7 +168,7 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
         default to `disabled`."""
         if mode == "disabled":
             mode = None
-        await self.bot.db.execute(
+        await self.bot.pool.execute(
             "INSERT INTO registered_guild (id,name,anti_spam_mode)"
             "VALUES ($1,$2,$3) ON CONFLICT (id) DO UPDATE SET name=$2,anti_spam_mode=$3",
             ctx.guild.id,

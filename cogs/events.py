@@ -1,31 +1,25 @@
 import contextlib
-import inspect
-import io
-import logging
-import math
-import traceback
-import typing
 
 import discord
-import humanize as humanize
-from discord.ext import commands
 
-from utils import constants, defaults, exceptions
-from utils.helpers import PersistentExceptionView
+from discord.ext import commands
 from main import Ayane
-from private.config import LOCAL, LOCAL_USER, DEFAULT_PREFIXES
+from private.config import DEFAULT_PREFIXES
+
 
 async def setup(bot):
-    bot.add_cog(Events(bot))
+    await bot.add_cog(Events(bot))
 
 
-class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
+class Events(commands.Cog):
     def __init__(self, bot):
         self.bot: Ayane = bot
+        self.emoji = '⚙'
+        self.brief = 'Ayane Internal Stuff'
 
     @commands.Cog.listener("on_command")
     async def basic_command_logger(self, ctx):
-        await self.bot.db.execute(
+        await self.bot.pool.execute(
             "INSERT INTO commands (guild_id, user_id, command, timestamp) VALUES ($1, $2, $3, $4)",
             getattr(ctx.guild, "id", None),
             ctx.author.id,
@@ -48,15 +42,17 @@ class Events(defaults.AyaneCog, emoji='⚙', brief='Ayane Internal Stuff'):
 
     def format_log_embed(self, guild, title, who_added=None):
         embed = discord.Embed(timestamp=discord.utils.utcnow(), colour=self.bot.colour, title=title)
+        guild_bots = [m for m in guild.members if m.bot]
+        guild_humans = [m for m in guild.members if not m.bot]
         if guild.icon:
             embed.set_thumbnail(url=guild.icon.url)
         embed.add_field(name="Name", value=guild.name, inline=False)
         embed.add_field(name="ID", value=str(guild.id), inline=False)
         embed.add_field(name="Owner", value=str(guild.owner) + " | " + str(guild.owner.id), inline=False)
         embed.add_field(name="Members", value=len(guild.members), inline=False)
-        embed.add_field(name="Bots", value=len(guild.bots), inline=False)
-        embed.add_field(name="Humans", value=len(guild.humans), inline=False)
-        embed.add_field(name="Bots/Humans", value=round(len(guild.bots) / len(guild.humans), 2), inline=False)
+        embed.add_field(name="Bots", value=len(guild_bots), inline=False)
+        embed.add_field(name="Humans", value=len(guild_humans), inline=False)
+        embed.add_field(name="Bots/Humans", value=round(len(guild_bots) / len(guild_humans), 2), inline=False)
         if who_added:
             embed.set_footer(icon_url=who_added.display_avatar.url, text=str(who_added))
         return embed

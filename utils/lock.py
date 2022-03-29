@@ -1,11 +1,12 @@
 import asyncio
 from utils.exceptions import UserLocked
 
+
 class UserLock:
     def __init__(
-        self,
-        user,
-        error_message =
+            self,
+            user,
+            error_message=
             "You probably clicked on a button that is waiting for your answer,"
             "please firstly cancel the operation.",
     ):

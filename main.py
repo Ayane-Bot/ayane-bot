@@ -1,9 +1,8 @@
 import io
 import os
 import logging
-import traceback
 import contextlib
-import humanize
+import traceback
 
 import aiohttp
 import certifi
@@ -16,7 +15,7 @@ import waifuim
 from discord.ext import commands
 from discord import app_commands
 
-from utils import constants, exceptions
+from utils import constants
 from utils.context import AyaneContext
 from utils.exceptions import UserBlacklisted, string_map, join_literals, convert_union_annotations, conv_n
 from utils.helpers import PersistentExceptionView
@@ -37,160 +36,15 @@ ok = '\033[42m\033[30m✔\033[0m'
 os.environ['JISHAKU_NO_UNDERSCORE'] = 'True'
 os.environ['JISHAKU_HIDE'] = 'True'
 
-class AyaneCommandTree(app_commands.CommandTree):
-    async def on_error(
-        self,
-        interaction,
-        command,
-        error,
-    ) -> None:
-        """Handles command exceptions and logs unhandled ones to the support guild."""
-        if hasattr(command, 'on_error') and not hasattr(interaction, 'bypass_first_error_handler'):
-            return
-    
-        if isinstance(error, commands.CommandInvokeError):
-            error = error.original
-        ignored = [
-                      commands.CommandNotFound,
-                  ] + ([commands.CheckFailure] if LOCAL else [])
-        if isinstance(error, tuple(ignored)):
-            return
-        
-        if isinstance(error, commands.UserInputError):
-            embed = discord.Embed(title='An incorrect argument was passed.')
-    
-            if isinstance(error, exceptions.UserLocked):
-                embed.title = '❌ Multiples Commands Running'
-                embed.description = f"Hey **{interaction.user}**,one thing after an other. " + str(error)
-    
-            elif isinstance(error, commands.BadUnionArgument):
-                embed.description = f"You did not provide a valid {conv_n(error.converters)}, please go check `/help {command.name}`."
-                embed.title = "❌ Bad argument"
-    
-            elif isinstance(error, commands.BadLiteralArgument):
-                embed.title = "❌ Bad argument"
-                literals = join_literals(error.param.annotation, return_list=True)
-                literals = '"' + '", "'.join(literals[:-2] + ['" or "'.join(literals[-2:])]) + '"'
-                embed.description = f"The `{error.param.name}` argument must be one of the following: {literals}"
-    
-            elif isinstance(error, commands.ArgumentParsingError):
-                if isinstance(error, commands.UnexpectedQuoteError):
-                    embed.title = "❌ Invalid Quote Mark"
-                    embed.description = f'Unexpected quote mark, {error.quote!r}, in non-quoted string'
-    
-                elif isinstance(error, commands.ExpectedClosingQuoteError):
-                    embed.title = "❌ Missing Closing Quote"
-                    embed.description = f"Expected closing {error.close_quote}."
-    
-                elif isinstance(error, commands.InvalidEndOfQuotedStringError):
-                    embed.title = "❌ Invalid Character after Quote"
-                    embed.description = f'Expected a space after closing quotation but received {error.char!r}'
-                else:
-                    embed.title = "❌ Sorry, Something went wrong while reading your message..."
-    
-            elif isinstance(error, commands.BadArgument):
-    
-                if isinstance(error, commands.UserNotFound):
-                    embed.description = f"You did not provide a valid user, please go check `/help {command.name}`."
-                    embed.title = "❌ User not found"
-    
-                elif isinstance(error, commands.MemberNotFound):
-                    embed.description = f"You did not provide a valid member, Please go check `/help {command.name}`."
-                    embed.title = "❌ Member not found"
-    
-                elif isinstance(error, commands.RoleNotFound):
-                    embed.description = f"You did not provide a valid role, Please go check `/help {command.name}`."
-                    embed.title = "❌ Role not found"
-    
-                else:
-                    embed.description = f"You provided at least one wrong argument. Please go check `/help {command.name}`"
-                    embed.title = "❌ Bad argument"
-    
-            else:
-                embed.description = f"You made an error in your commmand. Please go check `/help {command.name}`"
-                embed.title = "❌ Input error"
-    
-            await interaction.client.send_interaction_error_message(embed=embed, delete_after=15)
-    
-        elif isinstance(error, commands.BotMissingPermissions):
-            missing = [(e.replace('_', ' ').replace('guild', 'server')).title() for e in error.missing_permissions]
-            perms_formatted = "**, **".join(missing[:-2] + ["** and **".join(missing[-2:])])
-            _message = f"I need the **{perms_formatted}** permission(s) to run this command."
-            embed = discord.Embed(title="❌ Bot missing permissions", description=_message)
-            await interaction.client.send_interaction_error_message(embed=embed)
-    
-        elif isinstance(error, commands.DisabledCommand):
-            if command.enabled:
-                _message = str(error)
-            else:
-                _message = f"`{command.name}` command has been temporally disabled, it is probably under maintenance. For more information join the [support server]({constants.server_invite})!"
-            embed = discord.Embed(title="🛑 Command disabled", description=_message)
-            await interaction.client.send_interaction_error_message(embed=embed, delete_after=15)
-    
-        elif isinstance(error, commands.MaxConcurrencyReached):
-            _message = f"This command can only be used **{error.number}** time simultaneously, please retry later."
-            embed = discord.Embed(title="🛑 Maximum concurrency reached", description=_message)
-            await interaction.client.send_interaction_error_message(embed=embed, delete_after=15)
-    
-        elif isinstance(error, commands.CommandOnCooldown):
-            _message = f"This command is on cooldown, please retry in {humanize.time.precisedelta(math.ceil(error.retry_after))}."
-            embed = discord.Embed(title="🛑 Command on cooldown", description=_message)
-            await interaction.client.send_interaction_error_message(embed=embed, delete_after=15)
-    
-        elif isinstance(error, commands.MissingPermissions):
-            missing = [(e.replace('_', ' ').replace('guild', 'server')).title() for e in error.missing_permissions]
-            perms_formatted = "**, **".join(missing[:-2] + ["** and **".join(missing[-2:])])
-            _message = f"You need the **{perms_formatted}** permission(s) to use this command."
-            embed = discord.Embed(title="🛑 Missing permissions", description=_message)
-            await interaction.client.send_interaction_error_message(embed=embed, delete_after=15)
-    
-        elif isinstance(error, commands.MissingRole):
-            missing = error.missing_role
-            _message = f"You need the **{missing}** role to use this command."
-            embed = discord.Embed(title="🛑 Missing role", description=_message)
-            await interaction.client.send_interaction_error_message(embed=embed, delete_after=15)
-    
-        elif isinstance(error, discord.Forbidden):
-            _message = "I dont have the permissions to run this command."
-            embed = discord.Embed(title="❌ Permission error", description=_message)
-            await interaction.client.send_interaction_error_message(embed=embed)
-    
-        elif isinstance(error, commands.NSFWChannelRequired):
-            _message = "Sorry, I cannot display **NSFW** content in this channel."
-            embed = discord.Embed(title="🛑 NSFW channel required", description=_message)
-            await interaction.client.send_interaction_error_message(embed=embed, delete_after=15)
-    
-        elif isinstance(error, commands.NoPrivateMessage):
-            return
-    
-        elif isinstance(error, commands.NotOwner):
-            embed = discord.Embed(
-                title="🛑 Owner-only",
-                description=f"Sorry **{interaction.user}**, but this commmand is an owner-only command and "
-                            f"you arent one of my loved developers <:ty:833356132075700254>."
-            )
-            await ctx.send(embed=embed, delete_after=15)
-    
-        elif isinstance(error, exceptions.UserBlacklisted):
-            embed = discord.Embed(title="🛑 Blacklisted", description=str(error))
-            await ctx.send(embed=embed)
-    
-        elif isinstance(error, commands.CheckFailure):
-            embed = discord.Embed(
-                title="🛑 Forbidden",
-                description="You do not have the permissions to use this command.",
-            )
-            await interaction.client.send_interaction_error_message(embed=embed, delete_after=15)
-    
-        else:
-            await interaction.client.send_unexpected_error(interaction, command, error)
+
 
 
 class Ayane(commands.Bot):
     def __init__(self):
         # These are all attributes that will be set later in the `on_ready_once` method.
+        self.pool = None
         self.invite: str = None
-        self.waifuclient: waifuim.WaifuAioClient = None
+        self.waifu_client: waifuim.WaifuAioClient = None
         self.session: aiohttp.ClientSession = None
 
         # All extensions that are not located in the 'cogs' directory.
@@ -212,10 +66,7 @@ class Ayane(commands.Bot):
         self.colour = self.color = discord.Colour(value=0xA37FFF)
 
         # Startup tasks and stuff
-        self.loop.create_task(self.on_ready_once())
-        self.loop.run_until_complete(self.before_ready_once())
         self._load_cogs()
-        self.db: asyncpg.Pool = self.loop.run_until_complete(self._establish_database_connection())
         self.user_lock = {}
         self.guild_ratio = 0.35
         self.guild_maxbot = 31
@@ -230,21 +81,16 @@ class Ayane(commands.Bot):
             508355356376825868,
             850807820634030130,
         ]
-        self.verified_message_command_guilds = [336642139381301249, 800449566037114892]
-        self.verified_slash_command_guilds = []
-        print(self.owner_ids)
-        self.verified_message_command_user_ids = [*self.owner_ids]
-        self.verified_slash_command_user_ids = []
-        self.add_check(self.check_blacklisted)
-        self.add_check(self.check_user_lock)
+        self.default_checks = {self.check_blacklisted,self.check_user_lock}
 
     def get_sus_guilds(self):
         sus = []
         for guild in self.guilds:
-            prct = len(guild.bots) / len(guild.members)
+            guild_bots = [m for m in guild.members if m.bots]
+            ratio = len(guild_bots) / len(guild.members)
             if (
-                    prct > self.guild_ratio
-                    or len(guild.bots) > self.guild_maxbot
+                    ratio > self.guild_ratio
+                    or len(guild_bots) > self.guild_maxbot
                     and guild.id not in self.guild_whitelist
             ):
                 sus.append(guild)
@@ -254,39 +100,40 @@ class Ayane(commands.Bot):
         self.user_lock.update({lock.user.id: lock})
 
     @staticmethod
-    async def check_user_lock(ctx):
-        if lock := ctx.bot.user_lock.get(ctx.author.id):
+    async def check_user_lock(interaction):
+        if lock := interaction.client.user_lock.get(interaction.user.id):
             if lock.locked():
                 if isinstance(lock, UserLock):
                     raise lock.error
-                raise commands.CommandError(
+                raise app_commands.AppCommandError(
                     "You can't invoke another command while another command is running."
                 )
             else:
-                ctx.bot.user_lock.pop(ctx.author.id, None)
+                interaction.client.user_lock.pop(interaction.user.id, None)
                 return True
         return True
 
     @staticmethod
-    async def check_blacklisted(ctx):
-        cog_name = command.cog.qualified_name.lower() if command.cog else None
+    async def check_blacklisted(interaction):
+        cog_name = interaction.command.cog.qualified_name.lower() if interaction.command.cog else None
         if "jishaku" == cog_name:
             return True
-        if not hasattr(ctx.bot, "db"):
+        if not hasattr(interaction.client, "pool"):
             return True
-        result = await ctx.bot.is_blacklisted(ctx.author)
+        result = await interaction.client.is_blacklisted(interaction.user)
         if result:
-            raise UserBlacklisted(ctx.author, reason=result[0])
+            raise UserBlacklisted(interaction.user, reason=result)
         return True
 
     async def is_blacklisted(self, user):
-        return await self.db.fetchrow("SELECT reason FROM registered_user WHERE id=$1 AND is_blacklisted", user.id)
+        return await self.pool.fetchval("SELECT reason FROM registered_user WHERE id=$1 AND is_blacklisted", user.id)
 
-    async def before_ready_once(self):
+    async def setup_hook(self) -> None:
+        self.pool = await self.establish_database_connection()
         ssl_context = ssl.create_default_context(cafile=certifi.where())
         connector = aiohttp.TCPConnector(ssl=ssl_context)
         self.session = aiohttp.ClientSession(connector=connector)
-        self.waifuclient = waifuim.WaifuAioClient(appname="Ayane-Bot", token=WAIFU_API_TOKEN, session=self.session)
+        self.waifu_client = waifuim.WaifuAioClient(appname="Ayane-Bot", token=WAIFU_API_TOKEN, session=self.session)
 
     async def on_ready_once(self):
         await self.wait_until_ready()
@@ -303,7 +150,7 @@ class Ayane(commands.Bot):
 
 
     @staticmethod
-    async def _establish_database_connection() -> asyncpg.Pool:
+    async def establish_database_connection() -> asyncpg.Pool:
         credentials = {
             "user": DB_CONF.user,
             "password": DB_CONF.password,
@@ -323,13 +170,6 @@ class Ayane(commands.Bot):
 
     async def on_ready(self):
         logging.info(f"\033[42m\033[35m Logged in as {self.user}! \033[0m")
-
-    async def on_interaction(self, interaction: discord.Interaction):
-        if LOCAL is False or (LOCAL is True and PREVENT_LOCAL_COMMANDS is False):
-            try:
-                await super().on_interaction(interaction)
-            except commands.CommandNotFound as error:
-                print(error)
 
     async def get_context(self, message, *, cls=AyaneContext):
         return await super().get_context(message, cls=cls)
@@ -391,14 +231,9 @@ class Ayane(commands.Bot):
                 f"\nCommand executed in DMs"
             )
 
-        if LOCAL:
-            local_data = f'\nError occured in local mode with user of "from {LOCAL_USER}"'
-        else:
-            local_data = ''
-
         to_send = (
             f"```yaml\n{command_data}``````py"
-            f"\nCommand {command} raised the following error:{local_data}"
+            f"\nCommand {command} raised the following error:"
             f"\n{traceback_string}\n```"
         )
 
@@ -410,7 +245,7 @@ class Ayane(commands.Bot):
                     io.StringIO(traceback_string), filename="traceback.py"
                 )
                 await error_channel.send(
-                    f"```yaml\n{command_data}``````py Command {command} raised the following error:{local_data}\n```",
+                    f"```yaml\n{command_data}``````py Command {command} raised the following error:\n```",
                     file=file,
                     view=PersistentExceptionView(interaction.client),
                 )
@@ -442,28 +277,13 @@ class Ayane(commands.Bot):
 
 if __name__ == "__main__":
     bot = Ayane()
-
-    @bot.check
-    async def running_locally(ctx):
-        """
-        If the bot is running locally, only allows the owner
-        defined in the private/config.py to use commands.
-        """
-        if LOCAL is False:
-            return True
-        
-        if await bot.is_owner(ctx.author):
-            return True
-        raise commands.NotOwner()
-
     try:
-        if not LOCAL:
-            webhook = discord.SyncWebhook.from_url(WEBHOOK_URL, bot_token=bot.http.token)
-            webhook.send('👋 Ayane is waking up!')
-            del webhook
-        bot.run(TOKEN)
-        
+        webhook = discord.SyncWebhook.from_url(WEBHOOK_URL, bot_token=bot.http.token)
+        webhook.send('👋 Ayane is waking up!')
+        del webhook
+        async with bot:
+            await bot.start(TOKEN)
+            await bot.on_ready_once()
     finally:
-        if not LOCAL:
-            webhook = discord.SyncWebhook.from_url(WEBHOOK_URL, bot_token=bot.http.token)
-            webhook.send('🔻 Ayane is going to sleep!')
+        webhook = discord.SyncWebhook.from_url(WEBHOOK_URL, bot_token=bot.http.token)
+        webhook.send('🔻 Ayane is going to sleep!')

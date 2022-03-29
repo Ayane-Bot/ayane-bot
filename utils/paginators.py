@@ -8,11 +8,12 @@ from discord.ext import commands, menus
 import os
 
 from utils.constants import APIDomainName
-from utils.exceptions import NotAuthorized, LimitReached, UserBlacklisted
+from utils.modals import ActionModal
+from utils.exceptions import NotAuthorized, LimitReached, UserBlacklisted, NotOwner
 from utils.lock import UserLock
 
 
-def getcustomid():
+def get_custom_id():
     return f"Ayane_{os.urandom(32).hex()}_author_check"
 
 
@@ -40,10 +41,11 @@ class BaseSource(menus.ListPageSource):
 class ImageSource(BaseSource):
     def __init__(
             self,
+            *,
+            title,
             image_info,
             user=None,
             request_time=None,
-            title="Not Assigned",
             **kwargs,
     ):
         self.image_info = image_info
@@ -67,13 +69,13 @@ class ImageSource(BaseSource):
         embed_list = []
         for i, im in enumerate(self.image_info):
             embed = discord.Embed(
-                url=im["url"], colour=int(im["dominant_color"].replace("#", ""), 16)
+                url=im.url, colour=int(im.dominant_color.replace("#", ""), 16)
             )
             embed.set_author(
                 name=self.title,
-                url=f"https://{APIDomainName}/preview/?image=" + im["file"] + im["extension"],
+                url=im.preview_url,
             )
-            embed.set_image(url=im["url"])
+            embed.set_image(url=im.url)
             text = f"Requested by {self.user.name}"
             if self.request_time:
                 text += f" | {self.request_time}s"
@@ -128,7 +130,7 @@ class BaseView(discord.ui.View):
     def init_custom_id(self):
         for child in self.children:
             if child.custom_id == "True":
-                child.custom_id = getcustomid()
+                child.custom_id = get_custom_id()
 
     async def interaction_check(self, interaction):
         reason = await self.bot.is_blacklisted(interaction.user)
@@ -148,19 +150,15 @@ class BaseView(discord.ui.View):
             raise NotAuthorized(self.ctx.author)
         return True
 
+    async def send_message(self, *args, **kwargs):
+        if self.main_interaction.response.is_done():
+            return await self.main_interaction.followup.send(*args, **kwargs)
+        await self.main_interaction.response.send_message(*args, **kwargs)
+        return await self.main_interaction.original_message()
+
     async def send_view(self, *args, **kwargs):
         self.init_custom_id()
-        if self.main_interaction.response.is_done():
-            return await self.main_interaction.edit_original_message(
-                *args, **kwargs, view=self
-            )
-        await self.main_interaction.response.send_message(
-            *args,
-            **kwargs,
-            ephemeral=self.ephemeral,
-            view=self
-        )
-        return await self.main_interaction.original_message()
+        return await self.send_message(*args, **kwargs, ephemeral=self.ephemeral, view=self)
 
     async def on_timeout(self):
         await self.stop_paginator(timed_out=True)
@@ -168,12 +166,10 @@ class BaseView(discord.ui.View):
     async def on_error(
             self, error: Exception, item: discord.ui.Item, interaction: discord.Interaction
     ):
-        send_error_message = self.bot.get_cog("Events").send_interaction_error_message
-        send_unexpected_error = self.bot.get_cog("Events").send_unexpected_error
         if isinstance(error, NotAuthorized):
-            return await send_error_message(interaction, str(error), ephemeral=True)
+            return await self.bot.send_interaction_error_message(interaction, str(error), ephemeral=True)
         elif isinstance(error, LimitReached):
-            await send_error_message(
+            await self.bot.send_interaction_error_message(
                 interaction,
                 embed=discord.Embed(
                     title="🛑 LimitReached",
@@ -185,37 +181,32 @@ class BaseView(discord.ui.View):
                 ),
                 ephemeral=True,
             )
-        elif isinstance(error, discord.ext.commands.NotOwner):
+        elif isinstance(error, NotOwner):
             embed = discord.Embed(
                 title="🛑 Owner-only",
                 colour=self.bot.colour,
                 description=f"Sorry **{interaction.user}**, but this command is an owner-only command and "
                             f"you arent one of my loved developers <:ty:833356132075700254>."
             )
-            await send_error_message(
-                interaction, embed=embed, ephemeral=True
-            )
+            await self.bot.send_interaction_error_message(interaction, embed=embed, ephemeral=True)
         elif isinstance(error, UserBlacklisted):
             embed = discord.Embed(title="🛑 Forbidden", colour=self.bot.colour, description=str(error))
-            await send_error_message(
-                interaction, embed=embed, ephemeral=True
-            )
+            await self.bot.send_interaction_error_message(interaction, embed=embed, ephemeral=True)
         else:
-            await send_unexpected_error(self.ctx, error, user=interaction.user, interaction=interaction, ephemeral=True)
+            await self.bot.send_unexpected_error(interaction, interaction.command, error, ephemeral=True)
 
 
 class ViewMenu(BaseView):
     def __init__(
             self,
-            source=None,
-            imagemenu=None,
+            *,
+            source,
+            is_image_menu=None,
             **kwargs,
     ):
         super().__init__(**kwargs)
         self.source = source
-        if not self.source:
-            raise TypeError("source is a required argument")
-        self.imagemenu = imagemenu
+        self.is_image_menu = is_image_menu
         self.image_info = None
         self.source = source
         self.message = None
@@ -249,13 +240,13 @@ class ViewMenu(BaseView):
             self.add_item(self.go_to_next_page)
             if use_last_and_first:
                 self.add_item(self.go_to_last_page)
-            if not self.imagemenu:
+            if not self.is_image_menu:
                 self.add_item(self.stop_pages)
             self.add_item(self.numbered_page)
 
     async def _get_kwargs_from_page(self, page: int):
         value = await discord.utils.maybe_coroutine(self.source.format_page, self, page)
-        if self.imagemenu:
+        if self.is_image_menu:
             self.image_info = self.source.get_infos(self.current_page)
         if isinstance(value, dict):
             return value
@@ -300,14 +291,7 @@ class ViewMenu(BaseView):
                 self.check_embeds and self.main_interaction.guild
                 and not self.main_interaction.channel.permissions_for(self.main_interaction.guild.me).embed_links
         ):
-            if self.main_interaction.response.is_done():
-                await self.main_interaction.followup.send(
-                    "Bot does not have embed links permission in this channel."
-                )
-                return
-            await self.main_interaction.response.send_message(
-                "Bot does not have embed links permission in this channel."
-            )
+            await self.send_message("Bot does not have embed links permission in this channel.")
             return
         await self.source._prepare_once()
         page = await self.source.get_page(0)
@@ -320,9 +304,7 @@ class ViewMenu(BaseView):
         style=discord.ButtonStyle.grey,
         custom_id="True",
     )
-    async def go_to_first_page(
-            self, button: discord.ui.Button, interaction: discord.Interaction,
-    ):
+    async def go_to_first_page(self, interaction: discord.Interaction, button: discord.ui.Button):
         """go to the first page"""
         await self.show_page(0)
 
@@ -331,9 +313,7 @@ class ViewMenu(BaseView):
         style=discord.ButtonStyle.grey,
         custom_id="True",
     )
-    async def go_to_previous_page(
-            self, button: discord.ui.Button, interaction: discord.Interaction
-    ):
+    async def go_to_previous_page(self, interaction: discord.Interaction, button: discord.ui.Button):
         """go to the previous page"""
         await self.show_checked_page(self.current_page - 1)
 
@@ -343,9 +323,7 @@ class ViewMenu(BaseView):
         style=discord.ButtonStyle.grey,
         custom_id="True",
     )
-    async def stop_pages(
-            self, button: discord.ui.Button, interaction: discord.Interaction
-    ):
+    async def stop_pages(self, interaction: discord.Interaction, button: discord.ui.Button):
         """stops the pagination session."""
         if self.lock and self.lock.locked():
             await interaction.response.send_message(
@@ -360,9 +338,7 @@ class ViewMenu(BaseView):
         style=discord.ButtonStyle.grey,
         custom_id="True",
     )
-    async def go_to_next_page(
-            self, button: discord.ui.Button, interaction: discord.Interaction
-    ):
+    async def go_to_next_page(self, interaction: discord.Interaction, button: discord.ui.Button):
         """go to the next page"""
         await self.show_checked_page(self.current_page + 1)
 
@@ -371,9 +347,7 @@ class ViewMenu(BaseView):
         style=discord.ButtonStyle.grey,
         custom_id="True",
     )
-    async def go_to_last_page(
-            self, button: discord.ui.Button, interaction: discord.Interaction
-    ):
+    async def go_to_last_page(self, interaction: discord.Interaction, button: discord.ui.Button):
         """go to the last page"""
         await self.show_page(self.source.get_max_pages() - 1)
 
@@ -383,9 +357,7 @@ class ViewMenu(BaseView):
         style=discord.ButtonStyle.success,
         custom_id="True",
     )
-    async def numbered_page(
-            self, button: discord.ui.Button, interaction: discord.Interaction
-    ):
+    async def numbered_page(self, interaction: discord.Interaction, button: discord.ui.Button):
         """lets you type a page number to go to"""
         if self.lock and self.lock.locked():
             await interaction.response.send_message(
@@ -437,7 +409,7 @@ class ViewMenu(BaseView):
 class ImageMenu(ViewMenu):
     def __init__(self, delete_after=False, **kwargs):
         super().__init__(
-            delete_after=delete_after, **kwargs, imagemenu=True
+            delete_after=delete_after, **kwargs, is_image_menu=True
         )
         self.fav = {}
         self.info = {}
@@ -450,11 +422,11 @@ class ImageMenu(ViewMenu):
     def add_all_items(self) -> None:
         super().add_all_items()
         if len(self.source.entries) > 1:
-            self.add_to_favourite.row = self.delete.row = self.informations.row = self.report.row = 2
+            self.add_to_favourite.row = self.delete.row = self.information.row = self.report.row = 2
 
         self.add_item(self.add_to_favourite)
         self.add_item(self.report)
-        self.add_item(self.informations)
+        self.add_item(self.information)
         self.add_item(self.delete)
 
     def check_limit(self, limit, counter, user, usersdict):
@@ -465,22 +437,20 @@ class ImageMenu(ViewMenu):
             usersdict[user.id] += 1
 
     async def editfav(self, image_name, image, user):
-        t = await self.bot.waifuclient.fav_toggle(user_id=user.id, image=image_name)
+        t = await self.bot.waifu_client.fav_toggle(user_id=user.id, image=image_name)
         mes = "**added to**" if t["state"] == "INSERTED" else "**removed from**"
         return f"Alright **{user.name}**, the [image](https://{APIDomainName}/preview/?image={image}), " \
                f"has successfully been {mes} your Gallery.\n" \
                f"You can look at your Gallery [here](https://{APIDomainName}/fav/) " \
                "after logging in with your discord account, or by using the `favourite` command. "
 
-    @discord.ui.button(emoji="⚠", label="Report", style=discord.ButtonStyle.grey,custom_id="True",)
-    async def report(
-            self, button: discord.ui.Button, interaction: discord.Interaction
-    ):
+    @discord.ui.button(emoji="⚠", label="Report", style=discord.ButtonStyle.grey, custom_id="True", )
+    async def report(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.lock and self.lock.locked():
             return await interaction.response.send_message("I am already waiting for your response...", ephemeral=True)
         if interaction.user.id in {*self.bot.waifu_reason_exempted_users, self.bot.owner_id, *self.bot.owner_ids}:
             desc = "Owner report." if interaction.user.id in self.bot.owner_ids else "No reason required for this user."
-            await self.bot.waifuclient.report(self.image_info["file"], user_id=interaction.user.id, description=desc)
+            await self.bot.waifu_client.report(self.image_info.file, user_id=interaction.user.id, description=desc)
             await interaction.response.send_message(
                 "Your report has successfully been sent. Thank you for your help!",
                 ephemeral=True,
@@ -513,7 +483,6 @@ class ImageMenu(ViewMenu):
                             ephemeral=True,
                         )
                     else:
-                        print("tatatatatata")
                         if (await self.bot.get_context(message_user)).valid:
                             print("test")
                             continue
@@ -529,8 +498,8 @@ class ImageMenu(ViewMenu):
                             f'<@!{self.bot.user.id}>',
                             ''
                         )
-                        await self.bot.waifuclient.report(
-                            self.image_info["file"],
+                        await self.bot.waifu_client.report(
+                            self.image_info.file,
                             user_id=interaction.user.id,
                             description=report_desc.strip(" "),
                         )
@@ -545,15 +514,13 @@ class ImageMenu(ViewMenu):
         return await self.show_checked_page(self.current_page)
 
     @discord.ui.button(emoji="❤", style=discord.ButtonStyle.grey)
-    async def add_to_favourite(
-            self, button: discord.ui.Button, interaction: discord.Interaction
-    ):
+    async def add_to_favourite(self, interaction: discord.Interaction, button: discord.ui.Button):
         user = interaction.user
         self.check_limit(
             self.fav_limit, self.fav.setdefault(user.id, 1), user, self.fav
         )
-        image = self.image_info["file"] + self.image_info["extension"]
-        image_name = self.image_info["file"]
+        image = self.image_info.file + self.image_info.extension
+        image_name = self.image_info.file
         adv = await self.editfav(image_name, image, user)
         embed = discord.Embed(description=adv, color=discord.Colour.random())
         return await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -563,7 +530,7 @@ class ImageMenu(ViewMenu):
         style=discord.ButtonStyle.grey,
         custom_id="True",
     )
-    async def delete(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def delete(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.lock and self.lock.locked():
             return await interaction.response.send_message(
                 "I am already waiting for your response...", ephemeral=True
@@ -576,9 +543,7 @@ class ImageMenu(ViewMenu):
         row=1,
         style=discord.ButtonStyle.grey,
     )
-    async def informations(
-            self, button: discord.ui.Button, interaction: discord.Interaction
-    ):
+    async def information(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.check_limit(
             self.fav_limit,
             self.info.setdefault(interaction.user.id, 1),
@@ -587,18 +552,16 @@ class ImageMenu(ViewMenu):
         )
         await interaction.response.defer(ephemeral=True)
         try:
-            rq = await self.bot.waifuclient.info(images=[self.image_info["file"]])
-            self.image_info = self.source.imageinfos[self.current_page] = rq["images"][
-                0
-            ]
+            rq = await self.bot.waifu_client.info(images=[self.image_info.file])
+            self.image_info = self.source.image_infos[self.current_page] = rq[0]
         except:
             pass
 
-        image_name = self.image_info["file"]
-        image = image_name + self.image_info["extension"]
+        image_name = self.image_info.file
+        image = image_name + self.image_info.extension
         in_fav = False
         try:
-            favs = await self.bot.waifuclient.fav(user_id=interaction.user.id)
+            favs = await self.bot.waifu_client.fav(user_id=interaction.user.id)
             for im in favs["images"]:
                 if image_name == im["file"]:
                     in_fav = True
@@ -607,7 +570,7 @@ class ImageMenu(ViewMenu):
         except waifuim.exceptions.APIException as e:
             if e.status != 404:
                 raise e
-        numberfav = self.image_info["favourites"]
+        numberfav = self.image_info.favourites
         sd_part = "If the image doesn't have any source, and you really want it," \
                   "please use **[Saucenao](https://saucenao.com/)**," \
                   f"Join the [support server]({self.bot.server_invite}) and share us the new source."
@@ -620,7 +583,7 @@ class ImageMenu(ViewMenu):
             title=f"**{numberfav}** ❤",
             description=description,
         )
-        for key, value in self.image_info.items():
+        for key, value in self.image_info.__dict__.items():
             if key == "tags":
                 value = ",".join([f"`{t['name']}`" for t in value])
             embed.add_field(
@@ -632,15 +595,14 @@ class ImageMenu(ViewMenu):
 
 
 class FavMenu(ImageMenu):
-
     @discord.ui.button(
         emoji="❤️", label="Favourite or Remove", style=discord.ButtonStyle.grey
     )
     async def add_to_favourite(
             self, button: discord.ui.Button, interaction: discord.Interaction
     ):
-        await super().add_to_favourite(button, interaction)
-        if interaction.user.id == self.ctx.author.id:
+        await super().add_to_favourite(interaction, button)
+        if interaction.user.id == self.main_interaction.user.id:
             self.source.remove(self.current_page)
             if not self.source.entries:
                 await self.stop_paginator()
