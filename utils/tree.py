@@ -23,7 +23,7 @@ class AyaneCommandTree(app_commands.CommandTree):
         if isinstance(error, app_commands.errors.CommandNotFound):
             embed.title = "🛑 Command Not Found"
             embed.description = "Sorry this command does not exist anymore."
-            await interaction.client.send_interaction_error_message(interaction, embed=embed, delete_after=15)
+            await interaction.client.send_interaction_error_message(interaction, embed=embed)
         elif isinstance(error, app_commands.CheckFailure):
             if isinstance(error, app_commands.BotMissingPermissions):
                 missing = [(e.replace('_', ' ').replace('guild', 'server')).title() for e in error.missing_permissions]
@@ -37,7 +37,7 @@ class AyaneCommandTree(app_commands.CommandTree):
                 _message = f"This command is on cooldown, please retry in {humanize.time.precisedelta(math.ceil(error.retry_after))}. "
                 embed.title = "🛑 Command on cooldown"
                 embed.description = _message
-                await interaction.client.send_interaction_error_message(interaction, embed=embed, delete_after=15)
+                await interaction.client.send_interaction_error_message(interaction, embed=embed)
 
             elif isinstance(error, app_commands.MissingPermissions):
                 missing = [(e.replace('_', ' ').replace('guild', 'server')).title() for e in error.missing_permissions]
@@ -45,14 +45,14 @@ class AyaneCommandTree(app_commands.CommandTree):
                 _message = f"You need the **{perms_formatted}** permission(s) to use this command."
                 embed.title = "🛑 Missing permissions"
                 embed.description = _message
-                await interaction.client.send_interaction_error_message(interaction, embed=embed, delete_after=15)
+                await interaction.client.send_interaction_error_message(interaction, embed=embed)
 
             elif isinstance(error, app_commands.MissingRole):
                 missing = error.missing_role
                 _message = f"You need the **{missing}** role to use this command."
                 embed.title = "🛑 Missing role"
                 embed.description = _message
-                await interaction.client.send_interaction_error_message(interaction, embed=embed, delete_after=15)
+                await interaction.client.send_interaction_error_message(interaction, embed=embed)
 
             elif isinstance(error, app_commands.NoPrivateMessage):
                 return
@@ -60,23 +60,23 @@ class AyaneCommandTree(app_commands.CommandTree):
                 _message = "Sorry, I cannot display **NSFW** content in this channel."
                 embed.title = "🛑 NSFW channel required"
                 embed.description = _message
-                await interaction.client.send_interaction_error_message(interaction, embed=embed, delete_after=15)
+                await interaction.client.send_interaction_error_message(interaction, embed=embed)
 
             elif isinstance(error, exceptions.NotOwner):
                 _message = f"Sorry **{interaction.user}**, but this commmand is an owner-only command and you arent one " \
                            f"of my loved developers <:ty:833356132075700254>."
                 embed.title = "🛑 Owner-only"
                 embed.description = _message
-                await interaction.client.send_interaction_error_message(interaction, embed=embed, delete_after=15)
+                await interaction.client.send_interaction_error_message(interaction, embed=embed)
 
             elif isinstance(error, exceptions.UserBlacklisted):
                 embed.title = "🛑 Blacklisted"
                 embed.description = str(error)
-                await interaction.client.send_interaction_error_message(interaction, embed=embed, delete_after=15)
+                await interaction.client.send_interaction_error_message(interaction, embed=embed)
             else:
                 embed.title = "🛑 Forbidden",
                 embed.description = "You or the bot cannot run this command."
-                await interaction.client.send_interaction_error_message(interaction, embed=embed, delete_after=15)
+                await interaction.client.send_interaction_error_message(interaction, embed=embed)
 
         else:
             await interaction.client.send_unexpected_error(interaction, command, error)
