@@ -24,7 +24,7 @@ class Owner(commands.Cog):
             return True
         raise commands.NotOwner()
 
-    @commands.command(name='dev', aliases=['d'], invoke_without_command=True, hidden=True, message_command=True)
+    @commands.group(name='dev', aliases=['d'], invoke_without_command=True, hidden=True, message_command=True)
     async def dev(self, ctx: AyaneContext, subcommand: str = None):
         if subcommand:
             return await ctx.send(f'Unknown subcommand `{subcommand}`', delete_after=5)
