@@ -15,10 +15,6 @@ class AyaneCommandTree(app_commands.CommandTree):
             error,
     ) -> None:
         """Handles command exceptions and logs unhandled ones to the support guild."""
-        print("hyzbdhzb")
-        if hasattr(command, 'on_error') and not hasattr(interaction, 'bypass_first_error_handler'):
-            return
-        print("NEW ERROR2")
 
         embed = discord.Embed(colour=interaction.client.colour)
         if isinstance(error, app_commands.CommandInvokeError):
