@@ -22,7 +22,9 @@ class AyaneCommandTree(app_commands.CommandTree):
         if isinstance(error, app_commands.CommandInvokeError):
             error = error.original
         if isinstance(error, app_commands.errors.CommandNotFound):
-            return
+            embed.title = "🛑 Command Not Found"
+            embed.description = "Sorry this command does not exist anymore."
+            await interaction.client.send_interaction_error_message(embed=embed, delete_after=15)
         elif isinstance(error, app_commands.CheckFailure):
             if isinstance(error, app_commands.BotMissingPermissions):
                 missing = [(e.replace('_', ' ').replace('guild', 'server')).title() for e in error.missing_permissions]
@@ -69,7 +71,8 @@ class AyaneCommandTree(app_commands.CommandTree):
                 await interaction.client.send_interaction_error_message(embed=embed, delete_after=15)
 
             elif isinstance(error, exceptions.UserBlacklisted):
-                embed = discord.Embed(title="🛑 Blacklisted", description=str(error))
+                embed.title = "🛑 Blacklisted"
+                embed.description = str(error)
                 await interaction.client.send_interaction_error_message(embed=embed, delete_after=15)
             else:
                 embed.title = "🛑 Forbidden",
