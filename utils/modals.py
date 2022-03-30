@@ -54,5 +54,5 @@ class PagePrompterModal(BaseModal):
         try:
             page = int(self.page.value)
         except ValueError:
-            return await interaction.response.send_message(f"{self.page.value} is not a valid page")
+            return await interaction.response.send_message(f"{self.page.value} is not a valid page", ephemeral=True)
         await self.view.show_checked_page(page)
