@@ -30,7 +30,7 @@ class PictureConverter:
         filename = self.maybe_id
         try:
             rep = await self.bot.session.get(
-                self.u_input, headers={"Referer": "https://pixiv.net"}
+                self.file_string, headers={"Referer": "https://pixiv.net"}
             )
             if "image" in rep.headers.get("content-type", ""):
                 content = await rep.read()
