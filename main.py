@@ -110,9 +110,6 @@ class Ayane(commands.Bot):
 
     @staticmethod
     async def check_blacklisted(interaction):
-        cog_name = interaction.command.cog.qualified_name.lower() if interaction.command.cog else None
-        if "jishaku" == cog_name:
-            return True
         if not hasattr(interaction.client, "pool"):
             return True
         result = await interaction.client.is_blacklisted(interaction.user)
