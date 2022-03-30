@@ -110,15 +110,18 @@ class BaseView(discord.ui.View):
         try:
             if self.timeout:
                 self.__timeout_expiry = time.monotonic() + self.timeout
-            print(self.main_interaction.is_expired())
             if self.main_interaction.is_expired:
                 return
+            print("ta")
             allow = await self.interaction_check(interaction)
             if not allow:
                 return
+            print("ti")
             await item.callback(interaction)
+            print("to")
             if not interaction.response._responded:
                 await interaction.response.defer()
+            print("test")
 
         except Exception as e:
             return await self.on_error(e, item, interaction)
