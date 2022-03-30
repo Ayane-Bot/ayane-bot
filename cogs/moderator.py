@@ -1,7 +1,7 @@
 import datetime
 from collections import defaultdict
 from enum import Enum
-from typing import Literal, List, Union
+from typing import Literal, Union
 
 import dateparser
 import discord
@@ -10,7 +10,6 @@ from discord import app_commands
 
 from main import Ayane
 from utils.cache import ExpiringCache
-from utils.context import AyaneContext
 from utils.exceptions import AlreadyMuted, NotMuted
 from utils.mods import ModUtils
 from private.config import LOCAL

@@ -4,17 +4,16 @@ import typing
 import discord
 from discord.ext import commands
 
-from utils import defaults
 from utils.context import AyaneContext
 from main import Ayane
 from private.config import LOCAL
 
 
-def setup(bot):
-    bot.add_cog(Owner(bot))
+async def setup(bot):
+    await bot.add_cog(Owner(bot))
 
 
-class Owner(defaults.AyaneCog, emoji='🦉', brief='owner-only commands'):
+class Owner(commands.Cog, emoji='🦉', brief='owner-only commands'):
     def __init__(self, bot):
         self.bot: Ayane = bot
 
@@ -23,13 +22,12 @@ class Owner(defaults.AyaneCog, emoji='🦉', brief='owner-only commands'):
             return True
         raise commands.NotOwner()
 
-    @defaults.ayane_group(name='dev', aliases=['d'],
-                          invoke_without_command=True, hidden=True, message_command=True)
+    @commands.command(name='dev', aliases=['d'], invoke_without_command=True, hidden=True, message_command=True)
     async def dev(self, ctx: AyaneContext, subcommand: str = None):
         if subcommand:
             return await ctx.send(f'Unknown subcommand `{subcommand}`', delete_after=5)
 
-    @dev.ayane_command(name='restart', aliases=['reboot', 'r'], message_command=True)
+    @dev.command(name='restart', aliases=['reboot', 'r'], message_command=True)
     async def dev_restart(self, ctx: AyaneContext, *, service: str = 'ayane'):
         if LOCAL:
             return
@@ -38,7 +36,7 @@ class Owner(defaults.AyaneCog, emoji='🦉', brief='owner-only commands'):
 
     Status = typing.Literal['playing', 'streaming', 'listening', 'watching', 'competing']
 
-    @dev.ayane_command(name='status', aliases=['ss'], message_command=True)
+    @dev.command(name='status', aliases=['ss'], message_command=True)
     async def dev_status(self, ctx: AyaneContext, status: Status, *, text: str):
         activity_types = {
             'playing': discord.ActivityType.playing,
