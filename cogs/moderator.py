@@ -174,7 +174,8 @@ class Moderator(commands.Cog):
 
     @app_commands.command(name="ban")
     @app_commands.checks.has_permissions(ban_members=True)
-    async def ban_(self, interaction: discord.Interaction, member: Union[discord.Member,discord.User], reason: str = None):
+    async def ban_(self, interaction: discord.Interaction, member: Union[discord.Member, discord.User],
+                   reason: str = None):
         """Ban a member
         If 'spam' is in the reason, all the message the member sent in the last 24 hours will be deleted.
         If you want to ban one or multiple users that are not in the guild you should use `massban` command."""
@@ -207,7 +208,6 @@ class Moderator(commands.Cog):
         await self.modutils.kick(member, reason=reason)
         await interaction.response.send_message(f"**{member.name}** has been kicked.")
 
-
     @app_commands.command(name="mute")
     @app_commands.checks.has_permissions(manage_messages=True)
     async def mute_(self, interaction, member: discord.Member, reason: str = None):
@@ -235,7 +235,7 @@ class Moderator(commands.Cog):
 
     @app_commands.command(name="timeout")
     @app_commands.checks.has_permissions(moderate_members=True)
-    async def timeout_(self, interaction, member: discord.Member, *, until):
+    async def timeout_(self, interaction, member: discord.Member, until: str):
         """Timeout/disable timeout of a member.
         If the time you passed is invalid and the user is already timed out, then the bot will stop the timeout."""
         until = dateparser.parse(
