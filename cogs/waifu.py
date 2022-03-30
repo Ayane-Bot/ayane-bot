@@ -38,8 +38,8 @@ class PictureConverter:
         return filename
 
 
-def setup(bot):
-    bot.add_cog(Waifu(bot))
+async def setup(bot):
+    await bot.add_cog(Waifu(bot))
 
 
 class Waifu(commands.cog):
