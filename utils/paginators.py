@@ -106,6 +106,22 @@ class BaseView(discord.ui.View):
         self.message = None
         self.no_author_check = []
 
+    async def _scheduled_task(self, item, interaction):
+        try:
+            if self.timeout:
+                self.__timeout_expiry = time.monotonic() + self.timeout
+
+            allow = await self.interaction_check(interaction)
+            if not allow:
+                return
+
+            await item.callback(interaction)
+            if not interaction.response._responded:
+                await interaction.response.defer()
+
+        except Exception as e:
+            return await self.on_error(e, item, interaction)
+
     async def stop_paginator(self, timed_out=False):
         if (timed_out and not self.delete_after and self.message) or self.ephemeral:
             for it in self.children:

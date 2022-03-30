@@ -1,10 +1,28 @@
 import discord
+import time
 
 
 class BaseModal(discord.ui.Modal):
+
     def __init__(self, *, view, **kwargs):
         self.view = view
         super().__init__(**kwargs)
+
+    async def _scheduled_task(self, interaction):
+        try:
+            if self.timeout:
+                self.__timeout_expiry = time.monotonic() + self.timeout
+
+            allow = await self.interaction_check(interaction)
+            if not allow:
+                return
+
+            await self.on_submit(interaction)
+
+            if not interaction.response._responded:
+                await interaction.response.defer()
+        except Exception as e:
+            return await self.on_error(e, interaction)
 
     async def on_error(self, error: Exception, interaction) -> None:
         await self.view.on_error(error, None, interaction)
