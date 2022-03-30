@@ -1,10 +1,11 @@
 import discord
 from discord.ext import commands
+from discord import app_commands
 
 from main import Ayane
-from utils import defaults
 from utils.context import AyaneContext
 from utils.paginators import BaseSource, ViewMenu
+from utils.helpers import stop_if_nsfw
 
 import kadal
 # fork at https://github.com/Bucolo/Kadal/
@@ -23,10 +24,12 @@ anilisticon = "https://www.gitbook.com/cdn-cgi/image/" \
               "%3Fgeneration%3D1531944291782256%26alt%3Dmedia"
 
 
-class Fun(defaults.AyaneCog, emoji='🎢', brief='Some fun commands'):
+class Fun(commands.Cog):
     def __init__(self, bot):
+        self.emoji = '🎢'
+        self. = 'Some fun commands'
         self.bot: Ayane = bot
-        self.kadalclient = kadal.Client(session=self.bot.session, loop=self.bot.loop)
+        self.kadalclient = kadal.Client(session=self.bot.session)
 
     @staticmethod
     def format_error_message(search, safe_search=False):
@@ -68,55 +71,38 @@ class Fun(defaults.AyaneCog, emoji='🎢', brief='Some fun commands'):
         embed.set_image(url=f"https://img.anili.st/media/{media.id}")
         return embed
 
-    @defaults.ayane_command(name='anime', aliases=['anm'])
-    async def anime_(self, ctx: AyaneContext, *, name) -> discord.Message:
+    @app_commands.command(name='anime')
+    @app_commands.describe(name='The name of the anime you want to search')
+    async def anime_(self, interaction, *, name) -> discord.Message:
         """Search an anime on https://anilist.co"""
         try:
             anime = await self.kadalclient.search_anime(name, popularity=True, allow_adult=True)
         except kadal.MediaNotFound:
-            return await ctx.send(self.format_error_message(name))
-        ctx.stop_if_nsfw(anime.is_adult)
+            return await interaction.response.send_message(self.format_error_message(name))
+        stop_if_nsfw(anime.is_adult)
         await ctx.send(embed=self.format_anilist_embeds(anime))
 
-    @defaults.ayane_command(name='manga',
-                            aliases=['mng', 'mang', 'webtton', 'comic', 'manhua', 'manhwa', 'pornhwa', 'pornhua'])
-    async def manga_(self, ctx: AyaneContext, *, name) -> discord.Message:
+    @app_commands.command(name='manga')
+    @app_commands.describe(name='The name of the manga you want to search')
+    async def manga_(self, interaction, *, name) -> discord.Message:
         """Search a manga on https://anilist.co"""
         try:
             manga = await self.kadalclient.search_manga(name, popularity=True, allow_adult=True)
         except kadal.MediaNotFound:
-            return await ctx.send(self.format_error_message(name))
-        ctx.stop_if_nsfw(manga.is_adult)
-        await ctx.send(embed=self.format_anilist_embeds(manga))
+            return await interaction.response.send_message(self.format_error_message(name))
+        stop_if_nsfw(manga.is_adult)
+        await interaction.response.send_message(embed=self.format_anilist_embeds(manga))
 
-    @defaults.ayane_command(
-        name='topmanga',
-        aliases=[
-            'topmng',
-            'topmang',
-            'topwebtton',
-            'topcomic',
-            'topmanhua',
-            'topmanhwa',
-            'toppornhwa',
-            'toppornhua'
-        ]
-    )
-    async def topmanga_(
-            self,
-            ctx: AyaneContext,
-            adult: bool = commands.Option(
-                default=None,
-                description="Whether you want the top to contain only adult manga",
-            ),
-    ) -> discord.Message:
+    @app_commands.command(name='top-manga')
+    @app_commands.describe(adult='If you want or not to retrieve adult only mangas')
+    async def top_manga_(self,interaction,adult: bool = None):
         """Get the top 50 manga on https://anilist.co
         Safe search is forced if not in nsfw channel"""
-        ctx.stop_if_nsfw(adult)
+        stop_if_nsfw(adult)
         embed_list = []
         is_nsfw = False
-        if isinstance(ctx.channel, (discord.Thread, discord.TextChannel)):
-            is_nsfw = ctx.channel.is_nsfw()
+        if isinstance(interaction.channel, (discord.Thread, discord.TextChannel)):
+            is_nsfw = interaction.channel.is_nsfw()
         variables = {"type": "MANGA", "sort": "SCORE_DESC"}
         if not is_nsfw:
             variables["isAdult"] = is_nsfw
@@ -125,24 +111,18 @@ class Fun(defaults.AyaneCog, emoji='🎢', brief='Some fun commands'):
         allmangas = await self.kadalclient.custom_paged_search(**variables)
         for i, manga in enumerate(allmangas):
             embed_list.append(self.format_anilist_embeds(manga, index=i + 1, total=len(allmangas)))
-        await ViewMenu(source=BaseSource(embed_list, per_page=1), ctx=ctx).start()
+        await ViewMenu(source=BaseSource(embed_list, per_page=1), main_interaction=interaction).start()
 
-    @defaults.ayane_command(name='topanime', aliases=['topanm'])
-    async def topanime_(
-            self,
-            ctx: AyaneContext,
-            adult: bool = commands.Option(
-                default=None,
-                description="Whether you want the top to contain only adult anime",
-            ),
-    ) -> discord.Message:
+    @app_commands.command(name='top-anime')
+    @app_commands.describe(adult='If you want or not to retrieve adult only mangas')
+    async def top_anime_(self,interaction, adult: bool = None):
         """Get the top 50 anime on https://anilist.co
         Safe search is forced if not in nsfw channel"""
-        ctx.stop_if_nsfw(adult)
+        stop_if_nsfw(adult)
         embed_list = []
         is_nsfw = False
-        if isinstance(ctx.channel, (discord.Thread, discord.TextChannel)):
-            is_nsfw = ctx.channel.is_nsfw()
+        if isinstance(interaction.channel, (discord.Thread, discord.TextChannel)):
+            is_nsfw = interaction.channel.is_nsfw()
         variables = {"type": "ANIME", "sort": "SCORE_DESC"}
         if not is_nsfw:
             variables["isAdult"] = is_nsfw
@@ -151,4 +131,4 @@ class Fun(defaults.AyaneCog, emoji='🎢', brief='Some fun commands'):
         allanimes = await self.kadalclient.custom_paged_search(**variables)
         for i, anime in enumerate(allanimes):
             embed_list.append(self.format_anilist_embeds(anime, index=i + 1, total=len(allanimes)))
-        await ViewMenu(source=BaseSource(embed_list, per_page=1), ctx=ctx).start()
+        await ViewMenu(source=BaseSource(embed_list, per_page=1), main_interaction=interaction).start()

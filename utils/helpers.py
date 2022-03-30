@@ -3,8 +3,13 @@ from collections import Counter
 import discord
 
 from utils.context import AyaneContext
+from utils.exceptions import NSFWChannelRequired
 from private.config import LOCAL
 
+
+def stop_if_nsfw(condition):
+    if condition:
+        raise NSFWChannelRequired
 
 async def do_removal(ctx: AyaneContext, limit: int, predicate, *, before=None, after=None, bulk: bool = True) -> None:
     """
