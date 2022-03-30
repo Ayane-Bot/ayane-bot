@@ -11,15 +11,16 @@ class BaseModal(discord.ui.Modal):
 
 
 class ReportModal(BaseModal):
+    reason = discord.ui.TextInput(
+        label="What is the problem with this picture ?",
+        min_length=5,
+        max_length=200,
+        placeholder="Contain a loli / Tags are incorrect / Here is the new source : https://example.com/ ",
+        style=discord.TextStyle.paragraph
+    )
+
     def __init__(self, **kwargs):
         super().__init__(title="Report", **kwargs)
-        self.reason = discord.ui.TextInput(
-            label="What is the problem with this picture ?",
-            min_length=5,
-            max_length=200,
-            placeholder="Contain a loli / Tags are incorrect / Here is the new source : https://example.com/ ",
-            style=discord.TextStyle.paragraph
-        )
 
     async def on_submit(self, interaction) -> None:
         await self.view.bot.waifu_client.report(
@@ -38,16 +39,18 @@ class ReportModal(BaseModal):
 
 
 class PagePrompterModal(BaseModal):
+    page = discord.ui.TextInput(
+        label="Page",
+        min_length=1,
+
+        style=discord.TextStyle.short
+    )
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.max_page = self.view.source.get_max_pages() - 1
+        self.max_page = self.view.source.get_max_pages()
         self.title = f"Select a page number between 1 and {self.max_page}"
-        self.page = discord.ui.TextInput(
-            label="Page",
-            min_length=1,
-            max_length=len(str(self.max_page)),
-            style=discord.TextStyle.short
-        )
+        self.page.max_length = len(str(self.max_page)),
 
     async def on_submit(self, interaction) -> None:
         try:
