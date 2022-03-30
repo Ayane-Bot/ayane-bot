@@ -78,4 +78,6 @@ class AyaneCommandTree(app_commands.CommandTree):
 
     async def interaction_check(self, interaction) -> bool:
         for check in interaction.client.default_checks:
-            await check(interaction)
+            if await check(interaction) is False:
+                return False
+        return True
