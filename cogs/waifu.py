@@ -173,7 +173,7 @@ class Waifu(commands.Cog):
         The commands that use the bot [API](https://waifu.im/) are the nsfw commands and the `waifu` command."""
         stop_if_nsfw(not interaction.channel.is_nsfw() and (is_nsfw is None or is_nsfw))
         try:
-            images = await interaction.client.waifu_client.fav(user_id=interaction.user.id)
+            images = (await interaction.client.waifu_client.fav(user_id=interaction.user.id))["images"]
         except waifuim.APIException as e:
             if e.status == 404:
                 return await interaction.response.send_message(
