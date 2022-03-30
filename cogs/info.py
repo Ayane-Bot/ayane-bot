@@ -9,8 +9,8 @@ from discord.ext import commands
 from discord import app_commands
 
 
-def setup(bot):
-    bot.add_cog(Info(bot))
+async def setup(bot):
+    await bot.add_cog(Info(bot))
 
 
 class Info(commands.Cog):
