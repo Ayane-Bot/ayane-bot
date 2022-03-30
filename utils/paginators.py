@@ -1,13 +1,13 @@
-import discord
+import time
 import waifuim
-from discord.ext import commands, menus
-
 import os
+
+import discord
+from discord.ext import menus
 
 from utils.constants import APIDomainName
 from utils.modals import ReportModal, PagePrompterModal
 from utils.exceptions import NotAuthorized, LimitReached, UserBlacklisted, NotOwner
-from utils.lock import UserLock
 
 
 def get_custom_id():
