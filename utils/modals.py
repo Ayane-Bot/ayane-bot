@@ -14,7 +14,7 @@ class ReportModal(BaseModal):
     def __init__(self, **kwargs):
         super().__init__(title="Report", **kwargs)
         self.reason = discord.ui.TextInput(
-            "What is the problem with this picture ?",
+            label="What is the problem with this picture ?",
             min_length=5,
             max_length=200,
             placeholder="Contain a loli / Tags are incorrect / Here is the new source : https://example.com/ "
@@ -42,7 +42,7 @@ class PagePrompterModal(BaseModal):
         self.max_page = self.view.source.get_max_pages() - 1
         self.title = f"Select a page number between 1 and {self.max_page}"
         self.page = discord.ui.TextInput(
-            "Page",
+            label="Page",
             min_length=1,
             max_length=len(str(self.max_page)),
         )
