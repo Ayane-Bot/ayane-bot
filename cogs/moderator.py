@@ -175,7 +175,7 @@ class Moderator(commands.Cog):
     @app_commands.command(name="ban")
     @app_commands.context_menu(name="ban")
     @app_commands.checks.has_permissions(ban_members=True)
-    async def ban_(self, interaction, member: discord.Member, *, reason=None):
+    async def ban_(self, interaction, member: discord.Member, ):
         """Ban a member
         If 'spam' is in the reason, all the message the member sent in the last 24 hours will be deleted.
         If you want to ban one or multiple users that are not in the guild you should use `massban` command."""
