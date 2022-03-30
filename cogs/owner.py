@@ -13,8 +13,10 @@ async def setup(bot):
     await bot.add_cog(Owner(bot))
 
 
-class Owner(commands.Cog, emoji='🦉', brief='owner-only commands'):
+class Owner(commands.Cog):
     def __init__(self, bot):
+        self.emoji = '🦉'
+        self.brief = 'owner-only commands'
         self.bot: Ayane = bot
 
     async def cog_check(self, ctx: AyaneContext) -> bool:
