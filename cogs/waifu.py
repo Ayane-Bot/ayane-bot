@@ -105,8 +105,7 @@ class Waifu(commands.Cog):
                                       "are passed)")
     @app_commands.describe(
         file_name_or_url="A file name or an url to the file you want to look if it exist on the API.",
-        attachment="A file that you want to look if it exist on the API (this field will be used if file name is also "
-                   "passed) "
+        attachment="A file that you want to look if it exist on the API. "
     )
     @app_commands.checks.cooldown(1, float(3), key=lambda i: (i.user.id,))
     async def pics(self,
