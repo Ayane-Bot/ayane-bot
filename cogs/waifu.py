@@ -182,6 +182,7 @@ class Waifu(commands.Cog):
                 )
             else:
                 raise e
+        images = [waifuim.types.Image(i) for i in images]
         if is_nsfw is not None:
             images = list(filter(lambda image: image.is_nsfw == is_nsfw, images))
         title = interaction.user.name + " " + (
