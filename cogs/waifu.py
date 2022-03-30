@@ -122,7 +122,7 @@ class Waifu(commands.Cog):
         `is_ephemeral` argument only work with slash commands."""
         if not attachment and not file_name_or_url:
             return await interaction.response.send_message("You must at least provide a file name a url or an "
-                                                           "attachments")
+                                                           "attachment")
         if attachment and attachment.content_type.split("/")[0] != "image":
             return await interaction.response.send_message("This command only support image attachment")
         if file_name_or_url:
