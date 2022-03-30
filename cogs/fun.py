@@ -74,19 +74,19 @@ class Fun(commands.Cog):
     @app_commands.describe(name='The name of the anime you want to search')
     async def anime_(self, interaction, name: str) -> discord.Message:
         """Search an anime on https://anilist.co"""
-        nsfw_channel = interaction.chanel.is_nsfw() if not isinstance(interaction.channel, discord.DMChannel) else False
+        nsfw_channel = interaction.channel.is_nsfw() if not isinstance(interaction.channel, discord.DMChannel) else False
         try:
             anime = await self.kadalclient.search_anime(name, popularity=True, allow_adult=True)
         except kadal.MediaNotFound:
             return await interaction.response.send_message(self.format_error_message(name))
-        stop_if_nsfw(anime.is_adult)
+        stop_if_nsfw(anime.is_adult and not nsfw_channel)
         await interaction.response.send_message(embed=self.format_anilist_embeds(anime))
 
     @app_commands.command(name='manga')
     @app_commands.describe(name='The name of the manga you want to search')
     async def manga_(self, interaction, name: str) -> discord.Message:
         """Search a manga on https://anilist.co"""
-        nsfw_channel = interaction.chanel.is_nsfw() if not isinstance(interaction.channel, discord.DMChannel) else False
+        nsfw_channel = interaction.channel.is_nsfw() if not isinstance(interaction.channel, discord.DMChannel) else False
         try:
             manga = await self.kadalclient.search_manga(name, popularity=True, allow_adult=True)
         except kadal.MediaNotFound:
@@ -96,9 +96,9 @@ class Fun(commands.Cog):
 
     @app_commands.command(name='top-manga')
     @app_commands.describe(adult='If you want or not to retrieve adult only mangas')
-    async def top_manga_(self, interaction, adult: bool = None):
+    async def top_manga_(self, interaction, adult: bool = False):
         """Get the top 50 manga on https://anilist.co"""
-        nsfw_channel = interaction.chanel.is_nsfw() if not isinstance(interaction.channel, discord.DMChannel) else False
+        nsfw_channel = interaction.channel.is_nsfw() if not isinstance(interaction.channel, discord.DMChannel) else False
         stop_if_nsfw(adult and not nsfw_channel)
         embed_list = []
         variables = {"type": "MANGA", "sort": "SCORE_DESC"}
@@ -110,10 +110,10 @@ class Fun(commands.Cog):
 
     @app_commands.command(name='top-anime')
     @app_commands.describe(adult='If you want or not to retrieve adult only mangas')
-    async def top_anime_(self, interaction, adult: bool = None):
+    async def top_anime_(self, interaction, adult: bool = False):
         """Get the top 50 anime on https://anilist.co
         Safe search is forced if not in nsfw channel"""
-        nsfw_channel = interaction.chanel.is_nsfw() if not isinstance(interaction.channel, discord.DMChannel) else False
+        nsfw_channel = interaction.channel.is_nsfw() if not isinstance(interaction.channel, discord.DMChannel) else False
         stop_if_nsfw(adult and not nsfw_channel)
         embed_list = []
         variables = {"type": "ANIME", "sort": "SCORE_DESC"}
