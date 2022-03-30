@@ -6,7 +6,6 @@ class BaseModal(discord.ui.Modal):
         self.view = view
         super().__init__(**kwargs)
 
-
     async def on_error(self, error: Exception, interaction) -> None:
         await self.view.on_error(error, None, interaction)
 
@@ -47,8 +46,8 @@ class PagePrompterModal(BaseModal):
 
     def __init__(self, **kwargs):
         self.max_page = self.view.source.get_max_pages()
-        super().__init__(title = f"Select a page number between 1 and {self.max_page}",**kwargs)
-        self.page.max_length = len(str(self.max_page)),
+        super().__init__(title=f"Select a page number between 1 and {self.max_page}", **kwargs)
+        self.page.max_length = len(str(self.max_page))
 
     async def on_submit(self, interaction) -> None:
         try:
