@@ -174,7 +174,7 @@ class Moderator(commands.Cog):
 
     @app_commands.command(name="ban")
     @app_commands.checks.has_permissions(ban_members=True)
-    async def ban_(self, interaction : discord.Interaction, member: discord.Member, *, reason=None):
+    async def ban_(self, interaction: discord.Interaction, member: discord.Member, reason: str = None):
         """Ban a member
         If 'spam' is in the reason, all the message the member sent in the last 24 hours will be deleted.
         If you want to ban one or multiple users that are not in the guild you should use `massban` command."""
@@ -189,7 +189,8 @@ class Moderator(commands.Cog):
 
     @app_commands.command(name="massban")
     @app_commands.checks.has_permissions(ban_members=True)
-    async def massban_(self, interaction, users: commands.Greedy[Union[discord.Member, discord.User]], *, reason=None):
+    async def massban_(self, interaction, users: commands.Greedy[Union[discord.Member, discord.User]], *,
+                       reason: str = None):
         """Ban multiple members at once.
         If 'spam' is in the reason, all the message the user sent in the last 24 hours will be deleted."""
         if not users:
@@ -216,7 +217,7 @@ class Moderator(commands.Cog):
 
     @app_commands.command(name="unban")
     @app_commands.checks.has_permissions(ban_members=True)
-    async def unban_(self, interaction, user: discord.User, *, reason=None):
+    async def unban_(self, interaction, user: discord.User, reason: str = None):
         """Unban a member"""
         try:
             await self.modutils.unban(interaction.guild, user, reason=reason)
@@ -226,7 +227,7 @@ class Moderator(commands.Cog):
 
     @app_commands.command(name="kick")
     @app_commands.checks.has_permissions(kick_members=True)
-    async def kick_(self, interaction, member: discord.Member, *, reason=None):
+    async def kick_(self, interaction, member: discord.Member, reason: str = None):
         """Kick a member"""
         if member.guild_permissions.kick_members:
             return await interaction.response.send_message(f"Sorry **{member}** also has **Kick Members** permission, "
@@ -236,7 +237,7 @@ class Moderator(commands.Cog):
 
     @app_commands.command(name="masskick")
     @app_commands.checks.has_permissions(kick_members=True)
-    async def masskick_(self, interaction, members: commands.Greedy[discord.Member], *, reason=None):
+    async def masskick_(self, interaction, members: commands.Greedy[discord.Member], reason: str = None):
         """Kick multiple members at once."""
         if not members:
             return await interaction.response.send_message(
@@ -259,7 +260,7 @@ class Moderator(commands.Cog):
 
     @app_commands.command(name="mute")
     @app_commands.checks.has_permissions(manage_messages=True)
-    async def mute_(self, interaction, member: discord.Member, *, reason=None):
+    async def mute_(self, interaction, member: discord.Member, reason: str = None):
         """Mute a member"""
         if member.guild_permissions.manage_messages:
             return await interaction.response.send_message(
@@ -273,7 +274,7 @@ class Moderator(commands.Cog):
 
     @app_commands.command(name="unmute")
     @app_commands.checks.has_permissions(manage_messages=True)
-    async def unmute_(self, interaction, member: discord.Member, *, reason=None):
+    async def unmute_(self, interaction, member: discord.Member, reason: str = None):
         """Unmute a member"""
         try:
             await self.modutils.unmute(member, reason=reason)
