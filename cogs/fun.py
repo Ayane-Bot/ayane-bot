@@ -97,17 +97,19 @@ class Fun(commands.Cog):
     @app_commands.command(name='top-manga')
     @app_commands.describe(adult='If you want or not to retrieve adult only mangas')
     async def top_manga_(self, interaction, adult: bool = None):
-        """Get the top 50 manga on https://anilist.co
-        Safe search is forced if not in nsfw channel"""
-        nsfw_channel = interaction.chanel.is_nsfw() if not isinstance(interaction.chanel, discord.DMChannel) else False
-        stop_if_nsfw(adult and not nsfw_channel)
-        embed_list = []
-        variables = {"type": "MANGA", "sort": "SCORE_DESC"}
-        variables["isAdult"] = adult
-        allmangas = await self.kadalclient.custom_paged_search(**variables)
-        for i, manga in enumerate(allmangas):
-            embed_list.append(self.format_anilist_embeds(manga, index=i + 1, total=len(allmangas)))
-        await ViewMenu(source=BaseSource(embed_list, per_page=1), main_interaction=interaction).start()
+        """Get the top 50 manga on https://anilist.co"""
+        try:
+            nsfw_channel = interaction.chanel.is_nsfw() if not isinstance(interaction.chanel, discord.DMChannel) else False
+            stop_if_nsfw(adult and not nsfw_channel)
+            embed_list = []
+            variables = {"type": "MANGA", "sort": "SCORE_DESC"}
+            variables["isAdult"] = adult
+            allmangas = await self.kadalclient.custom_paged_search(**variables)
+            for i, manga in enumerate(allmangas):
+                embed_list.append(self.format_anilist_embeds(manga, index=i + 1, total=len(allmangas)))
+            await ViewMenu(source=BaseSource(embed_list, per_page=1), main_interaction=interaction).start()
+        except Exception as e:
+            await interaction.response.send_message(str(e))
 
     @app_commands.command(name='top-anime')
     @app_commands.describe(adult='If you want or not to retrieve adult only mangas')
