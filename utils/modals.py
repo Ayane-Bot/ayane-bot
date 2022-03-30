@@ -45,8 +45,9 @@ class PagePrompterModal(BaseModal):
     )
 
     def __init__(self, **kwargs):
+        super().__init__(title="Select a page number", **kwargs)
         self.max_page = self.view.source.get_max_pages()
-        super().__init__(title=f"Select a page number between 1 and {self.max_page}", **kwargs)
+        self.title = f"Select a page number between 1 and {self.max_page}"
         self.page.max_length = len(str(self.max_page))
 
     async def on_submit(self, interaction) -> None:
