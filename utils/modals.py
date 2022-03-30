@@ -2,9 +2,10 @@ import discord
 
 
 class BaseModal(discord.ui.Modal):
-    def __init__(self, *, view, title="No Title", **kwargs):
-        super().__init__(title=title, **kwargs)
+    def __init__(self, *, view, **kwargs):
         self.view = view
+        super().__init__(**kwargs)
+
 
     async def on_error(self, error: Exception, interaction) -> None:
         await self.view.on_error(error, None, interaction)
@@ -41,15 +42,12 @@ class ReportModal(BaseModal):
 class PagePrompterModal(BaseModal):
     page = discord.ui.TextInput(
         label="Page",
-        min_length=1,
-
-        style=discord.TextStyle.short
+        min_length=1
     )
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
         self.max_page = self.view.source.get_max_pages()
-        self.title = f"Select a page number between 1 and {self.max_page}"
+        super().__init__(title = f"Select a page number between 1 and {self.max_page}",**kwargs)
         self.page.max_length = len(str(self.max_page)),
 
     async def on_submit(self, interaction) -> None:
