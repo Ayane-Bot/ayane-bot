@@ -65,9 +65,6 @@ class Ayane(commands.Bot):
         self.server_invite = constants.server_invite
         self.owner_ids = OWNER_IDS
         self.colour = self.color = discord.Colour(value=0xA37FFF)
-
-        # Startup tasks and stuff
-        self._load_cogs()
         self.user_lock = {}
         self.guild_ratio = 0.35
         self.guild_maxbot = 31
@@ -254,7 +251,7 @@ class Ayane(commands.Bot):
             for line in traceback_string.split("\n"):
                 logging.info(line)
 
-    def _load_cogs(self):
+    async def load_cogs(self):
         """
         Loads all the extensions in the ./cogs directory.
         """
@@ -262,7 +259,7 @@ class Ayane(commands.Bot):
                       ] + self.initial_extensions  # Initial extensions like jishaku or others that may be elsewhere
         for ext in extensions:
             try:
-                self.load_extension(ext)
+                await self.load_extension(ext)
                 logging.info(f"{ok} Loaded extension {ext}")
                 
             except Exception as e:
@@ -284,6 +281,7 @@ if __name__ == "__main__":
             webhook.send('👋 Ayane is waking up!')
             del webhook
             async with bot:
+                await bot.load_cogs()
                 await bot.start(TOKEN)
                 await bot.on_ready_once()
         finally:
