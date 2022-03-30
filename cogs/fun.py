@@ -97,16 +97,10 @@ class Fun(commands.Cog):
     async def top_manga_(self, interaction, adult: bool = None):
         """Get the top 50 manga on https://anilist.co
         Safe search is forced if not in nsfw channel"""
-        stop_if_nsfw(adult)
+        stop_if_nsfw(adult and not interaction.channel.is_nsfw())
         embed_list = []
-        is_nsfw = False
-        if isinstance(interaction.channel, (discord.Thread, discord.TextChannel)):
-            is_nsfw = interaction.channel.is_nsfw()
         variables = {"type": "MANGA", "sort": "SCORE_DESC"}
-        if not is_nsfw:
-            variables["isAdult"] = is_nsfw
-        elif adult is not None:
-            variables["isAdult"] = adult
+        variables["isAdult"] = adult
         allmangas = await self.kadalclient.custom_paged_search(**variables)
         for i, manga in enumerate(allmangas):
             embed_list.append(self.format_anilist_embeds(manga, index=i + 1, total=len(allmangas)))
@@ -117,16 +111,10 @@ class Fun(commands.Cog):
     async def top_anime_(self, interaction, adult: bool = None):
         """Get the top 50 anime on https://anilist.co
         Safe search is forced if not in nsfw channel"""
-        stop_if_nsfw(adult)
+        stop_if_nsfw(adult and not interaction.channel.is_nsfw())
         embed_list = []
-        is_nsfw = False
-        if isinstance(interaction.channel, (discord.Thread, discord.TextChannel)):
-            is_nsfw = interaction.channel.is_nsfw()
         variables = {"type": "ANIME", "sort": "SCORE_DESC"}
-        if not is_nsfw:
-            variables["isAdult"] = is_nsfw
-        elif adult is not None:
-            variables["isAdult"] = adult
+        variables["isAdult"] = adult
         allanimes = await self.kadalclient.custom_paged_search(**variables)
         for i, anime in enumerate(allanimes):
             embed_list.append(self.format_anilist_embeds(anime, index=i + 1, total=len(allanimes)))
