@@ -80,8 +80,7 @@ class AyaneCommandTree(app_commands.CommandTree):
                 await interaction.client.send_interaction_error_message(interaction, embed=embed)
         elif isinstance(error, app_commands.TransformerError):
             embed.title = "🛑 Bad Argument"
-            embed.description = f"The argument `{error.value}` was not a correct "\
-                                f"**{error.type.name.capitalize()}** type. "
+            embed.description = str(error)
             await interaction.client.send_interaction_error_message(interaction, embed=embed)
         else:
             await interaction.client.send_unexpected_error(interaction, command, error)
