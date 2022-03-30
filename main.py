@@ -202,8 +202,7 @@ class Ayane(commands.Bot):
                        f"bot issues and updates join the [support server]({constants.server_invite}) !"
             embed = discord.Embed(title="❌ Error", colour=interaction.client.colour, description=_message)
             embed.add_field(name="Traceback :", value=f"```py\n{type(error).__name__} : {error}```")
-            await interaction.client.get_cog("Events").send_interaction_error_message(interaction, embed=embed,
-                                                                                      **kwargs)
+            await interaction.client.send_interaction_error_message(interaction, embed=embed, **kwargs)
 
         error_channel = interaction.client.get_channel(920086735755575327)
         traceback_string = "".join(traceback.format_exception(etype=None, value=error, tb=error.__traceback__))

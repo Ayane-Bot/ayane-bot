@@ -21,6 +21,8 @@ class AyaneCommandTree(app_commands.CommandTree):
         embed = discord.Embed(colour=interaction.client.colour)
         if isinstance(error, app_commands.CommandInvokeError):
             error = error.original
+        if isinstance(error, app_commands.errors.CommandNotFound):
+            return
         elif isinstance(error, app_commands.CheckFailure):
             if isinstance(error, app_commands.BotMissingPermissions):
                 missing = [(e.replace('_', ' ').replace('guild', 'server')).title() for e in error.missing_permissions]
