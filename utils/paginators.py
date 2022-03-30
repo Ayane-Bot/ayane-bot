@@ -110,6 +110,7 @@ class BaseView(discord.ui.View):
         try:
             if self.timeout:
                 self.__timeout_expiry = time.monotonic() + self.timeout
+            print(self.main_interaction.is_expired)
             if self.main_interaction.is_expired:
                 return
             allow = await self.interaction_check(interaction)

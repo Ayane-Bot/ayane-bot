@@ -58,7 +58,6 @@ class AyaneCommandTree(app_commands.CommandTree):
                 return
 
             elif isinstance(error, exceptions.NSFWChannelRequired):
-                print("teeeest")
                 _message = "Sorry, I cannot display **NSFW** content in this channel."
                 embed.title = "🛑 NSFW channel required"
                 embed.description = _message
