@@ -183,7 +183,7 @@ class Waifu(commands.Cog):
             else:
                 raise e
         if is_nsfw is not None:
-            images = list(filter(lambda image: image.is_nsfw == is_nsfw), images)
+            images = list(filter(lambda image: image.is_nsfw == is_nsfw, images))
         title = interaction.user.name + " " + (
             "SFW " if is_nsfw is True else "NSFW " if is_nsfw is False else "") + "Gallery"
         await FavMenu(
