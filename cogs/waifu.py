@@ -21,8 +21,6 @@ class PictureConverter:
             self.maybe_id = os.path.splitext(file_string.split("image=")[-1])[0]
         elif file_string:
             self.maybe_id = os.path.splitext(file_string.split("/")[-1])[0]
-        elif file:
-            self.maybe_id = os.path.splitext(xxhash.xxh3_64_hexdigest(await file.read()))
         self.bot = bot
         self.is_url = None
 
