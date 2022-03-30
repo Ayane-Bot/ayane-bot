@@ -160,7 +160,7 @@ class BaseView(discord.ui.View):
             *self.bot.owner_ids,
         }
         ):
-            raise NotAuthorized(self.ctx.author)
+            raise NotAuthorized(self.main_interaction.user)
         return True
 
     async def send_message(self, *args, **kwargs):

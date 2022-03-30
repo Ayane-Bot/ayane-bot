@@ -16,9 +16,7 @@ class BaseModal(discord.ui.Modal):
             allow = await self.interaction_check(interaction)
             if not allow:
                 return
-
             await self.on_submit(interaction)
-
             if not interaction.response._responded:
                 await interaction.response.defer()
         except Exception as e:
@@ -73,4 +71,4 @@ class PagePrompterModal(BaseModal):
             page = int(self.page.value)
         except ValueError:
             return await interaction.response.send_message(f"{self.page.value} is not a valid page", ephemeral=True)
-        await self.view.show_checked_page(page)
+        await self.view.show_checked_page(page - 1)
