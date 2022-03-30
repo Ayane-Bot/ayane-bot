@@ -504,7 +504,7 @@ class FavMenu(ImageMenu):
         emoji="❤️", label="Favourite or Remove", style=discord.ButtonStyle.grey
     )
     async def add_to_favourite(
-            self, button: discord.ui.Button, interaction: discord.Interaction
+            self, interaction: discord.Interaction, button: discord.ui.Button,
     ):
         await super().add_to_favourite(interaction, button)
         if interaction.user.id == self.main_interaction.user.id:
