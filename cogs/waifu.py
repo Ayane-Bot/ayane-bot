@@ -42,7 +42,7 @@ async def setup(bot):
     await bot.add_cog(Waifu(bot))
 
 
-class Waifu(commands.cog):
+class Waifu(commands.Cog):
     """The bot waifu API commands and some others."""
 
     def __init__(self, bot):
