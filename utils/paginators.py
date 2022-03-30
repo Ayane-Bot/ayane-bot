@@ -265,7 +265,8 @@ class ViewMenu(BaseView):
             if self.ephemeral:
                 await self.main_interaction.edit_original_message(**kwargs, view=self)
                 self.message = await self.main_interaction.original_message()
-            self.message = await self.message.edit(**kwargs, view=self)
+            else:
+                self.message = await self.message.edit(**kwargs, view=self)
 
     async def show_checked_page(
             self, page_number: int
