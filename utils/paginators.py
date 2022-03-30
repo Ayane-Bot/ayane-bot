@@ -490,7 +490,7 @@ class ImageMenu(ViewMenu):
         )
         for key, value in self.image_info.__dict__.items():
             if key == "tags":
-                value = ",".join([f"`{t['name']}`" for t in value])
+                value = ",".join([f"`{t['name']}`" for t in value.__dict__])
             embed.add_field(
                 name=key.replace("_", " ").capitalize(),
                 value=value if value is not None else "Sorry this field is empty",

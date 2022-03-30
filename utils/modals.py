@@ -44,7 +44,7 @@ class ReportModal(BaseModal):
             user_id=interaction.user.id,
             description=self.reason.value.strip(" "),
         )
-        await interaction.followup.send(
+        await interaction.response.send_message(
             "Your report has successfully been sent. Thank you for your help!",
             ephemeral=True,
         )
