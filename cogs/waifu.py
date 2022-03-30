@@ -14,16 +14,21 @@ from utils.paginators import ImageMenu, FavMenu, ImageSource
 
 
 class PictureConverter:
-    def __init__(self, u_input, bot):
-        self.u_input = u_input
-        if "manage" in u_input or "preview" in u_input:
-            self.maybe_id = os.path.splitext(u_input.split("image=")[-1])[0]
-        else:
-            self.maybe_id = os.path.splitext(u_input.split("/")[-1])[0]
+    def __init__(self, bot, file_string=None, file=None):
+        self.file_string = file_string
+        self.file = file
+        if file_string and "manage" in file_string or "preview" in file_string:
+            self.maybe_id = os.path.splitext(file_string.split("image=")[-1])[0]
+        elif file_string:
+            self.maybe_id = os.path.splitext(file_string.split("/")[-1])[0]
+        elif file:
+            self.maybe_id = os.path.splitext(xxhash.xxh3_64_hexdigest(await file.read()))
         self.bot = bot
         self.is_url = None
 
-    async def url_to_id(self):
+    async def to_id(self):
+        if self.file:
+            return os.path.splitext(xxhash.xxh3_64_hexdigest(await self.file.read()))[0]
         filename = self.maybe_id
         try:
             rep = await self.bot.session.get(
@@ -99,11 +104,16 @@ class Waifu(commands.Cog):
             ephemeral=is_ephemeral,
         ).start()
 
-    @app_commands.command(description="c19af2c9a399d0a3")
+    @app_commands.command(description="Look if an image exist on the api (the attachment field will be used if both "
+                                      "are passed)")
     @app_commands.describe(
         file_name_or_url="A file name or an url to the file you want to look if it exist on the API.")
-    @app_commands.checks.cooldown(1, float(3), key=commands.BucketType.user)
-    async def pics(self, interaction, file_name_or_url: str, ephemeral: bool = False):
+    @app_commands.checks.cooldown(1, float(3), key=lambda i: (i.user.id,))
+    async def pics(self,
+                   interaction,
+                   file_name_or_url: str = None,
+                   attachment: discord.AppCommandOptionType.attachment = None,
+                   ephemeral: bool = False):
         """🔗 Send you the picture related to the ID or the url you provided, if there is matches.
         This will work only if the image is strictly the same.
         Passing an image that have been compressed or went through any process that might alter its content will not work
@@ -111,15 +121,19 @@ class Waifu(commands.Cog):
         This command will display the image you want from the bot image API (for more information use `ayapi`).
         The ID is corresponding to the filename of the picture (without the extension), but you can still pass any url.
         `is_ephemeral` argument only work with slash commands."""
-        file_name_or_url = (
-            file_name_or_url.strip("||||")
-                .strip("******")
-                .strip("****")
-                .strip("**")
-                .strip("<>")
-        )
-        converter = PictureConverter(file_name_or_url, self.bot)
-        file_id = await converter.url_to_id()
+        if not attachment and not file_name_or_url:
+            return await interaction.response.send_message("You must at least provide a file name a url or an "
+                                                           "attachments")
+        if file_name_or_url:
+            file_name_or_url = (
+                file_name_or_url.strip("||||")
+                    .strip("******")
+                    .strip("****")
+                    .strip("**")
+                    .strip("<>")
+            )
+        converter = PictureConverter(self.bot, file_string=file_name_or_url, file=attachment)
+        file_id = await converter.to_id()
         start = time.perf_counter()
         try:
             matches = await self.bot.waifu_client.info([file_id])
