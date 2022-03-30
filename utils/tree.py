@@ -78,6 +78,11 @@ class AyaneCommandTree(app_commands.CommandTree):
                 embed.title = "🛑 Forbidden",
                 embed.description = "You or the bot cannot run this command."
                 await interaction.client.send_interaction_error_message(interaction, embed=embed)
+        elif isinstance(error, app_commands.TransformerError):
+            embed.title = "🛑 Bad Argument"
+            embed.description = f"The argument `{error.value}` was not a correct "\
+                                f"**{str(error.opt_type).capitalize()}** type. "
+
 
         else:
             print("NEW ERROR 5")
