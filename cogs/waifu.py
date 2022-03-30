@@ -76,7 +76,6 @@ class Waifu(commands.Cog):
                 selected_tags=selected_tags,
                 excluded_tags=excluded_tags,
                 gif=is_gif if not order_by == fav_order else None,
-                raw=True,
                 order_by=order_by,
                 many=many,
                 full=full,
@@ -92,7 +91,7 @@ class Waifu(commands.Cog):
         cleaned_category = "" if len(selected_tags) != 1 else selected_tags[0].capitalize()
         category = "Top " + cleaned_category if order_by == fav_order else cleaned_category
         await ImageMenu(source=ImageSource(
-            r["images"],
+            image_info=r,
             title=category,
             per_page=1,
             user=interaction.user,
@@ -138,7 +137,7 @@ class Waifu(commands.Cog):
         file_id = await converter.to_id()
         start = time.perf_counter()
         try:
-            matches = await self.bot.waifu_client.info([file_id])
+            matches = await self.bot.waifu_client.info(images=[file_id])
         except waifuim.APIException as e:
             if e.status == 404:
                 embed = discord.Embed(title="❌ File not found",
@@ -156,7 +155,7 @@ class Waifu(commands.Cog):
 
         return await ImageMenu(
             source=ImageSource(
-                matches, user=interaction.user,
+                image_info=matches, user=interaction.user,
                 title=tag.name.capitalize(),
                 request_time=round(end - start, 2),
                 per_page=1,
