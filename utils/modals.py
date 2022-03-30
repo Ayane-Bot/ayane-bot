@@ -17,7 +17,8 @@ class ReportModal(BaseModal):
             label="What is the problem with this picture ?",
             min_length=5,
             max_length=200,
-            placeholder="Contain a loli / Tags are incorrect / Here is the new source : https://example.com/ "
+            placeholder="Contain a loli / Tags are incorrect / Here is the new source : https://example.com/ ",
+            style=discord.TextStyle.paragraph
         )
 
     async def on_submit(self, interaction) -> None:
@@ -45,6 +46,7 @@ class PagePrompterModal(BaseModal):
             label="Page",
             min_length=1,
             max_length=len(str(self.max_page)),
+            style=discord.TextStyle.short
         )
 
     async def on_submit(self, interaction) -> None:
