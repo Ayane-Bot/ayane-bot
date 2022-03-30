@@ -125,7 +125,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             )
         ).start()
 
-    @defaults.ayane_command(description="c19af2c9a399d0a3")
+    @app_commands.command(description="c19af2c9a399d0a3")
     @commands.cooldown(1, float(3), commands.BucketType.user)
     async def pics(
             self,
@@ -582,7 +582,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
 
     """Normal commands"""
 
-    @defaults.ayane_command()
+    @app_commands.command()
     async def waifu(
             self,
             ctx,
@@ -604,7 +604,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx, selected_tags=[category], is_gif=is_gif, is_ephemeral=is_ephemeral, many=many, is_nsfw=False,
         )
 
-    @defaults.ayane_command(aliases=["proguy", "progirl"])
+    @app_commands.command(aliases=["proguy", "progirl"])
     async def maid(
             self,
             ctx,
@@ -626,7 +626,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             ctx, selected_tags=[category], is_gif=is_gif, is_ephemeral=is_ephemeral, many=many, is_nsfw=False,
         )
 
-    @defaults.ayane_command(aliases=["dank"])
+    @app_commands.command(aliases=["dank"])
     @commands.is_nsfw()
     async def ero(
             self,
@@ -654,7 +654,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             is_nsfw=True,
         )
 
-    @defaults.ayane_command()
+    @app_commands.command()
     @commands.is_nsfw()
     async def hentai(
             self,
@@ -682,7 +682,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             is_nsfw=True,
         )
 
-    @defaults.ayane_command()
+    @app_commands.command()
     @commands.is_nsfw()
     async def paizuri(
             self,
@@ -710,7 +710,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             is_nsfw=True,
         )
 
-    @defaults.ayane_command()
+    @app_commands.command()
     @commands.is_nsfw()
     async def ecchi(
             self,
@@ -738,7 +738,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             is_nsfw=True,
         )
 
-    @defaults.ayane_command(
+    @app_commands.command(
         aliases=["boobs", "tits", "perez", "breast"],
     )
     @commands.is_nsfw()
@@ -768,7 +768,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             is_nsfw=True,
         )
 
-    @defaults.ayane_command()
+    @app_commands.command()
     @commands.is_nsfw()
     async def hmaid(
             self,
@@ -796,7 +796,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             is_nsfw=True,
         )
 
-    @defaults.ayane_command()
+    @app_commands.command()
     @commands.is_nsfw()
     async def huniform(
             self,
@@ -824,7 +824,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             is_nsfw=True,
         )
 
-    @defaults.ayane_command()
+    @app_commands.command()
     async def uniform(
             self,
             ctx,
@@ -851,7 +851,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             is_nsfw=False,
         )
 
-    @defaults.ayane_command()
+    @app_commands.command()
     @commands.is_nsfw()
     async def ass(
             self,
@@ -879,7 +879,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             is_nsfw=True,
         )
 
-    @defaults.ayane_command()
+    @app_commands.command()
     @commands.is_nsfw()
     async def milf(
             self,
@@ -907,7 +907,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             is_nsfw=True,
         )
 
-    @defaults.ayane_command(aliases=["hselfie"])
+    @app_commands.command(aliases=["hselfie"])
     @commands.is_nsfw()
     async def hselfies(
             self,
@@ -935,7 +935,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             is_nsfw=True,
         )
 
-    @defaults.ayane_command(aliases=["selfie"])
+    @app_commands.command(aliases=["selfie"])
     async def selfies(
             self,
             ctx,
@@ -962,7 +962,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             is_nsfw=False,
         )
 
-    @defaults.ayane_command()
+    @app_commands.command()
     @commands.is_nsfw()
     async def oral(
             self,
@@ -990,7 +990,7 @@ class Waifu(defaults.AyaneCog, emoji='<:ty:833356132075700254>', brief='The bot 
             is_nsfw=True,
         )
 
-    @defaults.ayane_command(aliases=["stella"], enabled=False)
+    @app_commands.command(aliases=["stella"], enabled=False)
     async def femboy(self, ctx):
         """Get a femboy image from api.shiro.gg"""
         start = time.perf_counter()

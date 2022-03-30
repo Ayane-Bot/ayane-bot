@@ -6,9 +6,9 @@ from typing import Literal, List, Union
 import dateparser
 import discord
 from discord.ext import commands
+from discord import app_commands
 
 from main import Ayane
-from utils import defaults
 from utils.cache import ExpiringCache
 from utils.context import AyaneContext
 from utils.exceptions import AlreadyMuted, NotMuted
@@ -121,12 +121,14 @@ class AntiSpam:
                     pass
 
 
-def setup(bot):
-    bot.add_cog(Moderator(bot))
+async def setup(bot):
+    await bot.add_cog(Moderator(bot))
 
 
-class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brief='The bot moderator commands.'):
+class Moderator(commands.Cog):
     def __init__(self, bot):
+        self.emoji = '<:moderator:846464409404440666>'
+        self.brief = 'The bot moderator commands.'
         self.bot: Ayane = bot
         # We use defaultdict because it's faster than using setdefault each time.
         self.modutils = ModUtils()
@@ -149,16 +151,10 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
             guild_mode = await self.get_guild_mod(message.guild.id)
             await self.antispam[message.guild.id].sanction_if_spamming(message, guild_mode)
 
-    @defaults.ayane_command(name="antispam", aliases=["antiraid"])
-    @commands.has_guild_permissions(kick_members=True, ban_members=True, manage_messages=True)
-    async def toggle_antispam(
-            self,
-            ctx: AyaneContext,
-            mode: Literal["light", "soft", "strict", "disabled"] = commands.Option(
-                default="disabled",
-                description="The guild antispam mode",
-            ),
-    ) -> discord.Message:
+    @app_commands.command(name="antispam")
+    @app_commands.describe(mode="The antispam mode that you want to set.")
+    @app_commands.checks.has_permissions(kick_members=True, ban_members=True, manage_messages=True)
+    async def toggle_antispam(self, interaction, mode: Literal["light", "soft", "strict", "disabled"]):
         """Set the antispam mode
         `strict` : ban users when spamming (recommended)
         `soft` : kick users when spamming
@@ -171,39 +167,36 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
         await self.bot.pool.execute(
             "INSERT INTO registered_guild (id,name,anti_spam_mode)"
             "VALUES ($1,$2,$3) ON CONFLICT (id) DO UPDATE SET name=$2,anti_spam_mode=$3",
-            ctx.guild.id,
-            ctx.guild.name,
+            interaction.guild.id,
+            interaction.guild.name,
             mode,
         )
-        await ctx.send(f"The antispam mode is now set to `{mode if mode else 'disabled'}`.")
+        await interaction.response.send_message(f"The antispam mode is now set to `{mode if mode else 'disabled'}`.")
 
-    @defaults.ayane_command(name="ban")
-    @commands.has_guild_permissions(ban_members=True)
-    async def ban_(self, ctx: AyaneContext, member: discord.Member, *, reason=None):
+    @app_commands.command(name="ban")
+    @app_commands.context_menu(name="ban")
+    @app_commands.checks.has_permissions(ban_members=True)
+    async def ban_(self, interaction, member: discord.Member, *, reason=None):
         """Ban a member
         If 'spam' is in the reason, all the message the member sent in the last 24 hours will be deleted.
         If you want to ban one or multiple users that are not in the guild you should use `massban` command."""
         days = 0
         if isinstance(member, discord.Member) and member.guild_permissions.ban_members:
-            return await ctx.send(f"Sorry **{member}** also has **Ban Members** permission, "
-                                  "therefore I cannot allow you to ban an other staff member")
+            return await interaction.response.send_message(f"Sorry **{member}** also has **Ban Members** permission, "
+                                                           "therefore I cannot allow you to ban an other staff member")
         if reason and "spam" in reason:
             days = 1
         await self.modutils.ban(member.guild, member, reason=reason, delete_message_days=days)
-        await ctx.send(f"**{member.name}** has been banned.")
+        await interaction.response.send_message(f"**{member.name}** has been banned.")
 
-    @defaults.ayane_command(name="massban")
-    @commands.has_guild_permissions(ban_members=True)
-    async def massban_(self,
-                       ctx: AyaneContext,
-                       users: commands.Greedy[Union[discord.Member, discord.User]],
-                       *,
-                       reason=None,
-        ):
+    @app_commands.command(name="massban")
+    @app_commands.checks.has_permissions(ban_members=True)
+    async def massban_(self, interaction, users: commands.Greedy[Union[discord.Member, discord.User]], *, reason=None):
         """Ban multiple members at once.
         If 'spam' is in the reason, all the message the user sent in the last 24 hours will be deleted."""
         if not users:
-            return await ctx.send("You need to specify at least one user who you want me to ban.")
+            return await interaction.response.send_message("You need to specify at least one user who you want me to "
+                                                           "ban.")
         days = 0
         if reason and "spam" in reason:
             days = 1
@@ -216,56 +209,41 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
                 not_banned.append(user)
                 continue
             try:
-                await self.modutils.ban(ctx.guild, user, reason=reason, delete_message_days=days)
+                await self.modutils.ban(interaction.guild, user, reason=reason, delete_message_days=days)
                 success.append(user)
             except:
                 not_banned.append(user)
-        await ctx.send(f"Banned users : {', '.join([f'**{u.name}**' for u in success])}\n\n"
-                       f"The following users couldn't be banned : {', '.join([f'**{u.name}**' for u in not_banned])}")
+        await interaction.response.send_message(f"Banned users : {', '.join([f'**{u.name}**' for u in success])}\n\n"
+                                                f"The following users couldn't be banned : {', '.join([f'**{u.name}**' for u in not_banned])}")
 
-
-    @defaults.ayane_command(name="softban")
-    @commands.has_guild_permissions(kick_members=True)
-    async def softban_(self, ctx: AyaneContext, member: discord.Member, *, reason=None):
-        """Softban a member
-        If 'spam' is in the reason, all the message the user sent in the last 24 hours will be deleted.
-        A softban is where the user gets banned but then unbanned right after."""
-        days = 0
-        if member.guild_permissions.kick_members:
-            return await ctx.send(f"Sorry **{member}** also has **Kick Members** permission, "
-                                  "therefore I cannot allow you to ban an other staff member")
-        if reason and "spam" in reason:
-            days = 1
-        await self.modutils.ban(member.guild, member, reason=reason, delete_message_days=days)
-        await self.modutils.unban(ctx.guild, member, reason=reason)
-        await ctx.send(f"**{member.name}** has been soft-banned.")
-
-    @defaults.ayane_command(name="unban")
-    @commands.has_guild_permissions(ban_members=True)
-    async def unban_(self, ctx: AyaneContext, user: discord.User, *, reason=None):
+    @app_commands.command(name="unban")
+    @app_commands.checks.has_permissions(ban_members=True)
+    async def unban_(self, interaction, user: discord.User, *, reason=None):
         """Unban a member"""
         try:
-            await self.modutils.unban(ctx.guild, user, reason=reason)
+            await self.modutils.unban(interaction.guild, user, reason=reason)
         except discord.NotFound:
-            return await ctx.send(f"**{user}** was not banned or has already been unbanned.")
-        await ctx.send(f"**{user.name}** has been unbanned.")
+            return await interaction.response.send_message(f"**{user}** was not banned or has already been unbanned.")
+        await interaction.response.send_message(f"**{user.name}** has been unbanned.")
 
-    @defaults.ayane_command(name="kick")
-    @commands.has_guild_permissions(kick_members=True)
-    async def kick_(self, ctx: AyaneContext, member: discord.Member, *, reason=None):
+    @app_commands.command(name="kick")
+    @app_commands.context_menu(name="kick")
+    @app_commands.checks.has_permissions(kick_members=True)
+    async def kick_(self, interaction, member: discord.Member, *, reason=None):
         """Kick a member"""
         if member.guild_permissions.kick_members:
-            return await ctx.send(f"Sorry **{member}** also has **Kick Members** permission, "
-                                  "therefore I cannot allow you to kick an other staff member")
+            return await interaction.response.send_message(f"Sorry **{member}** also has **Kick Members** permission, "
+                                                           "therefore I cannot allow you to kick an other staff member")
         await self.modutils.kick(member, reason=reason)
-        await ctx.send(f"**{member.name}** has been kicked.")
+        await interaction.response.send_message(f"**{member.name}** has been kicked.")
 
-    @defaults.ayane_command(name="masskick")
-    @commands.has_guild_permissions(kick_members=True)
-    async def masskick_(self, ctx: AyaneContext, members: commands.Greedy[discord.Member], *, reason=None):
+    @app_commands.command(name="masskick")
+    @app_commands.checks.has_permissions(kick_members=True)
+    async def masskick_(self, interaction, members: commands.Greedy[discord.Member], *, reason=None):
         """Kick multiple members at once."""
         if not members:
-            return await ctx.send("You need to specify at least one member who you want me to kick.")
+            return await interaction.response.send_message(
+                "You need to specify at least one member who you want me to kick.")
         not_kicked = []
         success = []
         for member in members:
@@ -279,35 +257,40 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
                 success.append(member)
             except:
                 not_kicked.append(member)
-        await ctx.send(f"Kicked members : {', '.join([f'**{u.name}**' for u in success])}\n\n"
-                       f"The following members couldn't be kicked : {', '.join([f'**{u.name}**' for u in not_kicked])}")
+        await interaction.response.send_message(f"Kicked members : {', '.join([f'**{u.name}**' for u in success])}\n\n"
+                                                f"The following members couldn't be kicked : {', '.join([f'**{u.name}**' for u in not_kicked])}")
 
-    @defaults.ayane_command(name="mute")
-    @commands.has_guild_permissions(manage_messages=True)
-    async def mute_(self, ctx: AyaneContext, member: discord.Member, *, reason=None):
+    @app_commands.command(name="mute")
+    @app_commands.context_menu(name="mute")
+    @app_commands.checks.has_permissions(manage_messages=True)
+    async def mute_(self, interaction, member: discord.Member, *, reason=None):
         """Mute a member"""
         if member.guild_permissions.manage_messages:
-            return await ctx.send(f"Sorry **{member}** also has **Manage Messages** permission, "
-                                  "therefore I cannot allow you to mute an other staff member")
+            return await interaction.response.send_message(
+                f"Sorry **{member}** also has **Manage Messages** permission, "
+                "therefore I cannot allow you to mute an other staff member")
         try:
             await self.modutils.mute(member, reason=reason)
         except AlreadyMuted:
-            return await ctx.send(f"Sorry **{member}** is already muted.")
-        await ctx.send(f"**{member.name}** has been muted.")
+            return await interaction.response.send_message(f"Sorry **{member}** is already muted.")
+        await interaction.response.send_message(f"**{member.name}** has been muted.")
 
-    @defaults.ayane_command(name="unmute")
-    @commands.has_guild_permissions(manage_messages=True)
-    async def unmute_(self, ctx: AyaneContext, member: discord.Member, *, reason=None):
+    @app_commands.command(name="unmute")
+    @app_commands.context_menu(name="unmute")
+    @app_commands.checks.has_permissions(manage_messages=True)
+    async def unmute_(self, interaction, member: discord.Member, *, reason=None):
         """Unmute a member"""
         try:
             await self.modutils.unmute(member, reason=reason)
         except NotMuted:
-            return await ctx.send(f"Sorry **{member}** was not muted or as already been unmuted.")
-        await ctx.send(f"**{member.name}** has been unmuted.")
+            return await interaction.response.send_message(
+                f"Sorry **{member}** was not muted or as already been unmuted.")
+        await interaction.response.send_message(f"**{member.name}** has been unmuted.")
 
-    @defaults.ayane_command(name="timeout")
-    @commands.has_guild_permissions(moderate_members=True)
-    async def timeout_(self, ctx: AyaneContext, member: discord.Member, *, until):
+    @app_commands.command(name="timeout")
+    @app_commands.context_menu(name="timeout")
+    @app_commands.checks.has_permissions(moderate_members=True)
+    async def timeout_(self, interaction, member: discord.Member, *, until):
         """Timeout/disable timeout of a member.
         If the time you passed is invalid and the user is already timed out, then the bot will stop the timeout."""
         until = dateparser.parse(
@@ -315,20 +298,22 @@ class Moderator(defaults.AyaneCog, emoji='<:moderator:846464409404440666>', brie
             settings={'TO_TIMEZONE': 'UTC', 'RETURN_AS_TIMEZONE_AWARE': True, 'PREFER_DATES_FROM': 'future'},
         )
         if not member.timed_out and not until:
-            return await ctx.send("I couldn't parse your date.")
+            return await interaction.response.send_message("I couldn't parse your date.")
 
         if member.guild_permissions.moderate_members:
-            return await ctx.send(f"Sorry **{member}** also has **Moderate Members** permission, "
-                                  "therefore I cannot allow you to timeout an other staff member")
-        if until and until <= ctx.message.created_at:
-            return await ctx.send("Your date is in the past.")
+            return await interaction.response.send_message(
+                f"Sorry **{member}** also has **Moderate Members** permission, "
+                "therefore I cannot allow you to timeout an other staff member")
+        if until and until <= interaction.created_at:
+            return await interaction.response.send_message("Your date is in the past.")
         try:
             await member.edit(timeout_until=until)
         except discord.HTTPException:
-            return await ctx.send("Something went wrong, please check that the time provided isn't more than 28 days.")
+            return await interaction.response.send_message(
+                "Something went wrong, please check that the time provided isn't more than 28 days.")
         if until:
             state = f'has been timed out and will be release {discord.utils.format_dt(until, style="R")}.'
         else:
             state = "timeout has been disabled.\n*As I couldn't parse your date and the user was already timed out, " \
                     "I disabled its timeout.*"
-        await ctx.send(f"**{member.name}** {state}")
+        await interaction.response.send_message(f"**{member.name}** {state}")

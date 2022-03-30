@@ -16,8 +16,8 @@ class PrivateCategoryOrGroup(Exception):
             "or you do not have the permission to use them here.")
 
 
-def setup(bot):
-    bot.add_cog(Help(bot))
+async def setup(bot):
+    await bot.add_cog(Help(bot))
 
 
 class AyaneHelpView(paginators.ViewMenu):

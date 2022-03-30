@@ -3,7 +3,6 @@ from discord.ext import commands
 from discord import app_commands
 
 from main import Ayane
-from utils.context import AyaneContext
 from utils.paginators import BaseSource, ViewMenu
 from utils.helpers import stop_if_nsfw
 
@@ -13,8 +12,8 @@ import re
 from dateutil.parser import parse
 
 
-def setup(bot):
-    bot.add_cog(Fun(bot))
+async def setup(bot):
+    await bot.add_cog(Fun(bot))
 
 
 anilisticon = "https://www.gitbook.com/cdn-cgi/image/" \
@@ -27,7 +26,7 @@ anilisticon = "https://www.gitbook.com/cdn-cgi/image/" \
 class Fun(commands.Cog):
     def __init__(self, bot):
         self.emoji = '🎢'
-        self. = 'Some fun commands'
+        self.brief = 'Some fun commands'
         self.bot: Ayane = bot
         self.kadalclient = kadal.Client(session=self.bot.session)
 
@@ -80,7 +79,7 @@ class Fun(commands.Cog):
         except kadal.MediaNotFound:
             return await interaction.response.send_message(self.format_error_message(name))
         stop_if_nsfw(anime.is_adult)
-        await ctx.send(embed=self.format_anilist_embeds(anime))
+        await interaction.response.send_message(embed=self.format_anilist_embeds(anime))
 
     @app_commands.command(name='manga')
     @app_commands.describe(name='The name of the manga you want to search')
@@ -95,7 +94,7 @@ class Fun(commands.Cog):
 
     @app_commands.command(name='top-manga')
     @app_commands.describe(adult='If you want or not to retrieve adult only mangas')
-    async def top_manga_(self,interaction,adult: bool = None):
+    async def top_manga_(self, interaction, adult: bool = None):
         """Get the top 50 manga on https://anilist.co
         Safe search is forced if not in nsfw channel"""
         stop_if_nsfw(adult)
@@ -115,7 +114,7 @@ class Fun(commands.Cog):
 
     @app_commands.command(name='top-anime')
     @app_commands.describe(adult='If you want or not to retrieve adult only mangas')
-    async def top_anime_(self,interaction, adult: bool = None):
+    async def top_anime_(self, interaction, adult: bool = None):
         """Get the top 50 anime on https://anilist.co
         Safe search is forced if not in nsfw channel"""
         stop_if_nsfw(adult)

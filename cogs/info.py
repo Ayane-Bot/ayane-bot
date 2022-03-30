@@ -1,22 +1,26 @@
 import platform
 from main import Ayane
 from utils import constants
-from utils import defaults
+
 from utils.context import AyaneContext
 
 import discord
+from discord.ext import commands
+from discord import app_commands
 
 
 def setup(bot):
     bot.add_cog(Info(bot))
 
 
-class Info(defaults.AyaneCog, emoji='ℹ', brief='Information about me!'):
+class Info(commands.Cog):
     def __init__(self, bot):
+        self.emoji = 'ℹ'
+        self.brief = 'Information about me!'
         self.bot: Ayane = bot
 
-    @defaults.ayane_command(aliases=['info'])
-    async def about(self, ctx: AyaneContext) -> discord.Message:
+    @app_commands.command(name='about')
+    async def about(self, interaction):
         """Some information about the bot like the bot owners, statistics etc."""
         text_channel = 0
         voice_channel = 0
@@ -69,7 +73,7 @@ class Info(defaults.AyaneCog, emoji='ℹ', brief='Information about me!'):
             inline=False,
         )
         embed.set_footer(
-            text=f"Requested by {ctx.author.name}",
-            icon_url=ctx.author.display_avatar.url,
+            text=f"Requested by {interaction.user.name}",
+            icon_url=interaction.user.display_avatar.url,
         )
-        return await ctx.send(embed=embed)
+        return await interaction.response.send_message(embed=embed)
