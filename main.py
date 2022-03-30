@@ -1,3 +1,4 @@
+import asyncio
 import io
 import os
 import logging
@@ -276,14 +277,16 @@ class Ayane(commands.Bot):
 
 
 if __name__ == "__main__":
-    bot = Ayane()
-    try:
-        webhook = discord.SyncWebhook.from_url(WEBHOOK_URL, bot_token=bot.http.token)
-        webhook.send('👋 Ayane is waking up!')
-        del webhook
-        async with bot:
-            await bot.start(TOKEN)
-            await bot.on_ready_once()
-    finally:
-        webhook = discord.SyncWebhook.from_url(WEBHOOK_URL, bot_token=bot.http.token)
-        webhook.send('🔻 Ayane is going to sleep!')
+    async def main():
+        bot = Ayane()
+        try:
+            webhook = discord.SyncWebhook.from_url(WEBHOOK_URL, bot_token=bot.http.token)
+            webhook.send('👋 Ayane is waking up!')
+            del webhook
+            async with bot:
+                await bot.start(TOKEN)
+                await bot.on_ready_once()
+        finally:
+            webhook = discord.SyncWebhook.from_url(WEBHOOK_URL, bot_token=bot.http.token)
+            webhook.send('🔻 Ayane is going to sleep!')
+    asyncio.run(main())
