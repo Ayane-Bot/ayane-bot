@@ -102,7 +102,7 @@ class Waifu(commands.cog):
     @app_commands.command(description="c19af2c9a399d0a3")
     @app_commands.describe(
         file_name_or_url="A file name or an url to the file you want to look if it exist on the API.")
-    @app_commands.checks.cooldown(1, float(3), commands.BucketType.user)
+    @app_commands.checks.cooldown(1, float(3), key=commands.BucketType.user)
     async def pics(self, interaction, file_name_or_url, ephemeral: bool = False):
         """🔗 Send you the picture related to the ID or the url you provided, if there is matches.
         This will work only if the image is strictly the same.
