@@ -16,10 +16,11 @@ class PictureConverter:
     def __init__(self, bot, file_string=None, file=None):
         self.file_string = file_string
         self.file = file
-        if file_string and "manage" in file_string or "preview" in file_string:
-            self.maybe_id = os.path.splitext(file_string.split("image=")[-1])[0]
-        elif file_string:
-            self.maybe_id = os.path.splitext(file_string.split("/")[-1])[0]
+        if file_string:
+            if "manage" in file_string or "preview" in file_string:
+                self.maybe_id = os.path.splitext(file_string.split("image=")[-1])[0]
+            else:
+                self.maybe_id = os.path.splitext(file_string.split("/")[-1])[0]
         self.bot = bot
         self.is_url = None
 
