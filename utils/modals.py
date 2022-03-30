@@ -39,7 +39,7 @@ class ReportModal(BaseModal):
 class PagePrompterModal(BaseModal):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.max_page = self.view.source.get_max_page() - 1
+        self.max_page = self.view.source.get_max_pages() - 1
         self.title = f"Select a page number between 1 and {self.max_page}"
         self.page = discord.ui.TextInput(
             "Page",
