@@ -171,7 +171,7 @@ class Waifu(commands.Cog):
         To add an image to your gallery you just need to clique on the heart when requesting an image using one of the bot API image command.
         the subcommands are the type of picture to return, either sfw or nsfw if nothing is provided no filter will be applied.
         The commands that use the bot [API](https://waifu.im/) are the nsfw commands and the `waifu` command."""
-        stop_if_nsfw(not interaction.channel.is_nsfw() and is_nsfw)
+        stop_if_nsfw(not interaction.channel.is_nsfw() and (is_nsfw is None or is_nsfw))
         try:
             images = await interaction.client.waifu_client.fav(user_id=interaction.user.id)
         except waifuim.APIException as e:
@@ -183,7 +183,7 @@ class Waifu(commands.Cog):
             else:
                 raise e
         if is_nsfw is not None:
-            images = list(filter(lambda image: image.is_nsfw == is_nsfw))
+            images = list(filter(lambda image: image.is_nsfw == is_nsfw), images)
         title = interaction.user.name + " " + (
             "SFW " if is_nsfw is True else "NSFW " if is_nsfw is False else "") + "Gallery"
         await FavMenu(
