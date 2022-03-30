@@ -113,7 +113,7 @@ class Waifu(commands.Cog):
     async def pics(self,
                    interaction,
                    file_name_or_url: str = None,
-                   attachment: discord.AppCommandOptionType.attachment = None,
+                   attachment: discord.Attachment = None,
                    ephemeral: bool = False):
         """🔗 Send you the picture related to the ID or the url you provided, if there is matches.
         This will work only if the image is strictly the same.
