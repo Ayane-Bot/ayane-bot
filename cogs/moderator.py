@@ -174,7 +174,7 @@ class Moderator(commands.Cog):
 
     @app_commands.command(name="ban")
     @app_commands.checks.has_permissions(ban_members=True)
-    async def ban_(self, interaction: discord.Interaction, member: discord.Member, reason: str = None):
+    async def ban_(self, interaction: discord.Interaction, member: Union[discord.Member,discord.User], reason: str = None):
         """Ban a member
         If 'spam' is in the reason, all the message the member sent in the last 24 hours will be deleted.
         If you want to ban one or multiple users that are not in the guild you should use `massban` command."""
@@ -184,36 +184,8 @@ class Moderator(commands.Cog):
                                                            "therefore I cannot allow you to ban an other staff member")
         if reason and "spam" in reason:
             days = 1
-        await self.modutils.ban(member.guild, member, reason=reason, delete_message_days=days)
+        await self.modutils.ban(interaction.guild, member, reason=reason, delete_message_days=days)
         await interaction.response.send_message(f"**{member.name}** has been banned.")
-
-    @app_commands.command(name="massban")
-    @app_commands.checks.has_permissions(ban_members=True)
-    async def massban_(self, interaction, users: commands.Greedy[Union[discord.Member, discord.User]], *,
-                       reason: str = None):
-        """Ban multiple members at once.
-        If 'spam' is in the reason, all the message the user sent in the last 24 hours will be deleted."""
-        if not users:
-            return await interaction.response.send_message("You need to specify at least one user who you want me to "
-                                                           "ban.")
-        days = 0
-        if reason and "spam" in reason:
-            days = 1
-        not_banned = []
-        success = []
-        for user in users:
-            if user in not_banned or user in success:
-                continue
-            if isinstance(user, discord.Member) and user.guild_permissions.ban_members:
-                not_banned.append(user)
-                continue
-            try:
-                await self.modutils.ban(interaction.guild, user, reason=reason, delete_message_days=days)
-                success.append(user)
-            except:
-                not_banned.append(user)
-        await interaction.response.send_message(f"Banned users : {', '.join([f'**{u.name}**' for u in success])}\n\n"
-                                                f"The following users couldn't be banned : {', '.join([f'**{u.name}**' for u in not_banned])}")
 
     @app_commands.command(name="unban")
     @app_commands.checks.has_permissions(ban_members=True)
@@ -235,28 +207,6 @@ class Moderator(commands.Cog):
         await self.modutils.kick(member, reason=reason)
         await interaction.response.send_message(f"**{member.name}** has been kicked.")
 
-    @app_commands.command(name="masskick")
-    @app_commands.checks.has_permissions(kick_members=True)
-    async def masskick_(self, interaction, members: commands.Greedy[discord.Member], reason: str = None):
-        """Kick multiple members at once."""
-        if not members:
-            return await interaction.response.send_message(
-                "You need to specify at least one member who you want me to kick.")
-        not_kicked = []
-        success = []
-        for member in members:
-            if member in not_kicked or member in success:
-                continue
-            if member.guild_permissions.kick_members:
-                not_kicked.append(member)
-                continue
-            try:
-                await self.modutils.kick(member, reason=reason)
-                success.append(member)
-            except:
-                not_kicked.append(member)
-        await interaction.response.send_message(f"Kicked members : {', '.join([f'**{u.name}**' for u in success])}\n\n"
-                                                f"The following members couldn't be kicked : {', '.join([f'**{u.name}**' for u in not_kicked])}")
 
     @app_commands.command(name="mute")
     @app_commands.checks.has_permissions(manage_messages=True)
