@@ -8,7 +8,6 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 
-from utils.exceptions import APIServerError
 from utils.helpers import stop_if_nsfw
 from utils.paginators import ImageMenu, FavMenu, ImageSource
 
@@ -125,6 +124,8 @@ class Waifu(commands.Cog):
         if not attachment and not file_name_or_url:
             return await interaction.response.send_message("You must at least provide a file name a url or an "
                                                            "attachments")
+        if attachment and attachment.content_type.split("/")[0] != "image":
+            return await interaction.response.send_message("This command only support image attachment")
         if file_name_or_url:
             file_name_or_url = (
                 file_name_or_url.strip("||||")
