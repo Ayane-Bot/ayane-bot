@@ -18,9 +18,11 @@ class AyaneCommandTree(app_commands.CommandTree):
         """Handles command exceptions and logs unhandled ones to the support guild."""
         if hasattr(command, 'on_error') and not hasattr(interaction, 'bypass_first_error_handler'):
             return
+        print("NEW ERROR2")
         embed = discord.Embed(colour=interaction.client.colour)
         if isinstance(error, app_commands.CommandInvokeError):
             error = error.original
+
         if isinstance(error, app_commands.errors.CommandNotFound):
             embed.title = "🛑 Command Not Found"
             embed.description = "Sorry this command does not exist anymore."
@@ -80,6 +82,7 @@ class AyaneCommandTree(app_commands.CommandTree):
                 await interaction.client.send_interaction_error_message(interaction, embed=embed)
 
         else:
+            print("NEW ERROR 5")
             await interaction.client.send_unexpected_error(interaction, command, error)
 
     async def interaction_check(self, interaction) -> bool:
