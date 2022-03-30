@@ -1,5 +1,5 @@
 from main import Ayane
-from utils import constants, defaults, paginators
+from utils import constants, paginators
 import math
 
 import discord

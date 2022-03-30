@@ -23,6 +23,7 @@ from utils.helpers import PersistentExceptionView
 from private.config import (TOKEN, DEFAULT_PREFIXES, OWNER_IDS, LOCAL, DB_CONF, WEBHOOK_URL, WAIFU_API_TOKEN,
                             PREVENT_LOCAL_COMMANDS)
 from utils.lock import UserLock
+from utils.tree import AyaneCommandTree
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="[%(asctime)-15s] %(message)s")
@@ -32,12 +33,9 @@ err = '\033[41m\033[30m❌\033[0m'
 oop = '\033[43m\033[37m⚠\033[0m'
 ok = '\033[42m\033[30m✔\033[0m'
 
-
 # Jishaku flags
 os.environ['JISHAKU_NO_UNDERSCORE'] = 'True'
 os.environ['JISHAKU_HIDE'] = 'True'
-
-
 
 
 class Ayane(commands.Bot):
@@ -47,7 +45,6 @@ class Ayane(commands.Bot):
         self.invite: str = None
         self.waifu_client: waifuim.WaifuAioClient = None
         self.session: aiohttp.ClientSession = None
-
         # All extensions that are not located in the 'cogs' directory.
         self.initial_extensions = ['jishaku']
 
@@ -55,8 +52,8 @@ class Ayane(commands.Bot):
         intents = discord.Intents.all()
         intents.typing = False  # noqa
         intents.dm_typing = False  # noqa
-
         super().__init__(
+            tree_cls=AyaneCommandTree,
             command_prefix=commands.when_mentioned_or(*DEFAULT_PREFIXES),
             strip_after_prefix=True,
             intents=intents
@@ -79,7 +76,7 @@ class Ayane(commands.Bot):
             508355356376825868,
             850807820634030130,
         ]
-        self.default_checks = {self.check_blacklisted,self.check_user_lock}
+        self.default_checks = {self.check_blacklisted, self.check_user_lock}
 
     def get_sus_guilds(self):
         sus = []
@@ -146,7 +143,6 @@ class Ayane(commands.Bot):
             )
         )
 
-
     @staticmethod
     async def establish_database_connection() -> asyncpg.Pool:
         credentials = {
@@ -156,13 +152,13 @@ class Ayane(commands.Bot):
             "host": DB_CONF.host,
             "port": DB_CONF.port
         }
-        
+
         try:
             return await asyncpg.create_pool(**credentials)
-        
+
         except Exception as e:
             logging.error("Could not create database pool", exc_info=e)
-            
+
         finally:
             logging.info(f'{ok} Database connection created.')
 
@@ -177,12 +173,12 @@ class Ayane(commands.Bot):
         traceback_string = traceback.format_exc()
         for line in traceback_string.split('\n'):
             logging.info(line)
-            
+
         await self.wait_until_ready()
         error_channel = self.get_channel(920086768903147550)
         to_send = f"```yaml\nAn error occurred in an {event_method} event``````py" \
                   f"\n{traceback_string}\n```"
-        
+
         if len(to_send) < 2000:
             try:
                 await error_channel.send(to_send)
@@ -193,7 +189,7 @@ class Ayane(commands.Bot):
         else:
             await error_channel.send(f"```yaml\nAn error occurred in an {event_method} event``````py",
                                      file=discord.File(io.StringIO(traceback_string), filename='traceback.py'))
-            
+
     @staticmethod
     async def send_interaction_error_message(interaction, *args, **kwargs):
         if interaction.response.is_done():
@@ -209,7 +205,8 @@ class Ayane(commands.Bot):
                        f"bot issues and updates join the [support server]({constants.server_invite}) !"
             embed = discord.Embed(title="❌ Error", colour=interaction.client.colour, description=_message)
             embed.add_field(name="Traceback :", value=f"```py\n{type(error).__name__} : {error}```")
-            await interaction.client.get_cog("Events").send_interaction_error_message(interaction, embed=embed, **kwargs)
+            await interaction.client.get_cog("Events").send_interaction_error_message(interaction, embed=embed,
+                                                                                      **kwargs)
 
         error_channel = interaction.client.get_channel(920086735755575327)
         traceback_string = "".join(traceback.format_exception(etype=None, value=error, tb=error.__traceback__))
@@ -261,14 +258,14 @@ class Ayane(commands.Bot):
             try:
                 await self.load_extension(ext)
                 logging.info(f"{ok} Loaded extension {ext}")
-                
+
             except Exception as e:
                 if isinstance(e, commands.ExtensionNotFound):
                     logging.error(f"{oop} Extension {ext} was not found {oop}", exc_info=False)
-                    
+
                 elif isinstance(e, commands.NoEntryPointError):
                     logging.error(f"{err} Extension {ext} has no setup function {err}", exc_info=False)
-                    
+
                 else:
                     logging.error(f"{err}{err} Failed to load extension {ext} {err}{err}", exc_info=e)
 
@@ -287,4 +284,6 @@ if __name__ == "__main__":
         finally:
             webhook = discord.SyncWebhook.from_url(WEBHOOK_URL, bot_token=bot.http.token)
             webhook.send('🔻 Ayane is going to sleep!')
+
+
     asyncio.run(main())
