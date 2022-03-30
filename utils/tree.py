@@ -14,15 +14,14 @@ class AyaneCommandTree(app_commands.CommandTree):
             command,
             error,
     ) -> None:
-        print("NEW ERROR")
         """Handles command exceptions and logs unhandled ones to the support guild."""
         if hasattr(command, 'on_error') and not hasattr(interaction, 'bypass_first_error_handler'):
             return
-        print("NEW ERROR2")
+
         embed = discord.Embed(colour=interaction.client.colour)
         if isinstance(error, app_commands.CommandInvokeError):
             error = error.original
-
+        print("NEW ERROR2")
         if isinstance(error, app_commands.errors.CommandNotFound):
             embed.title = "🛑 Command Not Found"
             embed.description = "Sorry this command does not exist anymore."
@@ -59,7 +58,9 @@ class AyaneCommandTree(app_commands.CommandTree):
 
             elif isinstance(error, app_commands.NoPrivateMessage):
                 return
+
             elif isinstance(error, exceptions.NSFWChannelRequired):
+                print("teeeest")
                 _message = "Sorry, I cannot display **NSFW** content in this channel."
                 embed.title = "🛑 NSFW channel required"
                 embed.description = _message
