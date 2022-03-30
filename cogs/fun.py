@@ -72,7 +72,7 @@ class Fun(commands.Cog):
 
     @app_commands.command(name='anime')
     @app_commands.describe(name='The name of the anime you want to search')
-    async def anime_(self, interaction, *, name) -> discord.Message:
+    async def anime_(self, interaction, name: str) -> discord.Message:
         """Search an anime on https://anilist.co"""
         try:
             anime = await self.kadalclient.search_anime(name, popularity=True, allow_adult=True)
@@ -83,7 +83,7 @@ class Fun(commands.Cog):
 
     @app_commands.command(name='manga')
     @app_commands.describe(name='The name of the manga you want to search')
-    async def manga_(self, interaction, *, name) -> discord.Message:
+    async def manga_(self, interaction, name: str) -> discord.Message:
         """Search a manga on https://anilist.co"""
         try:
             manga = await self.kadalclient.search_manga(name, popularity=True, allow_adult=True)
