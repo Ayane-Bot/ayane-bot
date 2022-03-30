@@ -173,7 +173,6 @@ class Moderator(commands.Cog):
         await interaction.response.send_message(f"The antispam mode is now set to `{mode if mode else 'disabled'}`.")
 
     @app_commands.command(name="ban")
-    @app_commands.context_menu(name="ban")
     @app_commands.checks.has_permissions(ban_members=True)
     async def ban_(self, interaction : discord.Interaction, member: discord.Member, *, reason=None):
         """Ban a member
@@ -226,7 +225,6 @@ class Moderator(commands.Cog):
         await interaction.response.send_message(f"**{user.name}** has been unbanned.")
 
     @app_commands.command(name="kick")
-    @app_commands.context_menu(name="kick")
     @app_commands.checks.has_permissions(kick_members=True)
     async def kick_(self, interaction, member: discord.Member, *, reason=None):
         """Kick a member"""
@@ -260,7 +258,6 @@ class Moderator(commands.Cog):
                                                 f"The following members couldn't be kicked : {', '.join([f'**{u.name}**' for u in not_kicked])}")
 
     @app_commands.command(name="mute")
-    @app_commands.context_menu(name="mute")
     @app_commands.checks.has_permissions(manage_messages=True)
     async def mute_(self, interaction, member: discord.Member, *, reason=None):
         """Mute a member"""
@@ -275,7 +272,6 @@ class Moderator(commands.Cog):
         await interaction.response.send_message(f"**{member.name}** has been muted.")
 
     @app_commands.command(name="unmute")
-    @app_commands.context_menu(name="unmute")
     @app_commands.checks.has_permissions(manage_messages=True)
     async def unmute_(self, interaction, member: discord.Member, *, reason=None):
         """Unmute a member"""
@@ -287,7 +283,6 @@ class Moderator(commands.Cog):
         await interaction.response.send_message(f"**{member.name}** has been unmuted.")
 
     @app_commands.command(name="timeout")
-    @app_commands.context_menu(name="timeout")
     @app_commands.checks.has_permissions(moderate_members=True)
     async def timeout_(self, interaction, member: discord.Member, *, until):
         """Timeout/disable timeout of a member.
