@@ -102,7 +102,7 @@ class Waifu(commands.Cog):
 
         try:
             raws = await self.bot.waifu_client.endpoints()
-            self.bot.waifu_im_tags = dict(sfw=raws['versatile'], nsfw=raws['versatile'])
+            self.bot.waifu_im_tags = dict(sfw=raws['versatile'], nsfw=raws['versatile'] + raws['nsfw'])
         except:
             # If some unknown error happen we still set up some tags manually
             self.bot.waifu_im_tags = dict(sfw=['waifu'], nsfw=['waifu', 'ero'])
