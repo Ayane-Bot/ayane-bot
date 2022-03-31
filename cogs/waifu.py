@@ -95,12 +95,17 @@ class Waifu(commands.Cog):
             resp = await req.json()
             self.bot.waifu_im_order_by = resp['components']['schemas']['OrderByType']['enum']
         except:
-            pass
+            # If we can't fetch the enum values we still set up those two
+            self.bot.waifu_im_order_by = ["UPLOADED_AT", "FAVOURITES"]
         raws = await self.bot.waifu_client.endpoints()
-        self.bot.waifu_im_tags = dict(sfw=[t for t in raws['versatile'] if await self.not_empty(t, False)],
-                                      nsfw=[t for t in raws['versatile'] + raws['nsfw'] if
-                                            await self.not_empty(t, True)]
-                                      )
+        try:
+            self.bot.waifu_im_tags = dict(sfw=[t for t in raws['versatile'] if await self.not_empty(t, False)],
+                                          nsfw=[t for t in raws['versatile'] + raws['nsfw'] if
+                                                await self.not_empty(t, True)]
+                                          )
+        except:
+            # If some unknown error happen we still set up some tags manually
+            self.bot.waifu_im_tags = dict(sfw=['waifu'], nsfw=['waifu', 'ero'])
 
     @staticmethod
     async def waifu_launcher(
