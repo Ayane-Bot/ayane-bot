@@ -89,7 +89,7 @@ class Waifu(commands.Cog):
                                       )
 
         try:
-            req= await self.bot.session.get('https://api.waifu.im/openapi.json')
+            req = await self.bot.session.get('https://api.waifu.im/openapi.json')
             resp = await req.json()
             self.bot.waifu_im_order_by = resp['components']['schemas']['OrderByType']['enum']
         except:
@@ -233,36 +233,37 @@ class Waifu(commands.Cog):
             main_interaction=interaction,
             ephemeral=ephemeral,
         ).start()
-        waifu = app_commands.Group(name="waifu", description="Get a random waifu picture from waifu.im API.")
 
-        @waifu.command(name="sfw", description="Get a random safe picture from waifu.im API.")
-        @app_commands.describe(tag="The image tag used to fetch images",
-                               order_by="Sort image by a specific order",
-                               gif="If you want only classic images or gifs",
-                               many="To get a paginator of multiple files")
-        @app_commands.autocomplete(tag=sfw_tag_autocomplete, order_by=order_by_autocomplete)
-        async def sfw_(self, interaction, tag: str, order_by: str, gif: bool = None, many: bool = None):
-            await self.waifu_launcher(
-                interaction,
-                is_nsfw=False,
-                selected_tags=[tag],
-                is_gif=gif,
-                order_by=order_by,
-                many=many,
-            )
+    waifu = app_commands.Group(name="waifu", description="Get a random waifu picture from waifu.im API.")
 
-        @waifu.command(name="nsfw", description="Get a random lewd picture from waifu.im API.")
-        @app_commands.describe(tag="The image tag used to fetch images",
-                               order_by="Sort image by a specific order",
-                               gif="If you want only classic images or gifs",
-                               many="To get a paginator of multiple files")
-        @app_commands.autocomplete(tag=nsfw_tag_autocomplete, order_by=order_by_autocomplete)
-        async def nsfw_(self, interaction, tag: str, order_by: str, gif: bool = None, many: bool = None):
-            await self.waifu_launcher(
-                interaction,
-                is_nsfw=True,
-                selected_tags=[tag],
-                is_gif=gif,
-                order_by=order_by,
-                many=many,
-            )
+    @waifu.command(name="sfw", description="Get a random safe picture from waifu.im API.")
+    @app_commands.describe(tag="The image tag used to fetch images",
+                           order_by="Sort image by a specific order",
+                           gif="If you want only classic images or gifs",
+                           many="To get a paginator of multiple files")
+    @app_commands.autocomplete(tag=sfw_tag_autocomplete, order_by=order_by_autocomplete)
+    async def sfw_(self, interaction, tag: str, order_by: str, gif: bool = None, many: bool = None):
+        await self.waifu_launcher(
+            interaction,
+            is_nsfw=False,
+            selected_tags=[tag],
+            is_gif=gif,
+            order_by=order_by,
+            many=many,
+        )
+
+    @waifu.command(name="nsfw", description="Get a random lewd picture from waifu.im API.")
+    @app_commands.describe(tag="The image tag used to fetch images",
+                           order_by="Sort image by a specific order",
+                           gif="If you want only classic images or gifs",
+                           many="To get a paginator of multiple files")
+    @app_commands.autocomplete(tag=nsfw_tag_autocomplete, order_by=order_by_autocomplete)
+    async def nsfw_(self, interaction, tag: str, order_by: str, gif: bool = None, many: bool = None):
+        await self.waifu_launcher(
+            interaction,
+            is_nsfw=True,
+            selected_tags=[tag],
+            is_gif=gif,
+            order_by=order_by,
+            many=many,
+        )
