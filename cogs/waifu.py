@@ -83,7 +83,9 @@ class Waifu(commands.Cog):
             if e.status == 429:
                 await asyncio.sleep(0.25)
                 return await self.not_empty(tag, is_nsfw)
-            return False
+            if e.status != 404:
+                # We allow the tag even if it will error at least the user will get some traceback
+                return True
 
     async def cog_load(self):
         try:
