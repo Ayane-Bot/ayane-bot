@@ -239,7 +239,7 @@ class Waifu(commands.Cog):
         images = [waifuim.types.Image(i) for i in images]
         if is_nsfw is not None:
             images = list(filter(lambda image: image.is_nsfw == is_nsfw, images))
-        title = interaction.user.name + " " + (
+        title = interaction.user.name + "'s " + (
             "NSFW " if is_nsfw is True else "SFW " if is_nsfw is False else "") + "Gallery"
         await FavMenu(
             source=ImageSource(title=title, image_info=images, user=interaction.user, per_page=1),
