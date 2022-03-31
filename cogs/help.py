@@ -5,7 +5,6 @@ import math
 import discord
 from discord.ext import commands
 
-
 from private.config import LOCAL
 
 
@@ -30,9 +29,8 @@ class AyaneHelpView(paginators.ViewMenu):
         await self.add_select_options()
         self.add_all_items()
 
-
     async def add_select_options(self):
-        options=[]
+        options = []
         for cog, cmds in self.help_command.get_bot_mapping().items():
             if cog and cog.__cog_app_commands__:
                 options.append(discord.SelectOption(
@@ -40,7 +38,7 @@ class AyaneHelpView(paginators.ViewMenu):
                     value=cog.qualified_name,
                     label=f"{cog.qualified_name} [{len(cog.__cog_app_commands__)}]",
                     description=getattr(cog, 'brief', None),
-                    )
+                )
                 )
         self.category_selector.options = options
 
@@ -61,7 +59,7 @@ class AyaneHelpView(paginators.ViewMenu):
         self.add_item(self.stop_pages)
         self.add_item(self.go_home)
 
-    @discord.ui.select(placeholder="Select a category",row=0)
+    @discord.ui.select(placeholder="Select a category", row=0)
     async def category_selector(self, select: discord.ui.Select, interaction: discord.Interaction):
         cog = self.bot.get_cog(select.values[0])
         if cog is None:
@@ -71,11 +69,11 @@ class AyaneHelpView(paginators.ViewMenu):
                                                            ephemeral=True)
         await self.help_command.send_cog_help(cog, view_instance=self)
 
-    @discord.ui.button(emoji='🏡', label='Go Home',row=2)
+    @discord.ui.button(emoji='🏡', label='Go Home', row=2)
     async def go_home(self, button: discord.ui.Button, interaction: discord.Interaction):
         await self.help_command.send_bot_help(self.help_command.get_bot_mapping(), view_instance=self)
 
-    @discord.ui.button(emoji='🛑', label='Stop',row=2)
+    @discord.ui.button(emoji='🛑', label='Stop', row=2)
     async def stop_pages(self, button: discord.ui.Button, interaction: discord.Interaction):
         await super().stop_pages(button, interaction)
 
@@ -87,73 +85,31 @@ class AyaneHelpView(paginators.ViewMenu):
 class AyaneHelpCommand(commands.HelpCommand):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.verify_checks=False
-
-    def get_command_signature(self, command):
-        # Rip command.signature
-        return f"{self.context.clean_prefix}{command.name}"
-
-    async def change_view(self, source_items, view_instance=None):
-        source_items=source_items if isinstance(source_items,list) else [source_items]
-        if view_instance:
-            view_instance.source.entries = source_items
-            await view_instance.reload_items()
-            await view_instance.show_page(0)
-            return
-
-        await AyaneHelpView(
-            self,
-            ctx=self.context,
-            source=paginators.BaseSource(source_items, per_page=1),
-        ).start()
-
-    def get_bot_mapping(self):
-        """Retrieves the bot mapping passed to :meth:`send_bot_help`."""
-        bot = self.context.bot
-        hidden = ['Jishaku']
-        mapping = {cog: cog.__cog_app_commands__ for cog in bot.cogs.values() if cog.qualified_name not in hidden}
-        mapping[None] = []
-        return mapping
-
-    async def format_cog(self, cog):
-        embed_list = []
-        items_per_page = 8
-        commands = cog.__cog_app_commands__
-
-        pages = math.ceil(len(commands) / items_per_page)
-        for i in range(pages):
-            maybe_emoji = getattr(cog, "emoji", "🎉")
-            emoji = maybe_emoji if maybe_emoji else "🎉"
-            com_description = ""
-            page = i + 1
-            start = (page - 1) * items_per_page
-            end = start + items_per_page
-            for com in commands[start:end]:
-                com_description += f"`{com.name}` • {com.description or 'No description'}\n"
-            embed = discord.Embed(colour=self.context.bot.colour)
-            embed.title = f'{emoji} {cog.qualified_name.capitalize()}'
-            embed.set_thumbnail(url=self.context.bot.user.display_avatar.url)
-            embed.set_footer(text=f"Page {page}/{pages}", icon_url=self.context.bot.user.avatar.url)
-            embed_list.append(embed)
-        return embed_list
+        self.verify_checks = False
 
     async def send_bot_help(self, mapping, view_instance=None):
-        embed = discord.Embed(title="Ayane Help", description="A bot for Discord servers", colour=self.context.bot.colour)
+        embed = discord.Embed(title="Ayane Help", description="A bot for Discord servers\n\nIf you are looking for "
+                                                              "the available commands please look for the bot in "
+                                                              "your slash command tab, type `/` to display it`",
+                              colour=self.context.bot.colour)
         embed.set_thumbnail(url=self.context.bot.user.display_avatar.url)
         embed.add_field(
             name='Get support',
             value=f'To get support, join the [support server]({constants.server_invite})',
             inline=False,
         )
-        await self.change_view(embed, view_instance=view_instance)
+        embed.add_field(
+            name='Our API',
+            value=f'Here is the API [docs](https://waifu.im/docs), the [Github](https://https://github.com/Waifu-im/) '
+                  f'and the API [support server](https://discord.com/invite/Hg8kU9pmx9)',
+            inline=True,
+        )
+        await self.context.send(embed=embed)
 
-    async def send_cog_help(self, cog, view_instance=None):
-        await self.change_view(await self.format_cog(cog),view_instance=view_instance)
 
 class Help(commands.Cog):
     def __init__(self, bot):
         self.brief = 'The bot help command'
-        self.emoji = None
         self.bot: Ayane = bot
         self.bot.help_command = AyaneHelpCommand()
 
