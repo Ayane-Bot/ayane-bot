@@ -83,7 +83,7 @@ class Waifu(commands.Cog):
             if e.status == 429:
                 await asyncio.sleep(0.25)
                 return await self.not_empty(tag, is_nsfw)
-            if e.status != 404:
+            elif e.status != 404:
                 # We allow the tag even if it will error at least the user will get some traceback
                 return True
 
@@ -99,8 +99,9 @@ class Waifu(commands.Cog):
         except:
             # If we can't fetch the enum values (wrong status code etc...) we still set up those two
             self.bot.waifu_im_order_by = ["UPLOADED_AT", "FAVOURITES"]
-        raws = await self.bot.waifu_client.endpoints()
+
         try:
+            raws = await self.bot.waifu_client.endpoints()
             self.bot.waifu_im_tags = dict(sfw=[t for t in raws['versatile'] if await self.not_empty(t, False)],
                                           nsfw=[t for t in raws['versatile'] + raws['nsfw'] if
                                                 await self.not_empty(t, True)]
