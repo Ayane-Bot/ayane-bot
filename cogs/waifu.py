@@ -225,7 +225,6 @@ class Waifu(commands.Cog):
         subcommands are the type of picture to return, either sfw or nsfw if nothing is provided no filter will be
         applied. The commands that use the bot [API](https://waifu.im/) are the nsfw commands and the `waifu`
         command. """
-        stop_if_nsfw(not interaction.channel.is_nsfw() and (is_nsfw is None or is_nsfw))
         try:
             images = (await interaction.client.waifu_client.fav(user_id=interaction.user.id))["images"]
         except waifuim.APIException as e:
@@ -237,8 +236,10 @@ class Waifu(commands.Cog):
             else:
                 raise e
         images = [waifuim.types.Image(i) for i in images]
+
         if is_nsfw is not None:
             images = list(filter(lambda image: image.is_nsfw == is_nsfw, images))
+        stop_if_nsfw(not interaction.channel.is_nsfw() and (any(i.is_nsfw for i in images)))
         title = interaction.user.name + "'s " + (
             "NSFW " if is_nsfw is True else "SFW " if is_nsfw is False else "") + "Gallery"
         await FavMenu(

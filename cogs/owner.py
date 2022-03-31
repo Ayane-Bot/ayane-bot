@@ -3,6 +3,7 @@ import typing
 
 import discord
 from discord.ext import commands
+from discord import app_commands
 
 from utils.context import AyaneContext
 from main import Ayane
@@ -52,3 +53,16 @@ class Owner(commands.Cog):
             extras['url'] = 'https://youtu.be/dQw4w9WgXcQ'
         await self.bot.change_presence(activity=discord.Activity(type=activity_types[status], name=text, **extras))
         await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+
+    @app_commands.command(name="role-assignment")
+    @app_commands.guilds(800449566037114892)
+    async def assign_roles(self, interaction, role: typing.Literal['Lib User', 'API User', 'Bot User']):
+        reason = "role-assignment command"
+        role = discord.utils.get(interaction.guild.roles, name=role)
+        if role in interaction.user.roles:
+            await interaction.user.remove_roles(role, reason=reason)
+            return await interaction.response.send_message(f"I removed the **{role.name}** role from you.",
+                                                           ephemeral=True)
+        await interaction.user.add_roles(role, reason=reason)
+        return await interaction.response.send_message(f"I added you the **{role.name}** role.",
+                                                       ephemeral=True)
