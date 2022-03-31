@@ -77,7 +77,7 @@ class Waifu(commands.Cog):
 
     async def not_empty(self, tag, is_nsfw):
         try:
-            return bool(await self.bot.waifuclient.random(is_nsfw=is_nsfw, selected_tags=[tag]))
+            return bool(await self.bot.waifu_client.random(is_nsfw=is_nsfw, selected_tags=[tag]))
         except:
             return False
 
@@ -85,7 +85,7 @@ class Waifu(commands.Cog):
         raws = await self.bot.waifu_client.endpoints()
         self.bot.waifu_im_tags = dict(sfw=[t for t in raws['versatile'] if await self.not_empty(t, False)],
                                       nsfw=[t for t in raws['versatile'] + raws['nsfw'] if
-                                            await self.not_empty(t, False)]
+                                            await self.not_empty(t, True)]
                                       )
 
         try:
