@@ -79,25 +79,28 @@ class Waifu(commands.Cog):
     async def not_empty(self, tag, is_nsfw):
         try:
             return bool(await self.bot.waifu_client.random(is_nsfw=is_nsfw, selected_tags=[tag]))
-        except:
+        except waifuim.APIException as e:
+            if e.status == 429:
+                await asyncio.sleep(0.25)
+                return await self.not_empty(tag, is_nsfw)
             return False
 
     async def cog_load(self):
+        try:
+            while True:
+                req = await self.bot.session.get('https://api.waifu.im/openapi.json')
+                if req.status == 200:
+                    break
+                await asyncio.sleep(0.25)
+            resp = await req.json()
+            self.bot.waifu_im_order_by = resp['components']['schemas']['OrderByType']['enum']
+        except:
+            pass
         raws = await self.bot.waifu_client.endpoints()
         self.bot.waifu_im_tags = dict(sfw=[t for t in raws['versatile'] if await self.not_empty(t, False)],
                                       nsfw=[t for t in raws['versatile'] + raws['nsfw'] if
                                             await self.not_empty(t, True)]
                                       )
-
-        try:
-            req = None
-            while not req or req.status != 200:
-                await asyncio.sleep(1)
-                req = await self.bot.session.get('https://api.waifu.im/openapi.json')
-            resp = await req.json()
-            self.bot.waifu_im_order_by = resp['components']['schemas']['OrderByType']['enum']
-        except:
-            pass
 
     @staticmethod
     async def waifu_launcher(
