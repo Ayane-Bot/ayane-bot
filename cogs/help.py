@@ -138,7 +138,7 @@ class AyaneHelpCommand(commands.HelpCommand):
         return embed_list
 
     async def send_bot_help(self, mapping, view_instance=None):
-        embed = discord.Embed(title="Ayane Help", description="A bot for Discord servers", colour=self.context.bot.color)
+        embed = discord.Embed(title="Ayane Help", description="A bot for Discord servers", colour=self.context.bot.colour)
         embed.set_thumbnail(url=self.context.bot.user.display_avatar.url)
         embed.add_field(
             name='Get support',
