@@ -255,7 +255,7 @@ class Waifu(commands.Cog):
                            gif="If you want only classic images or gifs",
                            many="To get a paginator of multiple files")
     @app_commands.autocomplete(tag=sfw_tag_autocomplete, order_by=order_by_autocomplete)
-    async def sfw_(self, interaction, tag: str, order_by: str, gif: bool = None, many: bool = None):
+    async def sfw_(self, interaction, tag: str, order_by: str = None, gif: bool = None, many: bool = None):
         await self.waifu_launcher(
             interaction,
             is_nsfw=False,
@@ -271,7 +271,7 @@ class Waifu(commands.Cog):
                            gif="If you want only classic images or gifs",
                            many="To get a paginator of multiple files")
     @app_commands.autocomplete(tag=nsfw_tag_autocomplete, order_by=order_by_autocomplete)
-    async def nsfw_(self, interaction, tag: str, order_by: str, gif: bool = None, many: bool = None):
+    async def nsfw_(self, interaction, tag: str, order_by: str = None, gif: bool = None, many: bool = None):
         if isinstance(interaction.channel, (discord.Thread, discord.TextChannel)) and not interaction.channel.is_nsfw():
             raise exceptions.NSFWChannelRequired(channel=interaction.channel)
         await self.waifu_launcher(
