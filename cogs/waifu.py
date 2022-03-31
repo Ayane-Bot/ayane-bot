@@ -137,7 +137,7 @@ class Waifu(commands.Cog):
             )
         except waifuim.APIException as error:
             if error.status == 404:
-                return await interaction.followup.send(error.message)
+                return await interaction.followup.send(error.detail)
             else:
                 raise error
         end = time.perf_counter()
