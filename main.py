@@ -47,7 +47,6 @@ class Ayane(commands.Bot):
         self.session: aiohttp.ClientSession = None
         # All extensions that are not located in the 'cogs' directory.
         self.initial_extensions = ['jishaku']
-
         # Disabling the typing intents as we won't be using them.
         intents = discord.Intents.all()
         intents.typing = False  # noqa
@@ -58,7 +57,7 @@ class Ayane(commands.Bot):
             strip_after_prefix=True,
             intents=intents
         )
-
+        self.help_command = None
         self.server_invite = constants.server_invite
         self.owner_ids = OWNER_IDS
         self.colour = self.color = discord.Colour(value=0xA37FFF)
