@@ -9,6 +9,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 
+from utils import exceptions
 from utils.helpers import stop_if_nsfw
 from utils.paginators import ImageMenu, FavMenu, ImageSource
 
@@ -271,6 +272,8 @@ class Waifu(commands.Cog):
                            many="To get a paginator of multiple files")
     @app_commands.autocomplete(tag=nsfw_tag_autocomplete, order_by=order_by_autocomplete)
     async def nsfw_(self, interaction, tag: str, order_by: str, gif: bool = None, many: bool = None):
+        if isinstance(interaction.channel, (discord.Thread, discord.TextChannel)) and not interaction.channel.is_nsfw():
+            raise exceptions.NSFWChannelRequired(channel=interaction.channel)
         await self.waifu_launcher(
             interaction,
             is_nsfw=True,
