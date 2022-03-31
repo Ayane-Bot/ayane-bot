@@ -34,13 +34,12 @@ class AyaneHelpView(paginators.ViewMenu):
     async def add_select_options(self):
         options=[]
         for cog, cmds in self.help_command.get_bot_mapping().items():
-            cmds=await self.help_command.filter_commands(cmds)
-            if cmds and cog:
+            if cog and cog.__cog_app_commands__:
                 options.append(discord.SelectOption(
-                    emoji=cog.emoji,
+                    emoji=cog.emoji if hasattr(cog,'emoji') else None,
                     value=cog.qualified_name,
-                    label=f"{cog.qualified_name} [{len(cmds)}]",
-                    description=cog.brief,
+                    label=f"{cog.qualified_name} [{len(cog.__cog_app_commands__)}]",
+                    description=cog.brief if hasattr(cog,'brief') else None,
                     )
                 )
         self.category_selector.options = options
@@ -67,8 +66,6 @@ class AyaneHelpView(paginators.ViewMenu):
         cog = self.bot.get_cog(select.values[0])
         if cog is None:
             return await interaction.response.send_message("Somehow, that category doesn't exist anymore..."
-                                                           "\nThe bot may have restarted while you were interacting "
-                                                           "with the help menu. "
                                                            "\nIf this error persists, please run the help command "
                                                            "again.",
                                                            ephemeral=True)
@@ -93,20 +90,13 @@ class AyaneHelpCommand(commands.HelpCommand):
         self.verify_checks=False
 
     def get_command_signature(self, command):
-        return f"{self.context.clean_prefix}{command.qualified_name} {command.signature}"
+        # Rip command.signature
+        return f"{self.context.clean_prefix}{command.name}"
 
     async def on_help_command_error(self,ctx, error):
         original_error = getattr(error, 'original', error)
-        print("test")
-        if isinstance(original_error, PrivateCategoryOrGroup):
-            embed = discord.Embed(title="🛑 Private", description=str(original_error))
-            await ctx.send(embed=embed)
-        elif isinstance(original_error, commands.CommandNotFound):
-            embed = discord.Embed(title="❌ Command not found", description=str(original_error))
-            await ctx.send(embed=embed)
-        else:
-            ctx.bypass_first_error_handler=True
-            await super().on_help_command_error(ctx, error)
+        ctx.bypass_first_error_handler=True
+        await super().on_help_command_error(ctx, error)
 
 
     async def change_view(self, source_items, view_instance=None):
@@ -127,38 +117,25 @@ class AyaneHelpCommand(commands.HelpCommand):
         """Retrieves the bot mapping passed to :meth:`send_bot_help`."""
         bot = self.context.bot
         hidden = ['Jishaku']
-        mapping = {cog: cog.get_commands() for cog in bot.cogs.values() if cog.qualified_name not in hidden}
-        mapping[None] = [c for c in bot.commands if c.cog is None]
+        mapping = {cog: cog.__cog_app_commands__ for cog in bot.cogs.values() if cog.qualified_name not in hidden}
+        mapping[None] = []
         return mapping
 
-    async def format_cog_and_group(self, cog_or_group):
-        group = isinstance(cog_or_group, commands.Group)
+    async def format_cog(self, cog):
         embed_list = []
         items_per_page = 8
-        public_commands = await self.filter_commands(cog_or_group.commands if group else cog_or_group.get_commands())
+        commands = cog.__cog_app_commands__
 
-        if not public_commands:
-            raise PrivateCategoryOrGroup(group=group)
-        pages = math.ceil(len(public_commands) / items_per_page)
+        pages = math.ceil(len(commands) / items_per_page)
         for i in range(pages):
             com_description = ""
             page = i + 1
             start = (page - 1) * items_per_page
             end = start + items_per_page
-            for com in public_commands[start:end]:
-                com_description += f"`{com.qualified_name}` • {com.short_doc or 'No description'}\n"
+            for com in commands[start:end]:
+                com_description += f"`{com.name}` • {com.description or 'No description'}\n"
             embed = discord.Embed(colour=self.context.bot.colour)
-            if group:
-                embed.title = f"{cog_or_group.qualified_name.capitalize()}"
-                embed.description = f"Use `{self.context.clean_prefix}help <subcommand>` " \
-                                    f"for more information about a subcommand.\n\n" \
-                                    f"{cog_or_group.help or 'No help provided.'}\n\n{com_description}"
-            else:
-                embed.title = f"{cog_or_group.emoji} {cog_or_group.qualified_name.capitalize()}"
-                embed.description = f"Use `{self.context.clean_prefix}help <command>` " \
-                                    f"for more information about a command.\n\n" \
-                                    f"{com_description}"
-
+            embed.title = f'{cog.emoji if hasattr(cog, "emoji")} {cog.qualified_name.capitalize()}'
             embed.set_thumbnail(url=self.context.bot.user.display_avatar.url)
             embed.set_footer(
                 text=f"Page {page}/{pages}", icon_url=self.context.bot.user.avatar.url
@@ -177,68 +154,14 @@ class AyaneHelpCommand(commands.HelpCommand):
         await self.change_view(embed, view_instance=view_instance)
 
     async def send_cog_help(self, cog, view_instance=None):
-        await self.change_view(await self.format_cog_and_group(cog),view_instance=view_instance)
+        await self.change_view(await self.format_cog(cog),view_instance=view_instance)
 
-    async def send_group_help(self, group, view_instance=None):
-        await self.change_view(await self.format_cog_and_group(group),view_instance=view_instance)
-
-    async def send_command_help(self, command):
-        channel = self.get_destination()
-        command_signatures = self.get_command_signature(command)
-        embed = discord.Embed(
-            title=command.name,
-            description=command.help or "No help provided.",
-            colour=self.context.bot.colour,
-        )
-        embed.add_field(name="Usage", value=f"```{command_signatures}```", inline=False)
-        if command.aliases:
-            aliases = [f"`{c}`" for c in command.aliases]
-            embed.add_field(name="Aliases", value=" , ".join(aliases), inline=False)
-        embed.set_footer(
-            icon_url=self.context.bot.user.display_avatar.url,
-            text="<> Required argument | [] Optional argument",
-        )
-        await self.context.send(embed=embed)
-
-    def maybe_meant(self, string, group_command=None):
-        liste = []
-        for command in group_command.commands if group_command else self.context.bot.commands:
-            if string.lower() in command.name.lower() and len(string) >= 2:
-                liste.append(f"`{command.name}`")
-        if not group_command:
-            for cog,cmds in self.get_bot_mapping().items():
-                if not cmds or not cog:
-                    continue
-                if string.lower() in cog.qualified_name.lower() and len(string) >= 2:
-                    liste.append(f"`{str(cog.qualified_name)}`")
-        return liste
-
-    async def command_not_found(self, string):
-        liste = self.maybe_meant(string)
-        if liste:
-            raise commands.CommandNotFound(f"No command or command category called `{string}` found.\n"
-                                            f"**Did you mean ?**\n{' , '.join(liste)}")
-        else:
-            raise commands.CommandNotFound(f"No command or command category called `{string}` found.")
-
-    async def subcommand_not_found(self, command, string):
-        liste = self.maybe_meant(string, group_command=command)
-        if liste:
-            raise commands.CommandNotFound(f"Command `{command.qualified_name}` has no subcommand"
-                                            f"called `{string}`."
-                                            f"\n**Did you mean ?**\n{' , '.join(liste)}")
-        else:
-            raise commands.CommandNotFound(f"Command `{command.qualified_name}` has no subcommand"
-                                            f"called `{string}`.")
-
-
-class Help(defaults.AyaneCog, brief='The bot help command'):
+class Help(commands.Cog):
     def __init__(self, bot):
+        self.brief = 'The bot help command'
+        self.emoji = None
         self.bot: Ayane = bot
-        self.bot.help_command = AyaneHelpCommand(
-            command_attrs=dict(slash_command=not LOCAL, 
-                               message_command=True)
-        )
+        self.bot.help_command = AyaneHelpCommand()
 
     def cog_unload(self) -> None:
         self.bot.help_command = commands.MinimalHelpCommand()
