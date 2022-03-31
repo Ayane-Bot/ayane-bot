@@ -87,24 +87,26 @@ class AyaneHelpCommand(commands.HelpCommand):
         super().__init__(**kwargs)
         self.verify_checks = False
 
-    async def send_bot_help(self, mapping, view_instance=None):
-        embed = discord.Embed(title="Ayane Help", description="A bot for Discord servers\n\nIf you are looking for "
-                                                              "the available commands please look for the bot in "
-                                                              "your slash command tab, type `/` to display it`",
-                              colour=self.context.bot.colour)
-        embed.set_thumbnail(url=self.context.bot.user.display_avatar.url)
-        embed.add_field(
-            name='Get support',
-            value=f'To get support, join the [support server]({constants.server_invite})',
-            inline=False,
-        )
-        embed.add_field(
-            name='Our API',
-            value=f'Here is the API [docs](https://waifu.im/docs), the [Github](https://https://github.com/Waifu-im/) '
-                  f'and the API [support server](https://discord.com/invite/Hg8kU9pmx9)',
-            inline=True,
-        )
-        await self.context.send(embed=embed)
+    async def send_bot_help(self, mapping):
+        try:
+            embed = discord.Embed(title="Ayane Help", description="A bot for Discord servers\n\nIf you are looking for "
+                                                                  "the available commands please look for the bot in "
+                                                                  "your slash command tab, type `/` to display it`",
+                                  colour=self.context.bot.colour)
+            embed.set_thumbnail(url=self.context.bot.user.display_avatar.url)
+            embed.add_field(
+                name='Get support',
+                value=f'To get support, join the [support server]({constants.server_invite})',
+                inline=False,
+            )
+            embed.add_field(
+                name='Our API',
+                value=f'Here is the API [docs](https://waifu.im/docs), the [Github](https://github.com/Waifu-im/) '
+                      f'and the API [support server](https://discord.com/invite/Hg8kU9pmx9)',
+                inline=True,
+            )
+        except Exception as e:
+            await self.context.send(str(e))
 
 
 class Help(commands.Cog):
