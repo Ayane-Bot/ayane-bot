@@ -36,10 +36,10 @@ class AyaneHelpView(paginators.ViewMenu):
         for cog, cmds in self.help_command.get_bot_mapping().items():
             if cog and cog.__cog_app_commands__:
                 options.append(discord.SelectOption(
-                    emoji=cog.emoji if hasattr(cog,'emoji') else None,
+                    emoji=getattr(cog, 'emoji', None),
                     value=cog.qualified_name,
                     label=f"{cog.qualified_name} [{len(cog.__cog_app_commands__)}]",
-                    description=cog.brief if hasattr(cog,'brief') else None,
+                    description=getattr(cog, 'brief', None),
                     )
                 )
         self.category_selector.options = options
@@ -128,6 +128,8 @@ class AyaneHelpCommand(commands.HelpCommand):
 
         pages = math.ceil(len(commands) / items_per_page)
         for i in range(pages):
+            maybe_emoji = getattr(cog, "emoji", "🎉")
+            emoji = maybe_emoji if maybe_emoji else "🎉"
             com_description = ""
             page = i + 1
             start = (page - 1) * items_per_page
@@ -135,11 +137,9 @@ class AyaneHelpCommand(commands.HelpCommand):
             for com in commands[start:end]:
                 com_description += f"`{com.name}` • {com.description or 'No description'}\n"
             embed = discord.Embed(colour=self.context.bot.colour)
-            embed.title = f'{cog.emoji if hasattr(cog, "emoji")} {cog.qualified_name.capitalize()}'
+            embed.title = f'{emoji} {cog.qualified_name.capitalize()}'
             embed.set_thumbnail(url=self.context.bot.user.display_avatar.url)
-            embed.set_footer(
-                text=f"Page {page}/{pages}", icon_url=self.context.bot.user.avatar.url
-            )
+            embed.set_footer(text=f"Page {page}/{pages}", icon_url=self.context.bot.user.avatar.url)
             embed_list.append(embed)
         return embed_list
 
