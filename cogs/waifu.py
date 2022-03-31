@@ -41,6 +41,27 @@ class PictureConverter:
         return filename
 
 
+async def nsfw_tag_autocomplete(interaction, current):
+    return [
+        app_commands.Choice(name=tag.capitalize(), value=tag)
+        for tag in interaction.client.waifu_im_tags['nsfw'] if current.lower() in tag.lower()
+    ]
+
+
+async def sfw_tag_autocomplete(interaction, current):
+    return [
+        app_commands.Choice(name=tag.capitalize(), value=tag)
+        for tag in interaction.client.waifu_im_tags['sfw'] if current.lower() in tag.lower()
+    ]
+
+
+async def order_by_autocomplete(interaction, current):
+    return [
+        app_commands.Choice(name=type_.upper(), value=type_)
+        for type_ in interaction.client.waifu_im_order_by if current.lower() in type_.lower()
+    ]
+
+
 async def setup(bot):
     await bot.add_cog(Waifu(bot))
 
@@ -53,6 +74,26 @@ class Waifu(commands.Cog):
         self.emoji = '<:ty:833356132075700254>'
         self.brief = 'The bot waifu API commands and some others.'
         self.bot.waifu_reason_exempted_users = {747737674952999024}
+
+    async def not_empty(self, tag, is_nsfw):
+        try:
+            return bool(await self.bot.waifuclient.random(is_nsfw=is_nsfw, selected_tags=[tag]))
+        except:
+            return False
+
+    async def cog_load(self):
+        raws = await self.bot.waifu_client.endpoints()
+        self.bot.waifu_im_tags = dict(sfw=[t for t in raws['versatile'] if await self.not_empty(t, False)],
+                                      nsfw=[t for t in raws['versatile'] + raws['nsfw'] if
+                                            await self.not_empty(t, False)]
+                                      )
+
+        try:
+            req= await self.bot.session.get('https://api.waifu.im/openapi.json')
+            resp = await req.json()
+            self.bot.waifu_im_order_by = resp['components']['schemas']['OrderByType']['enum']
+        except:
+            pass
 
     @staticmethod
     async def waifu_launcher(
@@ -75,7 +116,7 @@ class Waifu(commands.Cog):
             r = await interaction.client.waifu_client.random(
                 selected_tags=selected_tags,
                 excluded_tags=excluded_tags,
-                gif=is_gif if not order_by == fav_order else None,
+                gif=is_gif,
                 order_by=order_by,
                 many=many,
                 full=full,
@@ -88,11 +129,10 @@ class Waifu(commands.Cog):
                 raise error
         end = time.perf_counter()
         request_time = round(end - start, 2)
-        cleaned_category = "" if len(selected_tags) != 1 else selected_tags[0].capitalize()
-        category = "Top " + cleaned_category if order_by == fav_order else cleaned_category
+        cleaned_category = selected_tags[0].capitalize()
         await ImageMenu(source=ImageSource(
             image_info=r,
-            title=category,
+            title=cleaned_category,
             per_page=1,
             user=interaction.user,
             request_time=None if order_by == fav_order else request_time,
@@ -113,13 +153,13 @@ class Waifu(commands.Cog):
                    file_name_or_url: str = None,
                    attachment: discord.Attachment = None,
                    ephemeral: bool = False):
-        """🔗 Send you the picture related to the ID or the url you provided, if there is matches.
-        This will work only if the image is strictly the same.
-        Passing an image that have been compressed or went through any process that might alter its content will not work
-        **please note that using [Saucenao](https://saucenao.com)** to find the original **file** url is recommended.
-        This command will display the image you want from the bot image API (for more information use `ayapi`).
-        The ID is corresponding to the filename of the picture (without the extension), but you can still pass any url.
-        `is_ephemeral` argument only work with slash commands."""
+        """🔗 Send you the picture related to the ID or the url you provided, if there is matches. This will work
+        only if the image is strictly the same. Passing an image that have been compressed or went through any
+        process that might alter its content will not work **please note that using [Saucenao](
+        https://saucenao.com)** to find the original **file** url is recommended. This command will display the image
+        you want from the bot image API (for more information use `ayapi`). The ID is corresponding to the filename
+        of the picture (without the extension), but you can still pass any url. `is_ephemeral` argument only work
+        with slash commands. """
         if not attachment and not file_name_or_url:
             return await interaction.response.send_message("You must at least provide a file name a url or an "
                                                            "attachment")
@@ -167,10 +207,11 @@ class Waifu(commands.Cog):
     @app_commands.command(name="favourite", description="Fetch a user favourite gallery from waifu.im API.")
     @app_commands.describe(is_nsfw="If provided set an nsfw filter depending on the value provided")
     async def favourite(self, interaction, is_nsfw: bool = None, ephemeral: bool = False):
-        """🔗 Display your favorite pictures on the API site. https://waifu.im
-        To add an image to your gallery you just need to clique on the heart when requesting an image using one of the bot API image command.
-        the subcommands are the type of picture to return, either sfw or nsfw if nothing is provided no filter will be applied.
-        The commands that use the bot [API](https://waifu.im/) are the nsfw commands and the `waifu` command."""
+        """🔗 Display your favorite pictures on the API site. https://waifu.im To add an image to your gallery you
+        just need to clique on the heart when requesting an image using one of the bot API image command. the
+        subcommands are the type of picture to return, either sfw or nsfw if nothing is provided no filter will be
+        applied. The commands that use the bot [API](https://waifu.im/) are the nsfw commands and the `waifu`
+        command. """
         stop_if_nsfw(not interaction.channel.is_nsfw() and (is_nsfw is None or is_nsfw))
         try:
             images = (await interaction.client.waifu_client.fav(user_id=interaction.user.id))["images"]
@@ -192,3 +233,36 @@ class Waifu(commands.Cog):
             main_interaction=interaction,
             ephemeral=ephemeral,
         ).start()
+        waifu = app_commands.Group(name="waifu", description="Get a random waifu picture from waifu.im API.")
+
+        @waifu.command(name="sfw", description="Get a random safe picture from waifu.im API.")
+        @app_commands.describe(tag="The image tag used to fetch images",
+                               order_by="Sort image by a specific order",
+                               gif="If you want only classic images or gifs",
+                               many="To get a paginator of multiple files")
+        @app_commands.autocomplete(tag=sfw_tag_autocomplete, order_by=order_by_autocomplete)
+        async def sfw_(self, interaction, tag: str, order_by: str, gif: bool = None, many: bool = None):
+            await self.waifu_launcher(
+                interaction,
+                is_nsfw=False,
+                selected_tags=[tag],
+                is_gif=gif,
+                order_by=order_by,
+                many=many,
+            )
+
+        @waifu.command(name="nsfw", description="Get a random lewd picture from waifu.im API.")
+        @app_commands.describe(tag="The image tag used to fetch images",
+                               order_by="Sort image by a specific order",
+                               gif="If you want only classic images or gifs",
+                               many="To get a paginator of multiple files")
+        @app_commands.autocomplete(tag=nsfw_tag_autocomplete, order_by=order_by_autocomplete)
+        async def nsfw_(self, interaction, tag: str, order_by: str, gif: bool = None, many: bool = None):
+            await self.waifu_launcher(
+                interaction,
+                is_nsfw=True,
+                selected_tags=[tag],
+                is_gif=gif,
+                order_by=order_by,
+                many=many,
+            )

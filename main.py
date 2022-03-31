@@ -76,6 +76,8 @@ class Ayane(commands.Bot):
             508355356376825868,
             850807820634030130,
         ]
+        self.waifu_im_tags = None
+        self.waifu_im_order_by = None
         self.default_checks = {self.check_blacklisted, self.check_user_lock}
 
     def get_sus_guilds(self):
