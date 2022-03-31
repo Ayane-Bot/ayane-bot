@@ -45,7 +45,7 @@ class ImageSource(BaseSource):
             request_time=None,
             **kwargs,
     ):
-        self.image_info = image_info
+        self.image_info = image_info if hasattr(image_info,'__iter__') else [image_info]
         self.title = title
         self.user = user
         self.request_time = request_time
