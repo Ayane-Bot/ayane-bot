@@ -122,7 +122,7 @@ class Ayane(commands.Bot):
     async def is_blacklisted(self, user):
         return await self.pool.fetchval("SELECT reason FROM registered_user WHERE id=$1 AND is_blacklisted", user.id)
 
-    async def setup_hook(self) -> None:
+    async def before_ready_once(self) -> None:
         self.pool = await self.establish_database_connection()
         ssl_context = ssl.create_default_context(cafile=certifi.where())
         connector = aiohttp.TCPConnector(ssl=ssl_context)
@@ -276,6 +276,7 @@ if __name__ == "__main__":
             webhook.send('👋 Ayane is waking up!')
             del webhook
             async with bot:
+                await bot.before_ready_once()
                 await bot.load_cogs()
                 await bot.start(TOKEN)
                 await bot.on_ready_once()
