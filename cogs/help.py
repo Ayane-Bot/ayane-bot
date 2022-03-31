@@ -144,14 +144,7 @@ class AyaneHelpCommand(commands.HelpCommand):
         return embed_list
 
     async def send_bot_help(self, mapping, view_instance=None):
-        embed = discord.Embed(title="Ayane Help", description="A bot for Discord servers", color=self.context.bot.color)
-        embed.set_thumbnail(url=self.context.bot.user.display_avatar.url)
-        embed.add_field(
-            name='Get support',
-            value=f'To get support, join the [support server]({constants.server_invite})',
-            inline=False,
-        )
-        await self.change_view(embed, view_instance=view_instance)
+        await self.context.send("test")
 
     async def send_cog_help(self, cog, view_instance=None):
         await self.change_view(await self.format_cog(cog),view_instance=view_instance)
