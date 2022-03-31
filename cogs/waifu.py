@@ -91,13 +91,13 @@ class Waifu(commands.Cog):
         try:
             while True:
                 req = await self.bot.session.get('https://api.waifu.im/openapi.json')
-                if req.status == 200:
+                if req.status != 429:
+                    resp = await req.json()
+                    self.bot.waifu_im_order_by = resp['components']['schemas']['OrderByType']['enum']
                     break
                 await asyncio.sleep(0.25)
-            resp = await req.json()
-            self.bot.waifu_im_order_by = resp['components']['schemas']['OrderByType']['enum']
         except:
-            # If we can't fetch the enum values we still set up those two
+            # If we can't fetch the enum values (wrong status code etc...) we still set up those two
             self.bot.waifu_im_order_by = ["UPLOADED_AT", "FAVOURITES"]
         raws = await self.bot.waifu_client.endpoints()
         try:
