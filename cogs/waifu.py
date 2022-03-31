@@ -3,6 +3,7 @@ import random
 import time
 import waifuim
 import xxhash
+import asyncio
 
 import discord
 from discord.ext import commands
@@ -89,7 +90,10 @@ class Waifu(commands.Cog):
                                       )
 
         try:
-            req = await self.bot.session.get('https://api.waifu.im/openapi.json')
+            req = None
+            while not req or req.status != 200:
+                await asyncio.sleep(1)
+                req = await self.bot.session.get('https://api.waifu.im/openapi.json')
             resp = await req.json()
             self.bot.waifu_im_order_by = resp['components']['schemas']['OrderByType']['enum']
         except:
