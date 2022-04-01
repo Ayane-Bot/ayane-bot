@@ -194,9 +194,7 @@ class Waifu(commands.Cog):
         except waifuim.APIException as e:
             if e.status == 404:
                 embed = discord.Embed(title="❌ File not found",
-                                      description=f"Sorry i did not find any file that match your search :"
-                                                  f"`{file_name_or_url}`. If you provided an url, please go check"
-                                                  f"`/help {interaction.command.name}`. ")
+                                      description=f"Sorry i did not find any file that match the provided file.")
                 return await interaction.response.send_message(embed=embed)
             raise e
         image = matches[0]
