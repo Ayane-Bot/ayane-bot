@@ -186,6 +186,7 @@ class Waifu(commands.Cog):
                     .strip("**")
                     .strip("<>")
             )
+        await interaction.response.send_message(os.path.splitext(xxhash.xxh3_64_hexdigest(await attachment.read()))[0])
         converter = PictureConverter(self.bot, file_string=file_name_or_url, file=attachment)
         file_id = await converter.to_id()
         start = time.perf_counter()
