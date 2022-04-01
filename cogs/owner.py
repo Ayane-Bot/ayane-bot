@@ -54,7 +54,8 @@ class Owner(commands.Cog):
         await self.bot.change_presence(activity=discord.Activity(type=activity_types[status], name=text, **extras))
         await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
-    @app_commands.command(name="role-assignment")
+    @app_commands.command(name="role-assignment",description="You can add yourself roles to be pinged when there is "
+                                                             "announcement about the topic they belong to.")
     @app_commands.guilds(800449566037114892)
     async def assign_roles(self, interaction, role: typing.Literal['Lib User', 'API User', 'Bot User']):
         reason = "role-assignment command"
