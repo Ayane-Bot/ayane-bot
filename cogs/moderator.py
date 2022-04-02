@@ -242,7 +242,7 @@ class Moderator(commands.Cog):
             until,
             settings={'TO_TIMEZONE': 'UTC', 'RETURN_AS_TIMEZONE_AWARE': True, 'PREFER_DATES_FROM': 'future'},
         )
-        if not member.timed_out and not until:
+        if not member.is_timed_out() and not until:
             return await interaction.response.send_message("I couldn't parse your date.")
 
         if member.guild_permissions.moderate_members:
@@ -252,7 +252,7 @@ class Moderator(commands.Cog):
         if until and until <= interaction.created_at:
             return await interaction.response.send_message("Your date is in the past.")
         try:
-            await member.edit(timeout_until=until)
+            await member.edit(timed_out_until=until)
         except discord.HTTPException:
             return await interaction.response.send_message(
                 "Something went wrong, please check that the time provided isn't more than 28 days.")
