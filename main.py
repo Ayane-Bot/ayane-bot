@@ -120,12 +120,14 @@ class Ayane(commands.Bot):
     async def is_blacklisted(self, user):
         return await self.pool.fetchval("SELECT reason FROM registered_user WHERE id=$1 AND is_blacklisted", user.id)
 
-    async def before_ready_once(self) -> None:
+    async def setup_hook(self) -> None:
         self.pool = await self.establish_database_connection()
         ssl_context = ssl.create_default_context(cafile=certifi.where())
         connector = aiohttp.TCPConnector(ssl=ssl_context)
         self.session = aiohttp.ClientSession(connector=connector)
         self.waifu_client = waifuim.WaifuAioClient(appname="Ayane-Bot", token=WAIFU_API_TOKEN, session=self.session)
+        await self.load_cogs()
+        self.loop.create_task(self.on_ready_once())
 
     async def on_ready_once(self):
         await self.wait_until_ready()
@@ -274,10 +276,7 @@ if __name__ == "__main__":
             webhook.send('👋 Ayane is waking up!')
             del webhook
             async with bot:
-                await bot.before_ready_once()
-                await bot.load_cogs()
                 await bot.start(TOKEN)
-                await bot.on_ready_once()
         finally:
             webhook = discord.SyncWebhook.from_url(WEBHOOK_URL, bot_token=bot.http.token)
             webhook.send('🔻 Ayane is going to sleep!')
