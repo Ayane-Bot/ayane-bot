@@ -78,19 +78,11 @@ class Ayane(commands.Bot):
         self.waifu_im_order_by = None
         self.default_checks = {self.check_blacklisted, self.check_user_lock}
 
-    async def webhook_message(self, message):
-        try:
-            webhook = discord.Webhook.from_url(WEBHOOK_URL, bot_token=self.http.token)
-            await webhook.send(message)
-        except:
-            pass
-
     async def close(self):
         await self.pool.close()
         await self.waifu_client.close()
         await self.session.close()
         await super().close()
-        await self.webhook_message('🔻 Ayane is going to sleep!')
 
     def get_sus_guilds(self):
         sus = []
@@ -135,7 +127,6 @@ class Ayane(commands.Bot):
         return await self.pool.fetchval("SELECT reason FROM registered_user WHERE id=$1 AND is_blacklisted", user.id)
 
     async def setup_hook(self) -> None:
-        await self.webhook_message('👋 Ayane is waking up!')
         self.pool = await self.establish_database_connection()
         ssl_context = ssl.create_default_context(cafile=certifi.where())
         connector = aiohttp.TCPConnector(ssl=ssl_context)
@@ -286,8 +277,17 @@ class Ayane(commands.Bot):
 if __name__ == "__main__":
     async def main():
         bot = Ayane()
+        try:
+            webhook = discord.SyncWebhook.from_url(WEBHOOK_URL, bot_token=bot.http.token)
+            webhook.send('👋 Ayane is waking up!')
+        except:
+            pass
         async with bot:
             await bot.start(TOKEN)
+        webhook = discord.SyncWebhook.from_url(WEBHOOK_URL, bot_token=bot.http.token)
+        webhook.send('🔻 Ayane is going to sleep!')
+
+
 
 
     asyncio.run(main())
