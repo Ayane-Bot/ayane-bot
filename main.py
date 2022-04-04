@@ -278,11 +278,9 @@ if __name__ == "__main__":
             pass
         async with bot:
             await bot.start(TOKEN)
-        try:
-            webhook = discord.SyncWebhook.from_url(WEBHOOK_URL, bot_token=bot.http.token)
-            webhook.send('🔻 Ayane is going to sleep!')
-        except:
-            pass
+
+        webhook = discord.SyncWebhook.from_url(WEBHOOK_URL, bot_token=bot.http.token)
+        webhook.send('🔻 Ayane is going to sleep!')
 
 
     asyncio.run(main())
