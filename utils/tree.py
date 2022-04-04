@@ -2,6 +2,7 @@ import math
 import humanize
 
 import discord
+from discord.ext.commands import NotOwner as CommandNotOwner
 from discord import app_commands
 
 from utils import exceptions
@@ -63,7 +64,7 @@ class AyaneCommandTree(app_commands.CommandTree):
                 embed.description = _message
                 await interaction.client.send_interaction_error_message(interaction, embed=embed)
 
-            elif isinstance(error, exceptions.NotOwner):
+            elif isinstance(error, (exceptions.NotOwner,CommandNotOwner)):
                 _message = f"Sorry **{interaction.user}**, but this commmand is an owner-only command and you arent one " \
                            f"of my loved developers <:ty:833356132075700254>."
                 embed.title = "🛑 Owner-only"
