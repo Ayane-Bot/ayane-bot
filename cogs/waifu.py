@@ -124,9 +124,8 @@ class Waifu(commands.Cog):
         """Used to easily run most of the command for the Waifu cog"""
 
         fav_order = "FAVOURITES"
-        order_by = order_by.upper() if order_by is not None else None
         await interaction.response.defer(ephemeral=is_ephemeral)
-        if order_by and order_by not in [i.upper() for i in interaction.client.waifu_im_order_by]:
+        if order_by and order_by not in [i for i in interaction.client.waifu_im_order_by]:
             available = ['`' + i + '`' for i in interaction.client.waifu_im_order_by]
             return await interaction.followup.send(
                 f"if `order_by` is provided it must be one of the followings : {', '.join(available)}"
