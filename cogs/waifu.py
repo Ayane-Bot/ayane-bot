@@ -122,15 +122,21 @@ class Waifu(commands.Cog):
 
     ):
         """Used to easily run most of the command for the Waifu cog"""
+
         fav_order = "FAVOURITES"
         await interaction.response.defer(ephemeral=is_ephemeral)
+        if order_by and order_by.upper() not in [i.upper() for i in interaction.client.waifu_im_order_by]:
+            available = ['`' + i + '`' for i in interaction.client.waifu.im_order_by]
+            return await interaction.followup.send(
+                f"if order_by is provided it must be one of the followings : {available}"
+            )
         start = time.perf_counter()
         try:
             r = await interaction.client.waifu_client.random(
                 selected_tags=selected_tags,
                 excluded_tags=excluded_tags,
                 gif=is_gif,
-                order_by=order_by,
+                order_by=order_by.upper() if order_by else None,
                 many=many,
                 full=full,
                 is_nsfw=is_nsfw,
