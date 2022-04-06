@@ -126,7 +126,7 @@ class Waifu(commands.Cog):
         fav_order = "FAVOURITES"
         await interaction.response.defer(ephemeral=is_ephemeral)
         if order_by and order_by.upper() not in [i.upper() for i in interaction.client.waifu_im_order_by]:
-            available = ['`' + i + '`' for i in interaction.client.waifu.im_order_by]
+            available = ['`' + i + '`' for i in interaction.client.waifu_im_order_by]
             return await interaction.followup.send(
                 f"if order_by is provided it must be one of the followings : {available}"
             )
