@@ -128,7 +128,7 @@ class Waifu(commands.Cog):
         if order_by and order_by.upper() not in [i.upper() for i in interaction.client.waifu_im_order_by]:
             available = ['`' + i + '`' for i in interaction.client.waifu_im_order_by]
             return await interaction.followup.send(
-                f"if order_by is provided it must be one of the followings : {available}"
+                f"if order_by is provided it must be one of the followings : {', '.join(available)}"
             )
         start = time.perf_counter()
         try:
