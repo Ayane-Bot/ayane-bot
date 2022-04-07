@@ -76,9 +76,13 @@ class AyaneCommandTree(app_commands.CommandTree):
                 embed.description = str(error)
                 await interaction.client.send_interaction_error_message(interaction, embed=embed)
             else:
-                embed.title = "🛑 Forbidden",
+                embed.title = "🛑 Check Failure",
                 embed.description = "You or the bot cannot run this command."
                 await interaction.client.send_interaction_error_message(interaction, embed=embed)
+        elif isinstance(error, discord.Forbidden):
+            embed.title = "🛑 Forbidden",
+            embed.description = "Sorry I dont have enough permissions to do this."
+            await interaction.client.send_interaction_error_message(interaction, embed=embed)
         elif isinstance(error, app_commands.TransformerError):
             embed.title = "🛑 Bad Argument"
             embed.description = str(error)
