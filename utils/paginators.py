@@ -467,11 +467,7 @@ class ImageMenu(ViewMenu):
         in_fav = False
         try:
             favs = await self.bot.waifu_client.fav(user_id=interaction.user.id)
-            for im in favs["images"]:
-                if image_name == im["file"]:
-                    in_fav = True
-                    break
-
+            in_fav = any(im.file == image_name for im in favs)
         except waifuim.exceptions.APIException as e:
             if e.status != 404:
                 raise e
