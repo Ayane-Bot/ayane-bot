@@ -91,7 +91,7 @@ class BaseView(discord.ui.View):
             main_interaction,
             delete_after=True,
             ephemeral=False,
-            check_embeds=True,
+            check_embeds=False,
             timeout=840,
             **kwargs,
     ):
