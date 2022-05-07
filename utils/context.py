@@ -14,7 +14,7 @@ class AyaneContext(commands.Context):
 
     async def send(self, content=None, *, embed=None, **kwargs) -> discord.Message:
         if embed:
-            if embed.colour is discord.Embed.Empty:
+            if embed.colour is None:
                 embed.colour = self.bot.colour
                 
         return await super().send(content=content, embed=embed, **kwargs)
