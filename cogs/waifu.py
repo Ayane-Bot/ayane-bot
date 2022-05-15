@@ -257,7 +257,7 @@ class Waifu(commands.Cog):
                            many="To get a paginator of multiple files")
     @app_commands.autocomplete(tag=sfw_tag_autocomplete, order_by=order_by_autocomplete)
     async def sfw_(self, interaction, tag: str, order_by: str = None, gif: bool = None, many: bool = None):
-        if tag.lower() not in interaction.client.waifu_im_tags['versatile']:
+        if tag.lower() not in interaction.client.waifu_im_tags['sfw']:
             return await interaction.send_message(f"Please choose a tag of the followings: {', '.join(['``'+t+'`' for t in interaction.client.waifu_im_tags['sfw']])}")
         await self.waifu_launcher(
             interaction,
