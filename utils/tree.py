@@ -9,6 +9,10 @@ from utils import exceptions
 
 
 class AyaneCommandTree(app_commands.CommandTree):
+    async def call(self, interaction):
+        await super().call(interaction)
+        interaction.client.dispatch("app_command", interaction)
+
     async def on_error(
             self,
             interaction,
@@ -64,7 +68,7 @@ class AyaneCommandTree(app_commands.CommandTree):
                 embed.description = _message
                 await interaction.client.send_interaction_error_message(interaction, embed=embed)
 
-            elif isinstance(error, (exceptions.NotOwner,CommandNotOwner)):
+            elif isinstance(error, (exceptions.NotOwner, CommandNotOwner)):
                 _message = f"Sorry **{interaction.user}**, but this commmand is an owner-only command and you arent one " \
                            f"of my loved developers <:ty:833356132075700254>."
                 embed.title = "🛑 Owner-only"

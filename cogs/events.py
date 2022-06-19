@@ -17,6 +17,16 @@ class Events(commands.Cog):
         self.emoji = '⚙'
         self.brief = 'Ayane Internal Stuff'
 
+    @commands.Cog.listener("on_app_command")
+    async def on_app_command(self, interaction) -> None:
+        await interaction.client.pool.execute(
+            "INSERT INTO commands (guild_id, user_id, command, timestamp) VALUES ($1, $2, $3, $4)",
+            getattr(interaction.guild, "id", None),
+            interaction.user.id,
+            interaction.command.name,
+            interaction.created_at,
+        )
+
     @commands.Cog.listener("on_command")
     async def basic_command_logger(self, ctx):
         await self.bot.pool.execute(

@@ -34,8 +34,8 @@ class Owner(commands.Cog):
     async def dev_restart(self, ctx: AyaneContext, *, service: str = 'ayane'):
         if LOCAL:
             return
-        await ctx.send(f'Restarting {service}...')
-        os.system(f'sudo systemctl restart {service}')
+        await ctx.send("Restarting the bot...")
+        await ctx.bot.close()
 
     Status = typing.Literal['playing', 'streaming', 'listening', 'watching', 'competing']
 
