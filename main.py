@@ -204,7 +204,7 @@ class Ayane(commands.Bot):
             await interaction.response.send_message(*args, **kwargs)
 
     @staticmethod
-    async def send_unexpected_error(interaction, command, error, **kwargs):
+    async def send_unexpected_error(interaction, error, **kwargs):
         with contextlib.suppress(discord.HTTPException):
             _message = f"Sorry, an error has occured, it has been reported to my developers. To be inform of the " \
                        f"bot issues and updates join the [support server]({constants.server_invite}) !"
@@ -218,7 +218,7 @@ class Ayane(commands.Bot):
         if interaction.guild:
             command_data = (
                 f"by: {interaction.user} ({interaction.user.id})"
-                f"\ncommand: {command}"
+                f"\ncommand: {interaction.command}"
                 f"\nguild_id: {interaction.guild.id} - channel_id: {interaction.channel.id}"
                 f"\nowner: {interaction.guild.owner.name} ({interaction.guild.owner.id})"
                 f"\nbot admin: {'✅' if interaction.guild.me.guild_permissions.administrator else '❌'} "
@@ -226,13 +226,13 @@ class Ayane(commands.Bot):
             )
         else:
             command_data = (
-                f"command: {command}"
+                f"command: {interaction.command}"
                 f"\nCommand executed in DMs"
             )
 
         to_send = (
             f"```yaml\n{command_data}``````py"
-            f"\nCommand {command} raised the following error:"
+            f"\nCommand {interaction.command} raised the following error:"
             f"\n{traceback_string}\n```"
         )
 
@@ -244,7 +244,7 @@ class Ayane(commands.Bot):
                     io.StringIO(traceback_string), filename="traceback.py"
                 )
                 await error_channel.send(
-                    f"```yaml\n{command_data}``````py Command {command} raised the following error:\n```",
+                    f"```yaml\n{command_data}``````py Command {interaction.command} raised the following error:\n```",
                     file=file,
                     view=PersistentExceptionView(interaction.client),
                 )
