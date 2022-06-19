@@ -49,11 +49,11 @@ class Info(commands.Cog):
         )
         embed.add_field(
             name="<:stats:846407087491121224> Statistics",
-            value=f"\n<:servers:846407428152492122> Servers : `{len(self.bot.guilds):,}`"
-                  f"\n<:users:846407378047729676> Users : `{len(self.bot.users):,}`"
-                  f"\n<:text_channel:846407318982885435> Text channels : `{text_channel:,}`"
-                  f"\n<:voice_channel:846407273718743080> Voice channels : `{voice_channel:,}`"
-                  f"\n<:stage_channel:846410090050879529> Stage channels : `{stage_channel:,}`"
+            value=f"\n<:servers:846407428152492122> Servers : `{len(self.bot.guilds)}`"
+                  f"\n<:users:846407378047729676> Users : `{len(self.bot.users)}`"
+                  f"\n<:text_channel:846407318982885435> Text channels : `{text_channel}`"
+                  f"\n<:voice_channel:846407273718743080> Voice channels : `{voice_channel}`"
+                  f"\n<:stage_channel:846410090050879529> Stage channels : `{stage_channel}`"
                   f"\n<:bot_commands:846415723798462464> Commands : `{len(self.bot.commands) + len(self.bot.tree.get_commands())}`",
             inline=False,
         )
