@@ -91,7 +91,7 @@ class AyaneCommandTree(app_commands.CommandTree):
             embed.description = str(error)
             await interaction.client.send_interaction_error_message(interaction, embed=embed)
         else:
-            await interaction.client.send_unexpected_error(interaction, interaction.command, error)
+            await interaction.client.send_unexpected_error(interaction, error)
 
     async def interaction_check(self, interaction) -> bool:
         for check in interaction.client.default_checks:
