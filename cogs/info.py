@@ -54,7 +54,7 @@ class Info(commands.Cog):
                   f"\n<:text_channel:846407318982885435> Text channels : `{text_channel:,}`"
                   f"\n<:voice_channel:846407273718743080> Voice channels : `{voice_channel:,}`"
                   f"\n<:stage_channel:846410090050879529> Stage channels : `{stage_channel:,}`"
-                  f"\n<:bot_commands:846415723798462464> Commands : `{len(self.bot.commands + len(self.bot.tree.get_commands())):,}`",
+                  f"\n<:bot_commands:846415723798462464> Commands : `{len(self.bot.commands) + len(self.bot.tree.get_commands())}`",
             inline=False,
         )
         embed.add_field(name="OS", value=f"OS : `{platform.system()}`", inline=True)
