@@ -220,8 +220,8 @@ class Moderator(commands.Cog):
         try:
             await self.modutils.mute(member, reason=reason)
         except AlreadyMuted:
-            return await interaction.response.send_message(f"Sorry **{member}** is already muted.")
-        await interaction.response.send_message(f"**{member.name}** has been muted.")
+            return await interaction.followup.send(f"Sorry **{member}** is already muted.")
+        await interaction.followup.send(f"**{member.name}** has been muted.")
 
     @app_commands.command(name="unmute")
     @app_commands.checks.has_permissions(manage_messages=True)
@@ -231,9 +231,9 @@ class Moderator(commands.Cog):
         try:
             await self.modutils.unmute(member, reason=reason)
         except NotMuted:
-            return await interaction.response.send_message(
+            return await interaction.followup.send(
                 f"Sorry **{member}** was not muted or as already been unmuted.")
-        await interaction.response.send_message(f"**{member.name}** has been unmuted.")
+        await interaction.followup.send(f"**{member.name}** has been unmuted.")
 
     @app_commands.command(name="timeout")
     @app_commands.checks.has_permissions(moderate_members=True)
