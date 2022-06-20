@@ -218,7 +218,7 @@ class Ayane(commands.Bot):
         if interaction.guild:
             command_data = (
                 f"by: {interaction.user} ({interaction.user.id})"
-                f"\ncommand: {interaction.command}"
+                f"\ncommand: {interaction.command.name}"
                 f"\nguild_id: {interaction.guild.id} - channel_id: {interaction.channel.id}"
                 f"\nowner: {interaction.guild.owner.name} ({interaction.guild.owner.id})"
                 f"\nbot admin: {'✅' if interaction.guild.me.guild_permissions.administrator else '❌'} "
@@ -226,13 +226,13 @@ class Ayane(commands.Bot):
             )
         else:
             command_data = (
-                f"command: {interaction.command}"
+                f"command: {interaction.command.name}"
                 f"\nCommand executed in DMs"
             )
 
         to_send = (
             f"```yaml\n{command_data}``````py"
-            f"\nCommand {interaction.command} raised the following error:"
+            f"\nCommand {interaction.command.name} raised the following error:"
             f"\n{traceback_string}\n```"
         )
 
@@ -244,7 +244,7 @@ class Ayane(commands.Bot):
                     io.StringIO(traceback_string), filename="traceback.py"
                 )
                 await error_channel.send(
-                    f"```yaml\n{command_data}``````py Command {interaction.command} raised the following error:\n```",
+                    f"```yaml\n{command_data}``````py Command {interaction.command.name} raised the following error:\n```",
                     file=file,
                     view=PersistentExceptionView(interaction.client),
                 )
