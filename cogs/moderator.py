@@ -216,6 +216,7 @@ class Moderator(commands.Cog):
             return await interaction.response.send_message(
                 f"Sorry **{member}** also has **Manage Messages** permission, "
                 "therefore I cannot allow you to mute an other staff member")
+        await interaction.response.defer(thinking=True)
         try:
             await self.modutils.mute(member, reason=reason)
         except AlreadyMuted:
@@ -226,6 +227,7 @@ class Moderator(commands.Cog):
     @app_commands.checks.has_permissions(manage_messages=True)
     async def unmute_(self, interaction, member: discord.Member, reason: str = None):
         """Unmute a member"""
+        await interaction.response.defer(thinking=True)
         try:
             await self.modutils.unmute(member, reason=reason)
         except NotMuted:
