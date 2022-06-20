@@ -63,7 +63,7 @@ class ModUtils:
                 await member.send(self.format_sanction_reason(member.guild, str(reason), "Muted"))
             except discord.HTTPException:
                 pass
-            for category in member.guild.categories:
+            for category in member.guild.categories + [c for c in member.guild.channels if c.category is None]:
                 await category.set_permissions(role, send_messages=False, connect=False)
             if delete_last_day:
                 await self.purge(member.guild.text_channels,
@@ -82,7 +82,7 @@ class ModUtils:
                     pass
             else:
                 raise NotMuted
-            for category in member.guild.categories:
+            for category in member.guild.categories + [c for c in member.guild.channels if c.category is None]:
                 await category.set_permissions(role, send_messages=False, connect=False)
 
     async def purge(self, channels, limit=None, after=None, user=None, original_message=None):
