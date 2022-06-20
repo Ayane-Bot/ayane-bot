@@ -155,12 +155,12 @@ class Moderator(commands.Cog):
     @app_commands.checks.has_permissions(kick_members=True, ban_members=True, manage_messages=True)
     async def toggle_antispam(self, interaction, mode: Literal["light", "soft", "strict", "disabled"]):
         """Set the antispam mode
-        `strict` : ban users when spamming (recommended)
-        `soft` : kick users when spamming
-        `light` : Mute users when spamming
-        `disabled` : disable anti-spam
-        every mode do delete the user messages in the last 24 hours.
-        default to `disabled`."""
+        strict : ban users when spamming (recommended)
+        soft : kick users when spamming
+        light : Mute users when spamming
+        disabled : disable anti-spam
+        every mode deletes the user messages in the last 24 hours.
+        default to disabled."""
         if mode == "disabled":
             mode = None
         await self.bot.pool.execute(
