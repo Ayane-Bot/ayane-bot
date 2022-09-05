@@ -234,8 +234,7 @@ class Waifu(commands.Cog):
         except waifuim.APIException as e:
             if e.status == 404:
                 return await interaction.response.send_message(
-                    "You have no Gallery or it is empty. You can add some by using the bot API commands `/sfw waifu` "
-                    "etc... "
+                    f"You have no favourites. You can add some by using `/waifu sfw` or `/waifu nsfw` and click on ❤️."
                 )
             else:
                 raise e
