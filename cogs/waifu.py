@@ -193,7 +193,7 @@ class Waifu(commands.Cog):
                     .strip("<>")
             )
         converter = PictureConverter(self.bot, file_string=file_name_or_url, file=attachment)
-        file= await converter.clean()
+        file = await converter.clean()
         start = time.perf_counter()
         try:
             matches = await self.bot.waifu_client.info(images=[file])
