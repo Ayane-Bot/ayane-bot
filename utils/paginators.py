@@ -406,10 +406,10 @@ class ImageMenu(ViewMenu):
                 raise LimitReached(limit=limit, counter=counter, user=user)
             usersdict[user.id] += 1
 
-    async def editfav(self, image_name, image, user):
-        t = await self.bot.waifu_client.fav_toggle(user_id=user.id, image=image_name)
+    async def edit_fav(self, filename, image_id, user):
+        t = await self.bot.waifu_client.fav_toggle(user_id=user.id, image=image_id)
         mes = "**added to**" if t["state"] == "INSERTED" else "**removed from**"
-        return f"Alright **{user.name}**, the [image](https://{APIDomainName}/preview/?image={image}), " \
+        return f"Alright **{user.name}**, the [image](https://{APIDomainName}/preview/{image_id}), " \
                f"has successfully been {mes} your Gallery.\n" \
                f"You can look at your Gallery [here](https://{APIDomainName}/fav/) " \
                "after logging in with your discord account, or by using the `favourite` command. "
@@ -424,9 +424,9 @@ class ImageMenu(ViewMenu):
         self.check_limit(
             self.fav_limit, self.fav.setdefault(user.id, 1), user, self.fav
         )
-        image = self.image_info.file + self.image_info.extension
-        image_name = self.image_info.file
-        adv = await self.editfav(image_name, image, user)
+        filename = str(self.image_info.image_id) + self.image_info.extension
+        image_id = self.image_info.image_id
+        adv = await self.edit_fav(filename, image_id, user)
         embed = discord.Embed(description=adv, color=discord.Colour.random())
         return await interaction.response.send_message(embed=embed, ephemeral=True)
 
@@ -457,17 +457,15 @@ class ImageMenu(ViewMenu):
         )
         await interaction.response.defer(ephemeral=True)
         try:
-            rq = await self.bot.waifu_client.info(images=[self.image_info.file])
+            rq = await self.bot.waifu_client.info(images=[self.image_info.image_id])
             self.image_info = self.source.image_infos[self.current_page] = rq[0]
         except:
             pass
-
-        image_name = self.image_info.file
-        image = image_name + self.image_info.extension
+        image_id = self.image_info.image_id
         in_fav = False
         try:
             favs = await self.bot.waifu_client.fav(user_id=interaction.user.id)
-            in_fav = any(im.file == image_name for im in favs)
+            in_fav = any(im.image_id == image_id for im in favs)
         except waifuim.exceptions.APIException as e:
             if e.status != 404:
                 raise e
@@ -476,7 +474,7 @@ class ImageMenu(ViewMenu):
                   "please use **[Saucenao](https://saucenao.com/)**," \
                   f"Join the [support server]({self.bot.server_invite}) and share us the new source."
         description = (
-                f"This **[image](https://waifu.im/preview/?image={image})** **is {'not' if not in_fav else 'already'}** in your [gallery](https://waifu.im/fav/)\n\n"
+                f"This **[image](https://waifu.im/preview/{image_id})** **is {'not' if not in_fav else 'already'}** in your [gallery](https://waifu.im/fav/)\n\n"
                 + sd_part
         )
         embed = discord.Embed(
