@@ -26,7 +26,7 @@ class PictureConverter:
         self.bot = bot
         self.is_url = None
 
-    async def to_id(self):
+    async def clean(self):
         if self.file:
             return os.path.splitext(xxhash.xxh3_64_hexdigest(await self.file.read()))[0]
         filename = self.maybe_id
@@ -193,10 +193,10 @@ class Waifu(commands.Cog):
                     .strip("<>")
             )
         converter = PictureConverter(self.bot, file_string=file_name_or_url, file=attachment)
-        file_id = await converter.to_id()
+        file= await converter.clean()
         start = time.perf_counter()
         try:
-            matches = await self.bot.waifu_client.info(images=[file_id])
+            matches = await self.bot.waifu_client.info(images=[file])
         except waifuim.APIException as e:
             if e.status == 404:
                 embed = discord.Embed(title="❌ File not found",
