@@ -40,7 +40,7 @@ class ReportModal(BaseModal):
 
     async def on_submit(self, interaction) -> None:
         await self.view.bot.waifu_client.report(
-            self.view.image_info.file,
+            self.view.image_info.image_id,
             user_id=interaction.user.id,
             description=self.reason.value.strip(" "),
         )
