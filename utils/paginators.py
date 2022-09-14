@@ -206,7 +206,7 @@ class BaseView(discord.ui.View):
             embed = discord.Embed(title="🛑 Forbidden", colour=self.bot.colour, description=str(error))
             await self.bot.send_interaction_error_message(interaction, embed=embed, ephemeral=True)
         else:
-            await self.bot.send_unexpected_error(interaction, interaction.command, error, ephemeral=True)
+            await self.bot.send_unexpected_error(interaction, error, ephemeral=True)
 
 
 class ViewMenu(BaseView):
