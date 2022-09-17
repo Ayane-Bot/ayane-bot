@@ -250,7 +250,7 @@ class Waifu(commands.Cog):
     waifu = app_commands.Group(name="waifu", description="Get a random waifu picture from waifu.im API.")
 
     @waifu.command(name="sfw", description="Get a random safe picture from waifu.im API.")
-    @app_commands.describe(tag="The image tag used to fetch images if not provided default to 'waifu'",
+    @app_commands.describe(tag="The tag used to fetch images if not provided default to waifu",
                            order_by="Sort by a specific order",
                            gif="If you want gifs or not",
                            many="To get a paginator of multiple files")
@@ -269,7 +269,7 @@ class Waifu(commands.Cog):
         )
 
     @waifu.command(name="nsfw", description="Get a random lewd picture from waifu.im API.")
-    @app_commands.describe(tag="The tag used to fetch images if not provided default to 'waifu'",
+    @app_commands.describe(tag="The tag used to fetch images if not provided default to waifu",
                            order_by="Sort by a specific order",
                            gif="If you want gifs or not",
                            many="To get a paginator of multiple files")
