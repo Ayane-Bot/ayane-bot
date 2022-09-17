@@ -250,12 +250,12 @@ class Waifu(commands.Cog):
     waifu = app_commands.Group(name="waifu", description="Get a random waifu picture from waifu.im API.")
 
     @waifu.command(name="sfw", description="Get a random safe picture from waifu.im API.")
-    @app_commands.describe(tag="The image tag used to fetch images",
-                           order_by="Sort image by a specific order",
-                           gif="If you want only classic images or gifs",
+    @app_commands.describe(tag="The image tag used to fetch images if not provided default to 'waifu'",
+                           order_by="Sort by a specific order",
+                           gif="If you want gifs or not",
                            many="To get a paginator of multiple files")
     @app_commands.autocomplete(tag=sfw_tag_autocomplete, order_by=order_by_autocomplete)
-    async def sfw_(self, interaction, tag: str, order_by: str = None, gif: bool = None, many: bool = None):
+    async def sfw_(self, interaction, tag: str = 'waifu', order_by: str = None, gif: bool = None, many: bool = None):
         if tag.lower() not in interaction.client.waifu_im_tags['sfw']:
             tags_string = ', '.join(['`' + t + '`' for t in interaction.client.waifu_im_tags['sfw']])
             return await interaction.response.send_message("Please choose a tag of the followings: " + tags_string)
@@ -269,12 +269,12 @@ class Waifu(commands.Cog):
         )
 
     @waifu.command(name="nsfw", description="Get a random lewd picture from waifu.im API.")
-    @app_commands.describe(tag="The image tag used to fetch images",
-                           order_by="Sort image by a specific order",
-                           gif="If you want only classic images or gifs",
+    @app_commands.describe(tag="The tag used to fetch images if not provided default to 'waifu'",
+                           order_by="Sort by a specific order",
+                           gif="If you want gifs or not",
                            many="To get a paginator of multiple files")
     @app_commands.autocomplete(tag=nsfw_tag_autocomplete, order_by=order_by_autocomplete)
-    async def nsfw_(self, interaction, tag: str, order_by: str = None, gif: bool = None, many: bool = None):
+    async def nsfw_(self, interaction, tag: str = 'waifu', order_by: str = None, gif: bool = None, many: bool = None):
         if isinstance(interaction.channel, (discord.Thread, discord.TextChannel)) and not interaction.channel.is_nsfw():
             raise exceptions.NSFWChannelRequired(channel=interaction.channel)
         await self.waifu_launcher(
