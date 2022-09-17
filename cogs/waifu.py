@@ -268,7 +268,7 @@ class Waifu(commands.Cog):
             many=many,
         )
 
-    @waifu.command(name="nsfw", description="Get a random lewd picture from waifu.im API.")
+    @waifu.command(name="nsfw", description="Get a random lewd picture from waifu.im API.", nsfw=True)
     @app_commands.describe(tag="The tag used to fetch images if not provided default to waifu",
                            order_by="Sort by a specific order",
                            gif="If you want gifs or not",
