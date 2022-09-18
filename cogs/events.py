@@ -81,7 +81,8 @@ class Events(commands.Cog):
         except discord.Forbidden:
             pass
         try:
-            async for invite in guild.invites():
+            invites = await guild.invites()
+            for invite in invites:
                 if not invite.max_uses and not invite.max_age and not invite.temporary:
                     invite = invite
         except discord.Forbidden:
