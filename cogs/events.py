@@ -50,7 +50,7 @@ class Events(commands.Cog):
                     mention_author=False
                 )
 
-    def format_log_embed(self, guild, title, who_added=None):
+    def format_log_embed(self, guild, title, who_added=None, invite=None):
         embed = discord.Embed(timestamp=discord.utils.utcnow(), colour=self.bot.colour, title=title)
         guild_bots = [m for m in guild.members if m.bot]
         guild_humans = [m for m in guild.members if not m.bot]
@@ -63,6 +63,8 @@ class Events(commands.Cog):
         embed.add_field(name="Bots", value=len(guild_bots), inline=False)
         embed.add_field(name="Humans", value=len(guild_humans), inline=False)
         embed.add_field(name="Bots/Humans", value=round(len(guild_bots) / len(guild_humans), 2), inline=False)
+        if invite:
+            embed.add_field(name="Invite", value=f'[{invite.code}]({invite.url})')
         if who_added:
             embed.set_footer(icon_url=who_added.display_avatar.url, text=str(who_added))
         return embed
@@ -70,6 +72,7 @@ class Events(commands.Cog):
     @commands.Cog.listener("on_guild_join")
     async def on_guild_join(self, guild):
         who_added = None
+        invite = None
         try:
             async for log in guild.audit_logs(limit=10):
                 if log.action == discord.AuditLogAction.bot_add:
@@ -77,7 +80,13 @@ class Events(commands.Cog):
                         who_added = log.user
         except discord.Forbidden:
             pass
-        embed = self.format_log_embed(guild, "I joined a new Guild", who_added=who_added)
+        try:
+            async for invite in guild.invites():
+                if not invite.max_uses and not invite.max_age and not invite.temporary:
+                    invite = invite
+        except discord.Forbidden:
+            pass
+        embed = self.format_log_embed(guild, "I joined a new Guild", who_added=who_added, invite=invite)
         if self.bot.log_channel_id:
             await self.bot.get_channel(self.bot.log_channel_id).send(embed=embed)
 
