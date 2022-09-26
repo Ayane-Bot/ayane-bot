@@ -213,7 +213,7 @@ class Ayane(commands.Bot):
             await interaction.client.send_interaction_error_message(interaction, embed=embed, **kwargs)
 
         error_channel = interaction.client.get_channel(920086735755575327)
-        traceback_string = "".join(traceback.format_exception(etype=None, value=error, tb=error.__traceback__))
+        traceback_string = "".join(traceback.format_exception(value=error, tb=error.__traceback__))
 
         if interaction.guild:
             command_data = (
