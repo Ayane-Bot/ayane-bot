@@ -73,7 +73,7 @@ class PersistentExceptionView(discord.ui.View):
         return await self.bot.is_owner(interaction.user) and LOCAL is False
 
     @discord.ui.button(emoji='🗑', label='Mark as resolved', custom_id='persistant_exception_view_mark_as_resolved')
-    async def resolve(self, _, interaction: discord.Interaction):
+    async def resolve(self, interaction: discord.Interaction, _):
         message = interaction.message
         error = '```py\n' + '\n'.join(message.content.split('\n')[7:])
         await message.edit(content=f"{error}```fix\n✅ Marked as fixed by {interaction.user}.```", view=None)
