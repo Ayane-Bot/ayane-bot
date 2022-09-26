@@ -17,7 +17,7 @@ class BaseModal(discord.ui.Modal):
             if not allow:
                 return
             await self.on_submit(interaction)
-            if not interaction.response._responded:
+            if not interaction.response.is_done():
                 await interaction.response.defer()
         except Exception as e:
             return await self.on_error(e, interaction)

@@ -116,7 +116,7 @@ class BaseView(discord.ui.View):
             if not allow:
                 return
             await item.callback(interaction)
-            if not interaction.response._responded:
+            if not interaction.response.is_done():
                 await interaction.response.defer()
 
         except Exception as e:
