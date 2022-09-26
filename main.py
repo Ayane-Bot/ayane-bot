@@ -205,6 +205,8 @@ class Ayane(commands.Bot):
 
     @staticmethod
     async def send_unexpected_error(interaction, error, **kwargs):
+        if not interaction.command:
+            command_name = "Unknown"
         with contextlib.suppress(discord.HTTPException):
             _message = f"Sorry, an error has occured, it has been reported to my developers. To be inform of the " \
                        f"bot issues and updates join the [support server]({constants.server_invite}) !"
@@ -214,11 +216,10 @@ class Ayane(commands.Bot):
 
         error_channel = interaction.client.get_channel(920086735755575327)
         traceback_string = "".join(traceback.format_exception(error, value=error, tb=error.__traceback__))
-
         if interaction.guild:
             command_data = (
                 f"by: {interaction.user} ({interaction.user.id})"
-                f"\ncommand: {interaction.command.qualified_name}"
+                f"\ncommand: {command_name}"
                 f"\nguild_id: {interaction.guild.id} - channel_id: {interaction.channel.id}"
                 f"\nowner: {interaction.guild.owner.name} ({interaction.guild.owner.id})"
                 f"\nbot admin: {'✅' if interaction.guild.me.guild_permissions.administrator else '❌'} "
@@ -226,13 +227,13 @@ class Ayane(commands.Bot):
             )
         else:
             command_data = (
-                f"command: {interaction.command.qualified_name}"
+                f"command: {command_name}"
                 f"\nCommand executed in DMs"
             )
 
         to_send = (
             f"```yaml\n{command_data}``````py"
-            f"\nCommand {interaction.command.qualified_name} raised the following error:"
+            f"\nCommand {command_name} raised the following error:"
             f"\n{traceback_string}\n```"
         )
 
@@ -244,7 +245,7 @@ class Ayane(commands.Bot):
                     io.StringIO(traceback_string), filename="traceback.py"
                 )
                 await error_channel.send(
-                    f"```yaml\n{command_data}``````py Command {interaction.command.qualified_name} raised the following error:\n```",
+                    f"```yaml\n{command_data}``````py Command {command_name} raised the following error:\n```",
                     file=file,
                     view=PersistentExceptionView(interaction.client),
                 )
