@@ -204,9 +204,8 @@ class Ayane(commands.Bot):
             await interaction.response.send_message(*args, **kwargs)
 
     @staticmethod
-    async def send_unexpected_error(interaction, error, **kwargs):
-        if not interaction.command:
-            command_name = "Unknown"
+    async def send_unexpected_error(interaction, error, command=None, **kwargs):
+        command_name = command.qualified_name if command else getattr(interaction, 'qualified_name', "Unknown")
         with contextlib.suppress(discord.HTTPException):
             _message = f"Sorry, an error has occured, it has been reported to my developers. To be inform of the " \
                        f"bot issues and updates join the [support server]({constants.server_invite}) !"
@@ -287,8 +286,6 @@ if __name__ == "__main__":
             await bot.start(TOKEN)
         webhook = discord.SyncWebhook.from_url(WEBHOOK_URL, bot_token=bot.http.token)
         webhook.send('🔻 Ayane is going to sleep!')
-
-
 
 
     asyncio.run(main())

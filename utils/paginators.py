@@ -45,7 +45,7 @@ class ImageSource(BaseSource):
             request_time=None,
             **kwargs,
     ):
-        self.image_info = image_info if hasattr(image_info,'__iter__') else [image_info]
+        self.image_info = image_info if hasattr(image_info, '__iter__') else [image_info]
         self.title = title
         self.user = user
         self.request_time = request_time
@@ -206,7 +206,8 @@ class BaseView(discord.ui.View):
             embed = discord.Embed(title="🛑 Forbidden", colour=self.bot.colour, description=str(error))
             await self.bot.send_interaction_error_message(interaction, embed=embed, ephemeral=True)
         else:
-            await self.bot.send_unexpected_error(interaction, error, ephemeral=True)
+            await self.bot.send_unexpected_error(interaction, error, command=self.main_interaction.command,
+                                                 ephemeral=True)
 
 
 class ViewMenu(BaseView):
