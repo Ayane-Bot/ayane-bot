@@ -17,13 +17,13 @@ class Events(commands.Cog):
         self.emoji = '⚙'
         self.brief = 'Ayane Internal Stuff'
 
-    @commands.Cog.listener("on_app_command")
-    async def on_app_command(self, interaction) -> None:
+    @commands.Cog.listener("on_app_command_completion")
+    async def on_app_command_completion(self, interaction, command) -> None:
         await interaction.client.pool.execute(
             "INSERT INTO commands (guild_id, user_id, command, timestamp) VALUES ($1, $2, $3, $4)",
             getattr(interaction.guild, "id", None),
             interaction.user.id,
-            interaction.command.qualified_name,
+            command.qualified_name,
             interaction.created_at,
         )
 
