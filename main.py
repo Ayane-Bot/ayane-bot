@@ -180,7 +180,7 @@ class Ayane(commands.Bot):
             logging.info(line)
 
         await self.wait_until_ready()
-        error_channel = self.get_channel(920086768903147550)
+        error_channel = self.get_channel(1024838787622244452)
         to_send = f"```yaml\nAn error occurred in an {event_method} event``````py" \
                   f"\n{traceback_string}\n```"
 

@@ -1,0 +1,219 @@
+SALON
+light.salon_38 via Home Assistant
+ESCALIER
+light.escalier_54 via Home Assistant
+LAMPE SALON
+light.lampe_salon_86 via Home Assistant
+NOTRE CHAMBRE
+light.notre_chambre_204 via Home Assistant
+CHEVET VALERIE
+light.chevet_valerie_446 via Home Assistant
+CHEVET BRICE
+light.chevet_brice_447 via Home Assistant
+Temp SPA 45059
+sensor.temp_spa_45059_869 via Home Assistant
+terrasse
+switch.sonoff_zbmini_l_3fb8b726_on_off via Home Assistant
+PRISE LEAF
+switch.prise_leaf_101 via Home Assistant
+Philips WC
+light.philips_wc_836_2 via Home Assistant
+Radiateur Cuisine
+tado° Smart Thermostat
+Radiateur Entrée
+tado° Smart Thermostat
+Radiateur SdB
+tado° Smart Thermostat
+Radiateur Rémi
+tado° Smart Thermostat
+Radiateur Arnaud
+tado° Smart Thermostat
+android t. v.
+media_player.android_t_v via Home Assistant
+TV du salon
+media_player.tv_du_salon via Home Assistant
+LAMPE REMI
+light.lampe_arnaud_76 via Home Assistant
+porte cagibi: Any
+binary_sensor.porte_cagibi_any via Home Assistant
+Abris jardin
+eWeLink WiFi Device
+Radiateur notre chambre
+tado° Smart RadiatorThermostat
+Thermostat
+tado° Smart Thermostat
+caméra garage
+a Wansview cloud camera(WVC961TMDFV0NJBM)
+Abris jardin
+switch.sonoff_1000b5dff6 via Home Assistant
+notre split
+Smart Air Conditioner from HITACHI
+Split Arnaud
+Smart Air Conditioner from HITACHI
+Split Salon
+Smart Air Conditioner from HITACHI
+Split Remi
+Smart Air Conditioner from HITACHI
+lampe meuble
+Royal Philips Electronics smart device
+caméra jardin
+a Wansview cloud camera(WVC9617FS1AXCOWV)
+cam-garage-w6
+a Wansview cloud camera(WVCA7TTVN2L05KKM)
+caméra comble
+a Wansview cloud camera(WVC961MGAAWKQZNH)
+test w5
+a Wansview cloud camera(WVC97UFYS5OLEWW0)
+HP Color LaserJet cm2320fxi MFP pcl3, hpcups 3.15.9
+HP smart device
+PRISE SAPIN
+light.prise_sapin_41 via Home Assistant
+EchoSalon
+Alexa App from Amazon Inc.
+EchoShow
+Amazon Alexa
+EchoSalonPlus
+Amazon smart device
+EchoCuisine
+Amazon smart device
+BANDEAU LED
+switch.prise_cuisine_696 via Home Assistant
+IMPRIMANTE 3D
+switch.imprimante_3d_850 via Home Assistant
+EchoRemi
+Amazon smart device
+Lumiere garage
+light.lumiere_garage_703 via Home Assistant
+saeco
+eWeLink WiFi Device
+LINGERIE
+light.lingerie_419 via Home Assistant
+ENTREE
+light.entree_51 via Home Assistant
+EchoBoulot
+Amazon smart device
+EchoArnaud
+Amazon smart device
+LANTERNE
+light.lanterne_7 via Home Assistant
+PRISE TV COMBLE
+switch.prise_tv_comble_85 via Home Assistant
+LUMIERE COMBLE
+light.lumiere_comble_525 via Home Assistant
+SALLE DE BAIN
+light.salle_de_bain_73 via Home Assistant
+CUISINE
+light.cuisine_27 via Home Assistant
+EchoLionel
+Amazon smart device
+LAMPE SALON
+light.lampe_salon_86 via Home Assistant
+CHEVET VALERIE
+light.chevet_valerie_446 via Home Assistant
+CHAMBRE ARNAUD
+light.chambre_arnaud_71 via Home Assistant
+EchoComble
+Amazon smart device
+ESCALIER
+light.escalier_54 via Home Assistant
+CHEVET BRICE
+light.chevet_brice_447 via Home Assistant
+NOTRE CHAMBRE
+light.notre_chambre_204 via Home Assistant
+CAGIBI
+light.wc_15 via Home Assistant
+CHAMBRE REMI
+light.chambre_remi_72 via Home Assistant
+COMMANDE FERMER STORE BANNE
+scene.commande_fermer_store_banne via Home Assistant
+COMMANDE OUVRIR STORE BANNE
+scene.commande_ouvrir_store_banne via Home Assistant
+contrôle manuel Radiateur Cuisine
+Scene connected via tado
+boost Radiateur Cuisine
+Scene connected via tado
+boost Radiateur Entrée
+Scene connected via tado
+contrôle manuel Radiateur Entrée
+Scene connected via tado
+boost Radiateur SdB
+Scene connected via tado
+contrôle manuel Radiateur SdB
+Scene connected via tado
+contrôle manuel Radiateur Rémi
+Scene connected via tado
+boost Radiateur Rémi
+Scene connected via tado
+contrôle manuel Radiateur Arnaud
+Scene connected via tado
+boost Radiateur Arnaud
+Scene connected via tado
+bfm
+script.france2_2 via Home Assistant
+tf1
+script.tf1 via Home Assistant
+france2
+script.france2 via Home Assistant
+led violet
+scene.led_violet via Home Assistant
+led cyan
+scene.led_cyan via Home Assistant
+led jaune
+scene.led_jaune via Home Assistant
+boost Radiateur notre chambre
+Scene connected via tado
+contrôle manuel Radiateur notre chambre
+Scene connected via tado
+contrôle manuel Thermostat
+Scene connected via tado
+boost Thermostat
+Scene connected via tado
+il fait tres froid dans le salon
+script.il_fait_tres_froid_dans_le_salon via Home Assistant
+select_iptv
+script.select_iptv via Home Assistant
+Manset - quand tu portes
+script.1611330345178 via Home Assistant
+status czero
+script.status_czero via Home Assistant
+test alexa
+script.test_alexa via Home Assistant
+panneaux solaire
+script.panneaux_solaire via Home Assistant
+led rouge
+scene.led_rouge via Home Assistant
+led mode plus
+scene.led_mode_plus via Home Assistant
+led verte
+scene.led_verte via Home Assistant
+led demo
+scene.led_demo via Home Assistant
+led bleu
+scene.led_bleu via Home Assistant
+led blanc
+scene.led_blanc via Home Assistant
+Rdc Off
+scene.rdc_off via Home Assistant
+COMMANDE OUVRIR PORTAILASL
+scene.commande_ouvrir_portailasl via Home Assistant
+COMMANDE VOLETS OFF
+scene.commande_volets_off via Home Assistant
+COMMANDE FERMER GARAGE
+scene.commande_fermer_garage via Home Assistant
+COMMANDE VOLETS ON
+scene.commande_volets_on via Home Assistant
+COMMANDE RECHARGE START
+scene.commande_recharge_start via Home Assistant
+COMMANDE OUVRIR GARAGE
+scene.commande_ouvrir_garage via Home Assistant
+czero alexa
+scene.czero_alexa via Home Assistant
+Etage Off
+scene.etage_off via Home Assistant
+COMMANDE RECHARGE STOP
+scene.commande_recharge_stop via Home Assistant
+NOTIF
+scene.notif via Home Assistant
+AllOff
+scene.alloff via Home Assistant
+
