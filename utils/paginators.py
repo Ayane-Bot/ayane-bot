@@ -108,19 +108,21 @@ class BaseView(discord.ui.View):
 
     async def _scheduled_task(self, item, interaction):
         try:
-            if self.timeout:
-                self.__timeout_expiry = time.monotonic() + self.timeout
-            if self.main_interaction.is_expired():
-                return
+            item._refresh_state(interaction.data)  # type: ignore
+
             allow = await self.interaction_check(interaction)
             if not allow:
                 return
+
+            if self.timeout:
+                self.__timeout_expiry = time.monotonic() + self.timeout
+
             await item.callback(interaction)
+        except Exception as e:
+            return await self.on_error(interaction, e, item)
+        else:
             if not interaction.response.is_done():
                 await interaction.response.defer()
-
-        except Exception as e:
-            return await self.on_error(e, item, interaction)
 
     async def stop_paginator(self, timed_out=False):
         if (timed_out and not self.delete_after and self.message) or self.ephemeral:
@@ -177,7 +179,7 @@ class BaseView(discord.ui.View):
         await self.stop_paginator(timed_out=True)
 
     async def on_error(
-            self, error: Exception, item: discord.ui.Item, interaction: discord.Interaction
+            self, interaction: discord.Interaction, error: Exception, item: discord.ui.Item,
     ):
         if isinstance(error, NotAuthorized):
             return await self.bot.send_interaction_error_message(interaction, str(error), ephemeral=True)
