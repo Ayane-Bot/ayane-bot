@@ -137,7 +137,7 @@ class BaseView(discord.ui.View):
                 pass
         self.stop()
         try:
-            if (self.delete_after or not timed_out) and not self.ephemeral:
+            if (self.delete_after or not timed_out) and not self.ephemeral and self.message:
                 await self.message.delete()
         except discord.DiscordException:
             pass
