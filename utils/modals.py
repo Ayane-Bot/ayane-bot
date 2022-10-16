@@ -1,5 +1,4 @@
 import discord
-import time
 
 
 class BaseModal(discord.ui.Modal):
@@ -8,7 +7,7 @@ class BaseModal(discord.ui.Modal):
         self.view = view
         super().__init__(**kwargs)
 
-    async def _scheduled_task(self, interaction, components:):
+    async def _scheduled_task(self, interaction, components):
         try:
             self._refresh_timeout()
             self._refresh(components)
@@ -27,9 +26,8 @@ class BaseModal(discord.ui.Modal):
                 await interaction.response.defer()
             self.stop()
 
-
-    async def on_error(self, error: Exception, interaction) -> None:
-        await self.view.on_error(error, None, interaction)
+    async def on_error(self, interaction, error: Exception) -> None:
+        await self.view.on_error(interaction, error, None)
 
 
 class ReportModal(BaseModal):
@@ -78,4 +76,3 @@ class PagePrompterModal(BaseModal):
         except ValueError:
             return await interaction.response.send_message(f"{self.page.value} is not a valid page", ephemeral=True)
         await self.view.show_checked_page(page - 1)
-
