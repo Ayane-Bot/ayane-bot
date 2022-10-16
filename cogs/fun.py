@@ -80,8 +80,8 @@ class Fun(commands.Cog):
         except kadal.MediaNotFound:
             return await interaction.response.send_message(self.format_error_message(name))
         stop_if_nsfw(anime.is_adult and not nsfw_channel)
-        await interaction.defer(thinking=True)
-        await interaction.response.send_message(embed=self.format_anilist_embeds(anime))
+        await interaction.response.defer(thinking=True)
+        await interaction.followup.send(embed=self.format_anilist_embeds(anime))
 
     @app_commands.command(name='manga')
     @app_commands.describe(name='The name of the manga you want to search')
@@ -93,8 +93,8 @@ class Fun(commands.Cog):
         except kadal.MediaNotFound:
             return await interaction.response.send_message(self.format_error_message(name))
         stop_if_nsfw(manga.is_adult and not nsfw_channel)
-        await interaction.defer(thinking=True)
-        await interaction.response.send_message(embed=self.format_anilist_embeds(manga))
+        await interaction.response.defer(thinking=True)
+        await interaction.followup.send(embed=self.format_anilist_embeds(manga))
 
     @app_commands.command(name='top-manga')
     @app_commands.describe(adult='If you want or not to retrieve adult only mangas')
@@ -108,7 +108,7 @@ class Fun(commands.Cog):
         allmangas = await self.kadalclient.custom_paged_search(**variables)
         for i, manga in enumerate(allmangas):
             embed_list.append(self.format_anilist_embeds(manga, index=i + 1, total=len(allmangas)))
-        await interaction.defer(thinking=True)
+        await interaction.response.defer(thinking=True)
         await ViewMenu(source=BaseSource(embed_list, per_page=1), main_interaction=interaction).start()
 
     @app_commands.command(name='top-anime')
@@ -124,5 +124,5 @@ class Fun(commands.Cog):
         allanimes = await self.kadalclient.custom_paged_search(**variables)
         for i, anime in enumerate(allanimes):
             embed_list.append(self.format_anilist_embeds(anime, index=i + 1, total=len(allanimes)))
-        await interaction.defer(thinking=True)
+        await interaction.response.defer(thinking=True)
         await ViewMenu(source=BaseSource(embed_list, per_page=1), main_interaction=interaction).start()
