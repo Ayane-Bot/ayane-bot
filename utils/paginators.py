@@ -124,6 +124,7 @@ class BaseView(discord.ui.View):
             if not interaction.response.is_done():
                 await interaction.response.defer()
 
+
     async def stop_paginator(self, timed_out=False):
         if (timed_out and not self.delete_after and self.message) or self.ephemeral:
             for it in self.children:

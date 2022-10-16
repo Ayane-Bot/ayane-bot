@@ -8,6 +8,26 @@ class BaseModal(discord.ui.Modal):
         self.view = view
         super().__init__(**kwargs)
 
+    async def _scheduled_task(self, interaction, components:):
+        try:
+            self._refresh_timeout()
+            self._refresh(components)
+
+            allow = await self.interaction_check(interaction)
+            if not allow:
+                return
+
+            await self.on_submit(interaction)
+        except Exception as e:
+            return await self.on_error(interaction, e)
+        else:
+            # No error, so assume this will always happen
+            # In the future, maybe this will require checking if we set an error response.
+            if not interaction.response.is_done():
+                await interaction.response.defer()
+            self.stop()
+
+
     async def on_error(self, error: Exception, interaction) -> None:
         await self.view.on_error(error, None, interaction)
 
@@ -58,3 +78,4 @@ class PagePrompterModal(BaseModal):
         except ValueError:
             return await interaction.response.send_message(f"{self.page.value} is not a valid page", ephemeral=True)
         await self.view.show_checked_page(page - 1)
+
