@@ -132,7 +132,7 @@ class BaseView(discord.ui.View):
                 if not self.ephemeral:
                     await self.message.edit(view=self)
                 else:
-                    await self.main_interaction.edit_original_message(view=None)
+                    await self.main_interaction.edit_original_response(view=None)
             except discord.DiscordException:
                 pass
         self.stop()
@@ -169,7 +169,7 @@ class BaseView(discord.ui.View):
         if self.main_interaction.response.is_done():
             return await self.main_interaction.followup.send(*args, **kwargs)
         await self.main_interaction.response.send_message(*args, **kwargs)
-        return await self.main_interaction.original_message()
+        return await self.main_interaction.original_response()
 
     async def send_view(self, *args, **kwargs):
         self.init_custom_id()
@@ -282,8 +282,8 @@ class ViewMenu(BaseView):
 
         if kwargs:
             if self.ephemeral:
-                await self.main_interaction.edit_original_message(**kwargs, view=self)
-                self.message = await self.main_interaction.original_message()
+                await self.main_interaction.edit_original_response(**kwargs, view=self)
+                self.message = await self.main_interaction.original_response()
             else:
                 self.message = await self.message.edit(**kwargs, view=self)
 
