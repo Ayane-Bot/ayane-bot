@@ -205,7 +205,7 @@ class Ayane(commands.Bot):
 
     @staticmethod
     async def send_unexpected_error(interaction, error, command=None, **kwargs):
-        command_name = command.qualified_name if command else getattr(interaction, 'qualified_name', "Unknown")
+        command_name = command.qualified_name if command else getattr(interaction.command, 'qualified_name', "Unknown")
         with contextlib.suppress(discord.HTTPException):
             _message = f"Sorry, an error has occured, it has been reported to my developers. To be inform of the " \
                        f"bot issues and updates join the [support server]({constants.server_invite}) !"
