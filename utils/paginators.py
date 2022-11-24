@@ -461,7 +461,7 @@ class ImageMenu(ViewMenu):
         )
         await interaction.response.defer(ephemeral=True)
         try:
-            rq = await self.bot.waifu_client.info(images=[self.image_info.image_id])
+            rq = await self.bot.waifu_client.search(included_tags=[self.image_info.image_id])
             self.image_info = self.source.image_infos[self.current_page] = rq[0]
         except:
             pass

@@ -79,7 +79,7 @@ class Waifu(commands.Cog):
 
     async def not_empty(self, tag, is_nsfw):
         try:
-            return bool(await self.bot.waifu_client.random(is_nsfw=is_nsfw, selected_tags=[tag]))
+            return bool(await self.bot.waifu_client.search(is_nsfw=is_nsfw, included_tags=[tag]))
         except waifuim.APIException as e:
             if e.status == 429:
                 await asyncio.sleep(0.25)
@@ -112,7 +112,7 @@ class Waifu(commands.Cog):
     async def waifu_launcher(
             interaction,
             is_nsfw=None,
-            selected_tags=None,
+            included_tags=None,
             excluded_tags=None,
             is_gif=None,
             is_ephemeral=False,
@@ -132,8 +132,8 @@ class Waifu(commands.Cog):
             )
         start = time.perf_counter()
         try:
-            r = await interaction.client.waifu_client.random(
-                selected_tags=selected_tags,
+            r = await interaction.client.waifu_client.search(
+                included_tags=included_tags,
                 excluded_tags=excluded_tags,
                 gif=is_gif,
                 order_by=order_by.upper() if order_by else None,
@@ -148,7 +148,7 @@ class Waifu(commands.Cog):
                 raise error
         end = time.perf_counter()
         request_time = round(end - start, 2)
-        cleaned_category = selected_tags[0].capitalize()
+        cleaned_category = included_tags[0].capitalize()
         await ImageMenu(source=ImageSource(
             image_info=r,
             title=cleaned_category,
@@ -196,7 +196,7 @@ class Waifu(commands.Cog):
         file = await converter.clean()
         start = time.perf_counter()
         try:
-            matches = await self.bot.waifu_client.info(images=[file])
+            matches = await self.bot.waifu_client.search(included_files=[file])
         except waifuim.APIException as e:
             if e.status == 404:
                 embed = discord.Embed(title="❌ File not found",
@@ -262,7 +262,7 @@ class Waifu(commands.Cog):
         await self.waifu_launcher(
             interaction,
             is_nsfw=False,
-            selected_tags=[tag],
+            included_tags=[tag],
             is_gif=gif,
             order_by=order_by,
             many=many,
@@ -280,7 +280,7 @@ class Waifu(commands.Cog):
         await self.waifu_launcher(
             interaction,
             is_nsfw=True,
-            selected_tags=[tag],
+            included_tags=[tag],
             is_gif=gif,
             order_by=order_by,
             many=many,
