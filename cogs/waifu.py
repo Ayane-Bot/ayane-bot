@@ -211,7 +211,7 @@ class Waifu(commands.Cog):
 
         return await ImageMenu(
             source=ImageSource(
-                image_info=matches, user=interaction.user,
+                image_info=image, user=interaction.user,
                 title=tag.name.capitalize(),
                 request_time=round(end - start, 2),
                 per_page=1,
