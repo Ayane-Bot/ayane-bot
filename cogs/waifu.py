@@ -196,14 +196,13 @@ class Waifu(commands.Cog):
         file = await converter.clean()
         start = time.perf_counter()
         try:
-            matches = await self.bot.waifu_client.search(included_files=[file])
+            image = await self.bot.waifu_client.search(included_files=[file])
         except waifuim.APIException as e:
             if e.status == 404:
                 embed = discord.Embed(title="❌ File not found",
                                       description=f"Sorry i did not find any file that match the provided file.")
                 return await interaction.response.send_message(embed=embed)
             raise e
-        image = matches[0]
         end = time.perf_counter()
         default = ["ero", "waifu"]
         filtered_tags = [t for t in image.tags if t.name not in default]
