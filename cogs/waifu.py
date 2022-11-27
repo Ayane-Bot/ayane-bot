@@ -102,7 +102,7 @@ class Waifu(commands.Cog):
             self.bot.waifu_im_order_by = ["UPLOADED_AT", "FAVOURITES"]
 
         try:
-            raws = await self.bot.waifu_client.endpoints()
+            raws = await self.bot.waifu_client.tags(raw=True)
             self.bot.waifu_im_tags = dict(sfw=raws['versatile'], nsfw=raws['versatile'] + raws['nsfw'])
         except:
             # If some unknown error happen we still set up some tags manually
