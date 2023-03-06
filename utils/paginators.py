@@ -473,7 +473,7 @@ class ImageMenu(ViewMenu):
         except waifuim.exceptions.APIException as e:
             if e.status != 404:
                 raise e
-        numberfav = self.image_info.favourites
+        number_fav = self.image_info.favorites
         sd_part = "If the image doesn't have any source, and you really want it," \
                   "please use **[Saucenao](https://saucenao.com/)**," \
                   f"Join the [support server]({self.bot.server_invite}) and share us the new source."
@@ -483,7 +483,7 @@ class ImageMenu(ViewMenu):
         )
         embed = discord.Embed(
             colour=discord.Colour.random(),
-            title=f"**{numberfav}** ❤",
+            title=f"**{number_fav}** ❤",
             description=description,
         )
         for key, value in self.image_info.__dict__.items():

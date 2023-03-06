@@ -99,7 +99,7 @@ class Waifu(commands.Cog):
                 await asyncio.sleep(0.25)
         except:
             # If we can't fetch the enum values (wrong status code etc...) we still set up those two
-            self.bot.waifu_im_order_by = ["UPLOADED_AT", "FAVOURITES"]
+            self.bot.waifu_im_order_by = ["UPLOADED_AT", "FAVORITES"]
 
         try:
             raws = await self.bot.waifu_client.tags(raw=True)
@@ -123,7 +123,7 @@ class Waifu(commands.Cog):
     ):
         """Used to easily run most of the command for the Waifu cog"""
 
-        fav_order = "FAVOURITES"
+        fav_order = "FAVORITES"
         await interaction.response.defer(ephemeral=is_ephemeral)
         if order_by and order_by not in [i for i in interaction.client.waifu_im_order_by]:
             available = ['`' + i + '`' for i in interaction.client.waifu_im_order_by]
@@ -220,9 +220,9 @@ class Waifu(commands.Cog):
             main_interaction=interaction,
         ).start()
 
-    @app_commands.command(name="favourites", description="Fetch a user favourite pictures from waifu.im API.")
+    @app_commands.command(name="favorites", description="Fetch a user favourite pictures from waifu.im API.")
     @app_commands.describe(is_nsfw="If provided set an nsfw filter depending on the value provided")
-    async def favourites(self, interaction, is_nsfw: bool = None, ephemeral: bool = False):
+    async def favorites(self, interaction, is_nsfw: bool = None, ephemeral: bool = False):
         """🔗 Display your favourite pictures on the API site. https://waifu.im To add an image to your gallery you
         just need to clique on the heart when requesting an image using one of the bot API image command. the
         subcommands are the type of picture to return, either sfw or nsfw if nothing is provided no filter will be
@@ -233,7 +233,7 @@ class Waifu(commands.Cog):
         except waifuim.APIException as e:
             if e.status == 404:
                 return await interaction.response.send_message(
-                    f"You have no favourites. You can add some by using `/waifu sfw` or `/waifu nsfw` and click on ❤️."
+                    f"You have no favorites. You can add some by using `/waifu sfw` or `/waifu nsfw` and click on ❤️."
                 )
             else:
                 raise e
