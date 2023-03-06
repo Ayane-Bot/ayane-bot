@@ -396,9 +396,9 @@ class ImageMenu(ViewMenu):
     def add_all_items(self) -> None:
         super().add_all_items()
         if len(self.source.entries) > 1:
-            self.add_to_favourite.row = self.delete.row = self.information.row = self.report.row = 2
+            self.add_to_favorites.row = self.delete.row = self.information.row = self.report.row = 2
 
-        self.add_item(self.add_to_favourite)
+        self.add_item(self.add_to_favorites)
         self.add_item(self.report)
         self.add_item(self.information)
         self.add_item(self.delete)
@@ -416,14 +416,14 @@ class ImageMenu(ViewMenu):
         return f"Alright **{user.name}**, the [image](https://{APIDomainName}/preview/{image_id}), " \
                f"has successfully been {mes} your Gallery.\n" \
                f"You can look at your Gallery [here](https://{APIDomainName}/fav/) " \
-               "after logging in with your discord account, or by using the `favourite` command. "
+               "after logging in with your discord account, or by using the `favorite` command. "
 
     @discord.ui.button(emoji="⚠", label="Report", style=discord.ButtonStyle.grey, custom_id="True", )
     async def report(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(ReportModal(view=self))
 
     @discord.ui.button(emoji="❤", style=discord.ButtonStyle.grey)
-    async def add_to_favourite(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def add_to_favorites(self, interaction: discord.Interaction, button: discord.ui.Button):
         user = interaction.user
         self.check_limit(
             self.fav_limit, self.fav.setdefault(user.id, 1), user, self.fav
@@ -499,12 +499,12 @@ class ImageMenu(ViewMenu):
 
 class FavMenu(ImageMenu):
     @discord.ui.button(
-        emoji="❤️", label="Favourite or Remove", style=discord.ButtonStyle.grey
+        emoji="❤️", label="Favorite or Remove", style=discord.ButtonStyle.grey
     )
-    async def add_to_favourite(
+    async def add_to_favorites(
             self, interaction: discord.Interaction, button: discord.ui.Button,
     ):
-        await super().add_to_favourite(interaction, button)
+        await super().add_to_favorites(interaction, button)
         if interaction.user.id == self.main_interaction.user.id:
             self.source.remove(self.current_page)
             if not self.source.entries:

@@ -220,10 +220,10 @@ class Waifu(commands.Cog):
             main_interaction=interaction,
         ).start()
 
-    @app_commands.command(name="favorites", description="Fetch a user favourite pictures from waifu.im API.")
+    @app_commands.command(name="favorites", description="Fetch a user favorite pictures from waifu.im API.")
     @app_commands.describe(is_nsfw="If provided set an nsfw filter depending on the value provided")
     async def favorites(self, interaction, is_nsfw: bool = None, ephemeral: bool = False):
-        """🔗 Display your favourite pictures on the API site. https://waifu.im To add an image to your gallery you
+        """🔗 Display your favorite pictures on the API site. https://waifu.im To add an image to your gallery you
         just need to clique on the heart when requesting an image using one of the bot API image command. the
         subcommands are the type of picture to return, either sfw or nsfw if nothing is provided no filter will be
         applied. The commands that use the bot [API](https://waifu.im/) are the nsfw commands and the `waifu`
