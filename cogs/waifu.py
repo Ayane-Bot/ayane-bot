@@ -223,10 +223,10 @@ class Waifu(commands.Cog):
     @app_commands.command(name="favorites", description="Fetch a user favorite pictures from waifu.im API.")
     @app_commands.describe(is_nsfw="If provided set an nsfw filter depending on the value provided")
     async def favorites(self, interaction, is_nsfw: bool = None, ephemeral: bool = False):
-        """🔗 Display your favorite pictures on the API site. https://waifu.im To add an image to your gallery you
+        """🔗 Display your favorite pictures on the API site. https://www.waifu.im To add an image to your favorites you
         just need to clique on the heart when requesting an image using one of the bot API image command. the
         subcommands are the type of picture to return, either sfw or nsfw if nothing is provided no filter will be
-        applied. The commands that use the bot [API](https://waifu.im/) are the nsfw commands and the `waifu`
+        applied. The commands that use the bot [API](https://www.waifu.im) are the nsfw commands and the `waifu`
         command. """
         try:
             images = await interaction.client.waifu_client.fav(user_id=interaction.user.id, is_nsfw=is_nsfw)
@@ -239,7 +239,7 @@ class Waifu(commands.Cog):
                 raise e
         stop_if_nsfw(not interaction.channel.is_nsfw() and (any(i.is_nsfw for i in images)))
         title = interaction.user.name + "'s " + (
-            "NSFW " if is_nsfw is True else "SFW " if is_nsfw is False else "") + "Gallery"
+            "NSFW " if is_nsfw is True else "SFW " if is_nsfw is False else "") + "favorites"
         await FavMenu(
             source=ImageSource(title=title, image_info=images, user=interaction.user, per_page=1),
             main_interaction=interaction,

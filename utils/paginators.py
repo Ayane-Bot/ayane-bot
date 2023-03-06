@@ -414,8 +414,8 @@ class ImageMenu(ViewMenu):
         t = await self.bot.waifu_client.fav_toggle(user_id=user.id, image_id=image_id)
         mes = "**added to**" if t["state"] == "INSERTED" else "**removed from**"
         return f"Alright **{user.name}**, the [image](https://{APIDomainName}/preview/{image_id}), " \
-               f"has successfully been {mes} your Gallery.\n" \
-               f"You can look at your Gallery [here](https://{APIDomainName}/fav/) " \
+               f"has successfully been {mes} your favorites.\n" \
+               f"You can look at your favorites [here](https://{APIDomainName}/fav/) " \
                "after logging in with your discord account, or by using the `favorite` command. "
 
     @discord.ui.button(emoji="⚠", label="Report", style=discord.ButtonStyle.grey, custom_id="True", )
@@ -478,7 +478,7 @@ class ImageMenu(ViewMenu):
                   "please use **[Saucenao](https://saucenao.com/)**," \
                   f"Join the [support server]({self.bot.server_invite}) and share us the new source."
         description = (
-                f"This **[image](https://waifu.im/preview/{image_id})** **is {'not' if not in_fav else 'already'}** in your [gallery](https://waifu.im/fav/)\n\n"
+                f"This **[image](https://waifu.im/preview/{image_id})** **is {'not' if not in_fav else 'already'}** in your [favorites](https://waifu.im/fav/)\n\n"
                 + sd_part
         )
         embed = discord.Embed(
