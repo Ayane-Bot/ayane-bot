@@ -131,7 +131,7 @@ class Ayane(commands.Bot):
         ssl_context = ssl.create_default_context(cafile=certifi.where())
         connector = aiohttp.TCPConnector(ssl=ssl_context)
         self.session = aiohttp.ClientSession(connector=connector)
-        self.waifu_client = waifuim.WaifuAioClient(appname="Ayane-Bot", token=WAIFU_API_TOKEN, session=self.session)
+        self.waifu_client = waifuim.WaifuAioClient(app_name="Ayane-Bot", token=WAIFU_API_TOKEN, session=self.session)
         await self.load_cogs()
         self.loop.create_task(self.on_ready_once())
 
