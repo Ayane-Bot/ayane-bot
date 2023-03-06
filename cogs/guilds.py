@@ -14,7 +14,6 @@ class Guilds(commands.Cog):
         self.bot.allowed_users = [689058746055262228]
         self.automove_source_channels = [990247228402720808]
         self.automove_target_category = 987106111905734667
-        print("aa")
         self.automove.start()
 
     @tasks.loop(seconds=5.0)
